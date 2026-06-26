@@ -67,6 +67,12 @@ export interface Room {
   title: string
   order: number
   template: RoomTemplate
+  /**
+   * Optional externally-authored room model, usually exported from Blender as GLB/GLTF.
+   * When present, the viewer uses this as the room shell and keeps slots/hotspots dynamic.
+   * When null, the viewer falls back to the built-in procedural room templates.
+   */
+  modelUrl: string | null
   wallTextureId: string | null
   floorTextureId: string | null
   ceilingTextureId: string | null
