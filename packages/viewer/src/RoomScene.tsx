@@ -2,6 +2,7 @@ import type { Room, Item } from '@vm/shared'
 import { getRoomSurfaces } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
+import { RoomModel } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
 import { Portal } from './Portal.js'
 import { NavController } from './NavController.js'
@@ -11,6 +12,7 @@ interface Props {
   items: Record<string, Item>
   textures: Record<string, string> // textureId → url
   activeViewpointId: string
+  gyroEnabled?: boolean
   onSlotSelect: (slotId: string, item: Item | null) => void
   onNavigate?: (roomId: string) => void
 }
@@ -20,6 +22,7 @@ export function RoomScene({
   items,
   textures,
   activeViewpointId,
+  gyroEnabled = false,
   onSlotSelect,
   onNavigate,
 }: Props) {
@@ -32,16 +35,22 @@ export function RoomScene({
     <>
       <RoomLighting preset={room.lightingPreset} />
 
-      {/* Walls */}
-      {surfaces.walls.map((wall) => (
-        <RoomSurface key={wall.name} config={wall} textureUrl={wallUrl} color="#d4c9b8" />
-      ))}
+      {room.modelUrl ? (
+        <RoomModel url={room.modelUrl} />
+      ) : (
+        <>
+          {/* Walls */}
+          {surfaces.walls.map((wall) => (
+            <RoomSurface key={wall.name} config={wall} textureUrl={wallUrl} color="#d4c9b8" />
+          ))}
 
-      {/* Floor */}
-      <RoomSurface config={surfaces.floor} textureUrl={floorUrl} color="#8b7355" />
+          {/* Floor */}
+          <RoomSurface config={surfaces.floor} textureUrl={floorUrl} color="#8b7355" />
 
-      {/* Ceiling */}
-      <RoomSurface config={surfaces.ceiling} textureUrl={ceilingUrl} color="#f5f0e8" />
+          {/* Ceiling */}
+          <RoomSurface config={surfaces.ceiling} textureUrl={ceilingUrl} color="#f5f0e8" />
+        </>
+      )}
 
       {/* Slots */}
       {room.slots
@@ -64,8 +73,8 @@ export function RoomScene({
       <NavController
         viewpoints={room.viewpoints}
         activeViewpointId={activeViewpointId}
+        gyroEnabled={gyroEnabled}
       />
     </>
   )
 }
-
