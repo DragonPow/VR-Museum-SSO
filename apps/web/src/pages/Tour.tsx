@@ -27,7 +27,7 @@ export function Tour({ content, onBack }: Props) {
 
   useEffect(() => {
     setContent(content)
-  }, [content])
+  }, [content, setContent])
 
   if (!currentRoomId || !activeViewpointId) return null
 
@@ -60,7 +60,9 @@ export function Tour({ content, onBack }: Props) {
           items={items}
           textures={textures}
           activeViewpointId={activeViewpointId}
+          gyroEnabled={gyroEnabled}
           onSlotSelect={handleSlotSelect}
+          onNavigate={navigateToRoom}
         />
       </SceneCanvas>
 
