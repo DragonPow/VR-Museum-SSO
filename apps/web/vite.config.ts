@@ -20,9 +20,11 @@ export default defineConfig({
             const ext = filePath.split('.').pop() ?? ''
             const mime: Record<string, string> = {
               json: 'application/json',
+              gltf: 'model/gltf+json',
               jpg: 'image/jpeg',
               jpeg: 'image/jpeg',
               png: 'image/png',
+              svg: 'image/svg+xml',
               webp: 'image/webp',
             }
             res.setHeader('Content-Type', mime[ext] ?? 'application/octet-stream')
