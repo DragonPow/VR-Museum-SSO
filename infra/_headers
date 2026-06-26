@@ -1,0 +1,19 @@
+# Cloudflare Pages _headers file
+# Copy to apps/web/public/ before build
+
+/content/images/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/content/textures/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/content.json
+  Cache-Control: public, max-age=60, s-maxage=60
+
+/index.html
+  Cache-Control: no-cache

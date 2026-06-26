@@ -1,0 +1,17 @@
+name = "virtual-museum-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "virtual-museum-media"
+
+[vars]
+ALLOWED_ORIGIN = "https://YOUR-ADMIN-DOMAIN.pages.dev"
+
+# Uncomment for local dev:
+# [[r2_buckets]]
+# binding = "MEDIA_BUCKET"
+# bucket_name = "virtual-museum-media"
+# preview_bucket_name = "virtual-museum-media-dev"

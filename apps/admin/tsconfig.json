@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@vm/shared": ["../../packages/shared/src/index.ts"],
+      "@vm/viewer": ["../../packages/viewer/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

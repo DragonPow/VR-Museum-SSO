@@ -1,0 +1,391 @@
+{
+  "version": "1",
+  "updatedAt": "2026-06-26T00:00:00.000Z",
+  "periods": [
+    {
+      "id": "period-1975-1985",
+      "slug": "thanh-lap-1975-1985",
+      "title": "Thành lập & Khai phá (1975–1985)",
+      "yearStart": 1975,
+      "yearEnd": 1985,
+      "order": 1,
+      "description": "Giai đoạn thành lập và những năm đầu xây dựng nền tảng của công ty sau ngày thống nhất đất nước.",
+      "themeColor": "#8B4513"
+    },
+    {
+      "id": "period-1986-1995",
+      "slug": "doi-moi-1986-1995",
+      "title": "Đổi Mới & Phát triển (1986–1995)",
+      "yearStart": 1986,
+      "yearEnd": 1995,
+      "order": 2,
+      "description": "Giai đoạn Đổi Mới, công ty mở rộng quy mô và cải tổ mô hình hoạt động.",
+      "themeColor": "#2E6B3E"
+    },
+    {
+      "id": "period-1996-2005",
+      "slug": "hoi-nhap-1996-2005",
+      "title": "Hội nhập & Hiện đại hóa (1996–2005)",
+      "yearStart": 1996,
+      "yearEnd": 2005,
+      "order": 3,
+      "description": "Công ty hội nhập quốc tế, đầu tư vào công nghệ và mở rộng thị trường.",
+      "themeColor": "#1A4F7A"
+    },
+    {
+      "id": "period-2006-2015",
+      "slug": "tang-truong-2006-2015",
+      "title": "Tăng trưởng mạnh (2006–2015)",
+      "yearStart": 2006,
+      "yearEnd": 2015,
+      "order": 4,
+      "description": "Giai đoạn tăng trưởng vượt bậc, mở rộng sang nhiều lĩnh vực mới.",
+      "themeColor": "#5A1E8C"
+    },
+    {
+      "id": "period-2016-2025",
+      "slug": "chuyen-doi-2016-2025",
+      "title": "Chuyển đổi số & Phát triển bền vững (2016–2025)",
+      "yearStart": 2016,
+      "yearEnd": 2025,
+      "order": 5,
+      "description": "Chuyển đổi số toàn diện, hướng tới phát triển bền vững và kỷ niệm 50 năm.",
+      "themeColor": "#C0392B"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "room-thanh-lap-gallery",
+      "periodId": "period-1975-1985",
+      "slug": "phong-thanh-lap",
+      "title": "Phòng Thành Lập",
+      "order": 1,
+      "template": "gallery",
+      "wallTextureId": "tex-wall-warm-stone",
+      "floorTextureId": "tex-floor-parquet",
+      "ceilingTextureId": null,
+      "lightingPreset": "warm",
+      "entryViewpointId": "vp-center",
+      "viewpoints": [
+        {
+          "id": "vp-center",
+          "name": "Trung tâm phòng",
+          "position": { "x": 0, "y": 1.6, "z": 0 },
+          "lookAt": { "x": 0, "y": 1.6, "z": -7 }
+        },
+        {
+          "id": "vp-front-wall",
+          "name": "Nhìn tường trước",
+          "position": { "x": 0, "y": 1.6, "z": 3 },
+          "lookAt": { "x": 0, "y": 1.6, "z": -7 }
+        },
+        {
+          "id": "vp-left-wall",
+          "name": "Nhìn tường trái",
+          "position": { "x": 3, "y": 1.6, "z": 0 },
+          "lookAt": { "x": -5, "y": 1.6, "z": 0 }
+        },
+        {
+          "id": "vp-right-wall",
+          "name": "Nhìn tường phải",
+          "position": { "x": -3, "y": 1.6, "z": 0 },
+          "lookAt": { "x": 5, "y": 1.6, "z": 0 }
+        }
+      ],
+      "slots": [
+        {
+          "id": "slot-front-center",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường trước — trung tâm",
+          "type": "image",
+          "transform": {
+            "position": { "x": 0, "y": 2.1, "z": -7.85 },
+            "rotation": { "x": 0, "y": 0, "z": 0 },
+            "size": { "w": 2.4, "h": 1.8 }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-khai-truong-1975",
+          "visible": true
+        },
+        {
+          "id": "slot-front-left",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường trước — trái",
+          "type": "image",
+          "transform": {
+            "position": { "x": -3.2, "y": 2.0, "z": -7.85 },
+            "rotation": { "x": 0, "y": 0, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-ban-lanh-dao-1975",
+          "visible": true
+        },
+        {
+          "id": "slot-front-right",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường trước — phải",
+          "type": "image",
+          "transform": {
+            "position": { "x": 3.2, "y": 2.0, "z": -7.85 },
+            "rotation": { "x": 0, "y": 0, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-co-so-vat-chat-1976",
+          "visible": true
+        },
+        {
+          "id": "slot-left-wall-1",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường trái — vị trí 1",
+          "type": "image",
+          "transform": {
+            "position": { "x": -5.85, "y": 2.0, "z": -4 },
+            "rotation": { "x": 0, "y": 1.5708, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-nhan-su-1977",
+          "visible": true
+        },
+        {
+          "id": "slot-left-wall-2",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường trái — vị trí 2",
+          "type": "image",
+          "transform": {
+            "position": { "x": -5.85, "y": 2.0, "z": 0 },
+            "rotation": { "x": 0, "y": 1.5708, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-san-pham-1978",
+          "visible": true
+        },
+        {
+          "id": "slot-left-wall-3",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường trái — vị trí 3",
+          "type": "image",
+          "transform": {
+            "position": { "x": -5.85, "y": 2.0, "z": 4 },
+            "rotation": { "x": 0, "y": 1.5708, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "slot-right-wall-1",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường phải — vị trí 1",
+          "type": "image",
+          "transform": {
+            "position": { "x": 5.85, "y": 2.0, "z": -4 },
+            "rotation": { "x": 0, "y": -1.5708, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-hop-tac-1980",
+          "visible": true
+        },
+        {
+          "id": "slot-right-wall-2",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường phải — vị trí 2",
+          "type": "image",
+          "transform": {
+            "position": { "x": 5.85, "y": 2.0, "z": 0 },
+            "rotation": { "x": 0, "y": -1.5708, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-thanh-tuu-1982",
+          "visible": true
+        },
+        {
+          "id": "slot-right-wall-3",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Tường phải — vị trí 3",
+          "type": "image",
+          "transform": {
+            "position": { "x": 5.85, "y": 2.0, "z": 4 },
+            "rotation": { "x": 0, "y": -1.5708, "z": 0 },
+            "size": { "w": 1.6, "h": 1.2 }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "slot-poster-entrance",
+          "roomId": "room-thanh-lap-gallery",
+          "name": "Poster lối vào",
+          "type": "poster",
+          "transform": {
+            "position": { "x": 0, "y": 2.5, "z": 7.85 },
+            "rotation": { "x": 0, "y": 3.14159, "z": 0 },
+            "size": { "w": 3.0, "h": 2.0 }
+          },
+          "frameStyle": "none",
+          "itemId": "item-poster-giai-doan-1",
+          "visible": true
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "item-khai-truong-1975",
+      "title": "Lễ Khai Trương Thành Lập Công Ty (1975)",
+      "year": 1975,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Lễ khai trương chính thức đánh dấu sự ra đời của công ty.",
+      "longDesc": "Ngày thành lập lịch sử đánh dấu bước đầu của hành trình 50 năm xây dựng và phát triển. Buổi lễ được tổ chức trang trọng với sự tham dự của các lãnh đạo địa phương và toàn thể cán bộ nhân viên sáng lập.",
+      "tags": ["khai-truong", "thanh-lap", "1975", "lich-su"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 1,
+      "status": "approved"
+    },
+    {
+      "id": "item-ban-lanh-dao-1975",
+      "title": "Ban Lãnh Đạo Đầu Tiên",
+      "year": 1975,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Những người sáng lập và ban lãnh đạo đầu tiên của công ty.",
+      "longDesc": "Chân dung và tiểu sử ngắn của những cá nhân đã đặt nền móng cho công ty. Họ là những con người tâm huyết, đặt nền tảng vững chắc cho sự phát triển sau này.",
+      "tags": ["lanh-dao", "sang-lap", "1975"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 2,
+      "status": "approved"
+    },
+    {
+      "id": "item-co-so-vat-chat-1976",
+      "title": "Cơ Sở Vật Chất Ban Đầu (1976)",
+      "year": 1976,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Trụ sở và trang thiết bị trong những năm đầu hoạt động.",
+      "longDesc": "Hình ảnh ghi lại trụ sở ban đầu, trang thiết bị và điều kiện làm việc trong những năm đầu thành lập. Dù còn nhiều khó khăn nhưng tinh thần làm việc luôn hăng say.",
+      "tags": ["co-so-vat-chat", "tru-so", "1976"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 3,
+      "status": "approved"
+    },
+    {
+      "id": "item-nhan-su-1977",
+      "title": "Đội Ngũ Nhân Sự 1977",
+      "year": 1977,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Hình ảnh tập thể cán bộ nhân viên năm 1977.",
+      "longDesc": "Bức ảnh tập thể quý giá ghi lại đội ngũ cán bộ nhân viên công ty trong giai đoạn đầu. Mỗi gương mặt là một câu chuyện, một hành trình.",
+      "tags": ["nhan-su", "can-bo", "1977", "tap-the"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 4,
+      "status": "approved"
+    },
+    {
+      "id": "item-san-pham-1978",
+      "title": "Sản Phẩm & Dịch Vụ Đầu Tiên (1978)",
+      "year": 1978,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Những sản phẩm và dịch vụ ra đời trong giai đoạn đầu.",
+      "longDesc": "Hình ảnh các sản phẩm và dịch vụ đầu tiên của công ty — những viên gạch đầu tiên xây dựng uy tín thương hiệu qua nhiều thập kỷ.",
+      "tags": ["san-pham", "dich-vu", "1978"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 5,
+      "status": "approved"
+    },
+    {
+      "id": "item-hop-tac-1980",
+      "title": "Hợp Tác & Đối Ngoại (1980)",
+      "year": 1980,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Các hoạt động hợp tác và kết nối trong những năm đầu.",
+      "longDesc": "Ghi lại những hoạt động hợp tác, ký kết và kết nối đối tác trong những năm đầu hoạt động, đặt nền móng cho mạng lưới quan hệ lâu dài sau này.",
+      "tags": ["hop-tac", "doi-ngoai", "1980"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 6,
+      "status": "approved"
+    },
+    {
+      "id": "item-thanh-tuu-1982",
+      "title": "Thành Tựu Nổi Bật (1982)",
+      "year": 1982,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Những thành tựu và giải thưởng đầu tiên.",
+      "longDesc": "Những giải thưởng, bằng khen và thành tựu nổi bật đầu tiên mà công ty đạt được, khẳng định vị thế và uy tín trong ngành.",
+      "tags": ["thanh-tuu", "giai-thuong", "1982"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 7,
+      "status": "approved"
+    },
+    {
+      "id": "item-poster-giai-doan-1",
+      "title": "Tổng Kết Giai Đoạn 1975–1985",
+      "year": 1985,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Nhìn lại 10 năm đầu xây dựng và phát triển.",
+      "longDesc": "Tổng kết những dấu mốc lịch sử, con số và thành tựu trong 10 năm đầu tiên xây dựng công ty từ những ngày đầu gian khó.",
+      "tags": ["tong-ket", "poster", "1985", "lich-su"],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/placeholder-thumb.jpg",
+      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
+      "fullUrl": "/content/images/placeholder-full.jpg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Truyền thông",
+      "priority": 8,
+      "status": "approved"
+    }
+  ],
+  "textures": [
+    {
+      "id": "tex-wall-warm-stone",
+      "name": "Tường đá ấm",
+      "url": "/content/textures/wall-warm-stone.jpg",
+      "type": "wall"
+    },
+    {
+      "id": "tex-floor-parquet",
+      "name": "Sàn gỗ parquet",
+      "url": "/content/textures/floor-parquet.jpg",
+      "type": "floor"
+    }
+  ]
+}

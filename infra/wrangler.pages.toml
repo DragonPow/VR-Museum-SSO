@@ -1,0 +1,3 @@
+# Cloudflare Pages deployment config
+# Deploy web:   pnpm --filter web build && wrangler pages deploy apps/web/dist --project-name=virtual-museum-web
+# Deploy admin: pnpm --filter admin build && wrangler pages deploy apps/admin/dist --project-name=virtual-museum-admin

@@ -1,0 +1,39 @@
+{
+  "name": "@vm/viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "prettier --check src"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.120.0",
+    "@react-three/fiber": "^8.17.0",
+    "three": "^0.170.0",
+    "@vm/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/three": "^0.170.0",
+    "tsup": "^8.3.0",
+    "vitest": "^2.1.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@types/react": "^18.3.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  }
+}
