@@ -6,6 +6,7 @@ import type { Viewpoint } from '@vm/shared'
 interface Props {
   viewpoints: Viewpoint[]
   activeViewpointId: string
+  gyroEnabled?: boolean
 }
 
 function toVec3(v: { x: number; y: number; z: number }) {
@@ -19,7 +20,15 @@ function computeYawPitch(from: THREE.Vector3, to: THREE.Vector3) {
   return { yaw, pitch }
 }
 
-export function NavController({ viewpoints, activeViewpointId }: Props) {
+function degToRad(deg: number) {
+  return (deg * Math.PI) / 180
+}
+
+function clampPitch(value: number) {
+  return Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, value))
+}
+
+export function NavController({ viewpoints, activeViewpointId, gyroEnabled = false }: Props) {
   const { camera, gl } = useThree()
 
   // Camera position target (lerped)
@@ -54,7 +63,7 @@ export function NavController({ viewpoints, activeViewpointId }: Props) {
       yaw.current = y
       pitch.current = p
     }
-  }, [activeViewpointId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeViewpointId, camera, viewpoints])
 
   // Pointer drag → look around
   useEffect(() => {
@@ -66,11 +75,11 @@ export function NavController({ viewpoints, activeViewpointId }: Props) {
       canvas.setPointerCapture(e.pointerId)
     }
     const onMove = (e: PointerEvent) => {
-      if (!isDragging.current) return
+      if (!isDragging.current || gyroEnabled) return
       const dx = e.clientX - lastMouse.current.x
       const dy = e.clientY - lastMouse.current.y
       yaw.current -= dx * 0.0035
-      pitch.current = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, pitch.current - dy * 0.0035))
+      pitch.current = clampPitch(pitch.current - dy * 0.0035)
       lastMouse.current = { x: e.clientX, y: e.clientY }
       transitioning.current = false // cancel smooth transition while dragging
     }
@@ -79,12 +88,35 @@ export function NavController({ viewpoints, activeViewpointId }: Props) {
     canvas.addEventListener('pointerdown', onDown)
     canvas.addEventListener('pointermove', onMove)
     canvas.addEventListener('pointerup', onUp)
+    canvas.addEventListener('pointercancel', onUp)
     return () => {
       canvas.removeEventListener('pointerdown', onDown)
       canvas.removeEventListener('pointermove', onMove)
       canvas.removeEventListener('pointerup', onUp)
+      canvas.removeEventListener('pointercancel', onUp)
     }
-  }, [gl])
+  }, [gl, gyroEnabled])
+
+  // Mobile gyro → look around. This intentionally uses a simple yaw/pitch mapping
+  // so it works as a lightweight MVP without pulling in a heavier controls stack.
+  useEffect(() => {
+    if (!gyroEnabled || typeof window === 'undefined') return
+
+    const onOrientation = (event: DeviceOrientationEvent) => {
+      if (event.alpha == null && event.beta == null) return
+
+      if (event.alpha != null) {
+        yaw.current = -degToRad(event.alpha)
+      }
+      if (event.beta != null) {
+        pitch.current = clampPitch(degToRad(event.beta - 90))
+      }
+      transitioning.current = false
+    }
+
+    window.addEventListener('deviceorientation', onOrientation, true)
+    return () => window.removeEventListener('deviceorientation', onOrientation, true)
+  }, [gyroEnabled])
 
   useFrame((_, delta) => {
     const t = Math.min(1, 6 * delta)
@@ -93,7 +125,7 @@ export function NavController({ viewpoints, activeViewpointId }: Props) {
     camera.position.lerp(targetPos.current, t)
 
     // Smooth orientation transition on viewpoint change
-    if (transitioning.current) {
+    if (transitioning.current && !gyroEnabled) {
       // Lerp yaw (handle wrap-around)
       let dyaw = targetYaw.current - yaw.current
       if (dyaw > Math.PI) dyaw -= 2 * Math.PI
@@ -110,4 +142,3 @@ export function NavController({ viewpoints, activeViewpointId }: Props) {
 
   return null
 }
-
