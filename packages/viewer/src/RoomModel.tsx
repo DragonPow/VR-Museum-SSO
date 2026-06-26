@@ -29,13 +29,6 @@ export function RoomModel({ url }: Props) {
         material.needsUpdate = true
       })
     })
-
-    return () => {
-      scene.traverse((obj) => {
-        if (!(obj instanceof THREE.Mesh)) return
-        obj.geometry?.dispose()
-      })
-    }
   }, [scene])
 
   return <primitive object={scene} />
