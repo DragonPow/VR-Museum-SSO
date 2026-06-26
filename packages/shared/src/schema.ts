@@ -62,6 +62,14 @@ export const SlotSchema = z.object({
   visible: z.boolean(),
 })
 
+export const RoomPortalSchema = z.object({
+  id: NonEmptyString,
+  targetRoomId: NonEmptyString,
+  label: NonEmptyString,
+  position: Vec3Schema,
+  rotation: Vec3Schema,
+})
+
 export const RoomSchema = z.object({
   id: NonEmptyString,
   periodId: NonEmptyString,
@@ -76,6 +84,7 @@ export const RoomSchema = z.object({
   entryViewpointId: NonEmptyString,
   viewpoints: z.array(ViewpointSchema).min(1),
   slots: z.array(SlotSchema),
+  portals: z.array(RoomPortalSchema).default([]),
 })
 
 export const ItemSchema = z.object({

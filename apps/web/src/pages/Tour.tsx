@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
-import type { Content, Item } from '@vm/shared'
+import { useEffect, useState } from 'react'
+import type { Content } from '@vm/shared'
 import { SceneCanvas, RoomScene, buildRoomProps, useGyroToggle, shouldUseFallback } from '@vm/viewer'
+import type { Item } from '@vm/shared'
 import { useMuseumStore } from '../store.js'
 import { TimelineNav } from '../ui/TimelineNav.js'
 import { InfoModal } from '../ui/InfoModal.js'
@@ -98,10 +99,36 @@ export function Tour({ content, onBack }: Props) {
         <span style={styles.roomTitle}>{room.title}</span>
       </div>
 
+      {/* Drag hint — fades out after 4s */}
+      <DragHint />
+
       {/* Info modal */}
       {selectedItem && (
         <InfoModal item={selectedItem} onClose={closeModal} />
       )}
+    </div>
+  )
+}
+
+function DragHint() {
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), 4000)
+    return () => clearTimeout(t)
+  }, [])
+  if (!visible) return null
+  return (
+    <div style={{
+      position: 'absolute', top: '50%', left: '50%',
+      transform: 'translate(-50%,-50%)',
+      background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(200,168,90,0.3)',
+      color: '#c8a85a', borderRadius: '12px',
+      padding: '10px 20px', fontSize: '13px',
+      pointerEvents: 'none', zIndex: 5,
+      textAlign: 'center', backdropFilter: 'blur(6px)',
+      animation: 'fadeout 1s 3s forwards',
+    }}>
+      🖱 Kéo để nhìn quanh · Click khung ảnh để xem chi tiết
     </div>
   )
 }

@@ -1,115 +1,113 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Viewpoint } from '@vm/shared'
 
 interface Props {
   viewpoints: Viewpoint[]
   activeViewpointId: string
-  onViewpointChange?: (id: string) => void
 }
 
-const LERP_SPEED = 5
-
-function toVec3(v: { x: number; y: number; z: number }): THREE.Vector3 {
+function toVec3(v: { x: number; y: number; z: number }) {
   return new THREE.Vector3(v.x, v.y, v.z)
 }
 
-export function NavController({ viewpoints, activeViewpointId, onViewpointChange }: Props) {
-  const { camera } = useThree()
-  const targetPos = useRef(new THREE.Vector3())
-  const targetLookAt = useRef(new THREE.Vector3())
-  const currentLookAt = useRef(new THREE.Vector3())
-  const [gyroEnabled, setGyroEnabled] = useState(false)
-  const gyroRef = useRef<{ alpha: number; beta: number; gamma: number } | null>(null)
+function computeYawPitch(from: THREE.Vector3, to: THREE.Vector3) {
+  const dir = to.clone().sub(from).normalize()
+  const yaw = Math.atan2(dir.x, -dir.z)
+  const pitch = Math.asin(Math.max(-1, Math.min(1, dir.y)))
+  return { yaw, pitch }
+}
 
-  // Sync target when viewpoint changes
+export function NavController({ viewpoints, activeViewpointId }: Props) {
+  const { camera, gl } = useThree()
+
+  // Camera position target (lerped)
+  const targetPos = useRef(new THREE.Vector3(0, 1.6, 0))
+  // Orientation — drag mutates these directly for instant feel
+  const yaw = useRef(Math.PI)
+  const pitch = useRef(0)
+  // For smooth orientation transition on viewpoint change
+  const targetYaw = useRef(Math.PI)
+  const targetPitch = useRef(0)
+  const transitioning = useRef(false)
+
+  const isDragging = useRef(false)
+  const lastMouse = useRef({ x: 0, y: 0 })
+
+  // Init and viewpoint change
   useEffect(() => {
     const vp = viewpoints.find((v) => v.id === activeViewpointId)
     if (!vp) return
-    targetPos.current.copy(toVec3(vp.position))
-    targetLookAt.current.copy(toVec3(vp.lookAt))
-  }, [activeViewpointId, viewpoints])
+    const pos = toVec3(vp.position)
+    const lookAt = toVec3(vp.lookAt)
+    targetPos.current.copy(pos)
 
-  // Jump to first viewpoint immediately on mount
-  useEffect(() => {
-    const vp = viewpoints.find((v) => v.id === activeViewpointId)
-    if (!vp) return
-    camera.position.copy(toVec3(vp.position))
-    currentLookAt.current.copy(toVec3(vp.lookAt))
-    camera.lookAt(currentLookAt.current)
-    targetPos.current.copy(toVec3(vp.position))
-    targetLookAt.current.copy(toVec3(vp.lookAt))
-  }, []) // intentionally only on mount
+    const { yaw: y, pitch: p } = computeYawPitch(pos, lookAt)
+    targetYaw.current = y
+    targetPitch.current = p
+    transitioning.current = true
 
-  // Smooth lerp each frame
-  useFrame((_, delta) => {
-    const t = Math.min(1, LERP_SPEED * delta)
-    camera.position.lerp(targetPos.current, t)
-    currentLookAt.current.lerp(targetLookAt.current, t)
-    if (gyroRef.current) {
-      // gyro handled by orientation event — don't interfere with lookAt
+    // Snap position immediately on first load (no lerp delay at start)
+    if (!isDragging.current) {
+      camera.position.copy(pos)
+      yaw.current = y
+      pitch.current = p
     }
+  }, [activeViewpointId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pointer drag → look around
+  useEffect(() => {
+    const canvas = gl.domElement
+
+    const onDown = (e: PointerEvent) => {
+      isDragging.current = true
+      lastMouse.current = { x: e.clientX, y: e.clientY }
+      canvas.setPointerCapture(e.pointerId)
+    }
+    const onMove = (e: PointerEvent) => {
+      if (!isDragging.current) return
+      const dx = e.clientX - lastMouse.current.x
+      const dy = e.clientY - lastMouse.current.y
+      yaw.current -= dx * 0.0035
+      pitch.current = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, pitch.current - dy * 0.0035))
+      lastMouse.current = { x: e.clientX, y: e.clientY }
+      transitioning.current = false // cancel smooth transition while dragging
+    }
+    const onUp = () => { isDragging.current = false }
+
+    canvas.addEventListener('pointerdown', onDown)
+    canvas.addEventListener('pointermove', onMove)
+    canvas.addEventListener('pointerup', onUp)
+    return () => {
+      canvas.removeEventListener('pointerdown', onDown)
+      canvas.removeEventListener('pointermove', onMove)
+      canvas.removeEventListener('pointerup', onUp)
+    }
+  }, [gl])
+
+  useFrame((_, delta) => {
+    const t = Math.min(1, 6 * delta)
+
+    // Smooth position lerp
+    camera.position.lerp(targetPos.current, t)
+
+    // Smooth orientation transition on viewpoint change
+    if (transitioning.current) {
+      // Lerp yaw (handle wrap-around)
+      let dyaw = targetYaw.current - yaw.current
+      if (dyaw > Math.PI) dyaw -= 2 * Math.PI
+      if (dyaw < -Math.PI) dyaw += 2 * Math.PI
+      yaw.current += dyaw * t
+      pitch.current += (targetPitch.current - pitch.current) * t
+      if (Math.abs(dyaw) < 0.001 && Math.abs(targetPitch.current - pitch.current) < 0.001) {
+        transitioning.current = false
+      }
+    }
+
+    camera.quaternion.setFromEuler(new THREE.Euler(pitch.current, yaw.current, 0, 'YXZ'))
   })
 
-  // DeviceOrientation (gyro) handler
-  const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
-    if (e.beta == null || e.gamma == null) return
-    gyroRef.current = { alpha: e.alpha ?? 0, beta: e.beta, gamma: e.gamma }
-    // Map beta/gamma to camera look direction
-    const euler = new THREE.Euler(
-      THREE.MathUtils.degToRad(Math.max(-60, Math.min(60, e.beta - 90))),
-      THREE.MathUtils.degToRad(-(e.gamma ?? 0)),
-      0,
-      'YXZ',
-    )
-    camera.quaternion.setFromEuler(euler)
-  }, [camera])
-
-  useEffect(() => {
-    if (!gyroEnabled) {
-      window.removeEventListener('deviceorientation', handleOrientation)
-      gyroRef.current = null
-      return
-    }
-    window.addEventListener('deviceorientation', handleOrientation)
-    return () => window.removeEventListener('deviceorientation', handleOrientation)
-  }, [gyroEnabled, handleOrientation])
-
-  return (
-    <>
-      {!gyroEnabled && (
-        <OrbitControls
-          makeDefault
-          enablePan={false}
-          enableZoom={false}
-          rotateSpeed={0.4}
-          minPolarAngle={Math.PI * 0.15}
-          maxPolarAngle={Math.PI * 0.85}
-          target={currentLookAt.current}
-        />
-      )}
-    </>
-  )
+  return null
 }
 
-/** Hook to request + toggle gyro permission (iOS 13+) */
-export function useGyroToggle() {
-  const [enabled, setEnabled] = useState(false)
-
-  const toggle = useCallback(async () => {
-    if (enabled) { setEnabled(false); return }
-    // iOS requires explicit permission request
-    const dor = DeviceOrientationEvent as unknown as {
-      requestPermission?: () => Promise<string>
-    }
-    if (typeof dor.requestPermission === 'function') {
-      const perm = await dor.requestPermission()
-      if (perm !== 'granted') return
-    }
-    setEnabled(true)
-  }, [enabled])
-
-  return { gyroEnabled: enabled, toggleGyro: toggle }
-}

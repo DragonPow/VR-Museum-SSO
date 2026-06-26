@@ -1,41 +1,85 @@
 import { useState } from 'react'
-import type { Viewpoint } from '@vm/shared'
+import { Text } from '@react-three/drei'
+import * as THREE from 'three'
+import type { RoomPortal } from '@vm/shared'
 
 interface Props {
-  position: [number, number, number]
-  label: string
-  targetRoomId: string
+  portal: RoomPortal
   onNavigate: (roomId: string) => void
 }
 
-export function Portal({ position, label, targetRoomId, onNavigate }: Props) {
+const ARCH_W = 2.0
+const ARCH_H = 2.5
+const BORDER = 0.055
+
+export function Portal({ portal, onNavigate }: Props) {
   const [hovered, setHovered] = useState(false)
 
+  const color = hovered ? '#f0d060' : '#c8a85a'
+  const bgOpacity = hovered ? 0.28 : 0.12
+
+  const pos: [number, number, number] = [portal.position.x, portal.position.y, portal.position.z]
+  const rot: [number, number, number] = [portal.rotation.x, portal.rotation.y, portal.rotation.z]
+
+  const handlers = {
+    onPointerOver: (e: THREE.Event) => { (e as any).stopPropagation(); setHovered(true) },
+    onPointerOut: () => setHovered(false),
+    onClick: (e: THREE.Event) => { (e as any).stopPropagation(); onNavigate(portal.targetRoomId) },
+  }
+
   return (
-    <group position={position}>
-      {/* Arrow disc */}
-      <mesh
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
-        onPointerOut={() => setHovered(false)}
-        onClick={(e) => { e.stopPropagation(); onNavigate(targetRoomId) }}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.02, 0]}
+    <group position={pos} rotation={rot as unknown as THREE.Euler}>
+      {/* Background panel */}
+      <mesh {...handlers}>
+        <planeGeometry args={[ARCH_W, ARCH_H]} />
+        <meshBasicMaterial color="#0d0820" transparent opacity={bgOpacity} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Frame — top */}
+      <mesh position={[0, ARCH_H / 2 - BORDER / 2, 0.008]} {...handlers}>
+        <planeGeometry args={[ARCH_W, BORDER]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+      {/* Frame — bottom */}
+      <mesh position={[0, -(ARCH_H / 2 - BORDER / 2), 0.008]} {...handlers}>
+        <planeGeometry args={[ARCH_W, BORDER]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+      {/* Frame — left */}
+      <mesh position={[-(ARCH_W / 2 - BORDER / 2), 0, 0.008]} {...handlers}>
+        <planeGeometry args={[BORDER, ARCH_H]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+      {/* Frame — right */}
+      <mesh position={[ARCH_W / 2 - BORDER / 2, 0, 0.008]} {...handlers}>
+        <planeGeometry args={[BORDER, ARCH_H]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+
+      {/* Arrow */}
+      <Text
+        position={[0, 0.25, 0.012]}
+        fontSize={0.45}
+        color={hovered ? '#ffffff' : '#c8a85a'}
+        anchorX="center"
+        anchorY="middle"
+        {...handlers}
       >
-        <circleGeometry args={[0.3, 32]} />
-        <meshBasicMaterial color={hovered ? '#f0d060' : '#ffffff'} transparent opacity={0.85} />
-      </mesh>
+        →
+      </Text>
 
-      {/* Pulsing ring */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-        <ringGeometry args={[0.32, 0.38, 32]} />
-        <meshBasicMaterial color={hovered ? '#f0d060' : '#aaaaaa'} transparent opacity={0.6} />
-      </mesh>
-
-      {/* Arrow up indicator */}
-      <mesh position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <coneGeometry args={[0.08, 0.2, 8]} />
-        <meshBasicMaterial color={hovered ? '#ffcc00' : '#555555'} />
-      </mesh>
+      {/* Label */}
+      <Text
+        position={[0, -0.3, 0.012]}
+        fontSize={0.14}
+        color={hovered ? '#ffe8a0' : '#a89060'}
+        anchorX="center"
+        anchorY="middle"
+        maxWidth={ARCH_W - 0.2}
+        {...handlers}
+      >
+        {portal.label}
+      </Text>
     </group>
   )
 }

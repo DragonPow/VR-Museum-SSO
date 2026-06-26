@@ -14,7 +14,7 @@ export function SceneCanvas({ children, style, className }: Props) {
   return (
     <Canvas
       dpr={perf.dpr}
-      frameloop={perf.frameloop}
+      frameloop="always"
       shadows={false}
       gl={{
         antialias: perf.tier !== 'low',

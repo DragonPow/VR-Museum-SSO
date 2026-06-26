@@ -43,7 +43,7 @@ export function RoomSurface({ config, textureUrl, color = '#d4c9b8' }: Props) {
         ref={matRef}
         map={textureUrl ? greyTexture() : null}
         color={textureUrl ? '#ffffff' : color}
-        side={THREE.FrontSide}
+        side={THREE.DoubleSide}
       />
     </mesh>
   )

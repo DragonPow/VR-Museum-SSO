@@ -52,6 +52,14 @@ export interface Slot {
   visible: boolean
 }
 
+export interface RoomPortal {
+  id: string
+  targetRoomId: string
+  label: string
+  position: Vec3
+  rotation: Vec3
+}
+
 export interface Room {
   id: string
   periodId: string
@@ -66,6 +74,7 @@ export interface Room {
   entryViewpointId: string
   viewpoints: Viewpoint[]
   slots: Slot[]
+  portals: RoomPortal[]
 }
 
 export interface Item {

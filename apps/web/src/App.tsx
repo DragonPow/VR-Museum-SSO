@@ -1,7 +1,30 @@
-import { useState } from 'react'
+import { useState, Component } from 'react'
+import type { ReactNode } from 'react'
 import { useContent } from './content/useContent.js'
 import { Landing } from './pages/Landing.js'
 import { Tour } from './pages/Tour.js'
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
+  state = { error: null }
+  static getDerivedStateFromError(e: Error) { return { error: e.message } }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ ...centerStyle, flexDirection: 'column', gap: 12, padding: 24 }}>
+          <p style={{ color: '#c04040', fontWeight: 700 }}>Lỗi render 3D:</p>
+          <pre style={{ color: '#b08060', fontSize: 12, whiteSpace: 'pre-wrap', maxWidth: 600 }}>
+            {this.state.error}
+          </pre>
+          <button
+            style={{ padding: '8px 20px', background: '#3a2e1e', border: '1px solid #5a4a30', color: '#c8a85a', borderRadius: 6, cursor: 'pointer' }}
+            onClick={() => this.setState({ error: null })}
+          >Thử lại</button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 type View = 'landing' | 'tour'
 
@@ -23,7 +46,11 @@ export function App() {
     return <Landing content={content} onEnter={() => setView('tour')} />
   }
 
-  return <Tour content={content} onBack={() => setView('landing')} />
+  return (
+    <ErrorBoundary>
+      <Tour content={content} onBack={() => setView('landing')} />
+    </ErrorBoundary>
+  )
 }
 
 function LoadingScreen() {
