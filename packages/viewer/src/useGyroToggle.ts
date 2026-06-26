@@ -5,7 +5,9 @@ export function useGyroToggle() {
 
   const toggleGyro = useCallback(async () => {
     if (gyroEnabled) { setGyroEnabled(false); return }
-    const dor = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
+    if (typeof window === 'undefined' || typeof window.DeviceOrientationEvent === 'undefined') return
+
+    const dor = window.DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
     if (typeof dor.requestPermission === 'function') {
       const perm = await dor.requestPermission()
       if (perm !== 'granted') return
