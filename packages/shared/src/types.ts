@@ -60,6 +60,12 @@ export interface RoomPortal {
   rotation: Vec3
 }
 
+/** Axis-aligned bounding rectangle on the XZ plane used for collision blocking. */
+export interface ObstacleZone {
+  minX: number; maxX: number
+  minZ: number; maxZ: number
+}
+
 export interface Room {
   id: string
   periodId: string
@@ -67,6 +73,23 @@ export interface Room {
   title: string
   order: number
   template: RoomTemplate
+  /**
+   * Optional externally-authored room model, usually exported from Blender as GLB/GLTF.
+   * When present, the viewer uses this as the room shell and keeps slots/hotspots dynamic.
+   * When null, the viewer falls back to the built-in procedural room templates.
+   */
+  modelUrl: string | null
+  /**
+   * XYZ offset applied to the GLB model in Three.js world space.
+   * Needed when the Blender scene has the room at a non-origin world position.
+   * Example: side room at Blender x=40 → modelOffset: [-40, 0, 0]
+   */
+  modelOffset?: [number, number, number]
+  /**
+   * Static collision zones for interior walls, pillars, and props in the GLB model
+   * that the outer-wall bounds alone cannot cover.
+   */
+  obstacles?: ObstacleZone[]
   wallTextureId: string | null
   floorTextureId: string | null
   ceilingTextureId: string | null

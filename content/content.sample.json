@@ -1,391 +1,2134 @@
 {
   "version": "1",
-  "updatedAt": "2026-06-26T00:00:00.000Z",
+  "updatedAt": "2026-06-27T00:00:00.000Z",
   "periods": [
     {
       "id": "period-1975-1985",
-      "slug": "thanh-lap-1975-1985",
-      "title": "Thành lập & Khai phá (1975–1985)",
+      "slug": "1975-1985",
+      "title": "1975–1985 — Những ngày đầu",
       "yearStart": 1975,
       "yearEnd": 1985,
       "order": 1,
-      "description": "Giai đoạn thành lập và những năm đầu xây dựng nền tảng của công ty sau ngày thống nhất đất nước.",
-      "themeColor": "#8B4513"
-    },
-    {
-      "id": "period-1986-1995",
-      "slug": "doi-moi-1986-1995",
-      "title": "Đổi Mới & Phát triển (1986–1995)",
-      "yearStart": 1986,
-      "yearEnd": 1995,
-      "order": 2,
-      "description": "Giai đoạn Đổi Mới, công ty mở rộng quy mô và cải tổ mô hình hoạt động.",
-      "themeColor": "#2E6B3E"
-    },
-    {
-      "id": "period-1996-2005",
-      "slug": "hoi-nhap-1996-2005",
-      "title": "Hội nhập & Hiện đại hóa (1996–2005)",
-      "yearStart": 1996,
-      "yearEnd": 2005,
-      "order": 3,
-      "description": "Công ty hội nhập quốc tế, đầu tư vào công nghệ và mở rộng thị trường.",
-      "themeColor": "#1A4F7A"
-    },
-    {
-      "id": "period-2006-2015",
-      "slug": "tang-truong-2006-2015",
-      "title": "Tăng trưởng mạnh (2006–2015)",
-      "yearStart": 2006,
-      "yearEnd": 2015,
-      "order": 4,
-      "description": "Giai đoạn tăng trưởng vượt bậc, mở rộng sang nhiều lĩnh vực mới.",
-      "themeColor": "#5A1E8C"
-    },
-    {
-      "id": "period-2016-2025",
-      "slug": "chuyen-doi-2016-2025",
-      "title": "Chuyển đổi số & Phát triển bền vững (2016–2025)",
-      "yearStart": 2016,
-      "yearEnd": 2025,
-      "order": 5,
-      "description": "Chuyển đổi số toàn diện, hướng tới phát triển bền vững và kỷ niệm 50 năm.",
-      "themeColor": "#C0392B"
+      "description": "Giai đoạn đặt nền móng và những bước trưởng thành đầu tiên của công ty.",
+      "themeColor": "#c8a85a"
     }
   ],
   "rooms": [
     {
-      "id": "room-thanh-lap-gallery",
+      "id": "room-hall",
       "periodId": "period-1975-1985",
-      "slug": "phong-thanh-lap",
-      "title": "Phòng Thành Lập",
+      "slug": "hoi-truong-chinh",
+      "title": "Hội trường chính",
       "order": 1,
-      "template": "gallery",
-      "wallTextureId": "tex-wall-warm-stone",
-      "floorTextureId": "tex-floor-parquet",
+      "template": "hall",
+      "modelUrl": "/content/models/hall.glb",
+      "obstacles": [
+        { "minX": -6.4, "maxX": 6.4, "minZ": -3.05, "maxZ": -1.95 },
+        { "minX": -1.85, "maxX": 1.85, "minZ": -1.85, "maxZ": 1.85 }
+      ],
+      "wallTextureId": null,
+      "floorTextureId": null,
       "ceilingTextureId": null,
       "lightingPreset": "warm",
-      "entryViewpointId": "vp-center",
+      "entryViewpointId": "vp-entry",
       "viewpoints": [
         {
+          "id": "vp-entry",
+          "name": "Cửa vào",
+          "position": {
+            "x": 0,
+            "y": 1.6,
+            "z": -7.5
+          },
+          "lookAt": {
+            "x": 0,
+            "y": 1.6,
+            "z": 2.5
+          }
+        },
+        {
           "id": "vp-center",
-          "name": "Trung tâm phòng",
-          "position": { "x": 0, "y": 1.6, "z": 0 },
-          "lookAt": { "x": 0, "y": 1.6, "z": -7 }
+          "name": "Trung tâm",
+          "position": {
+            "x": 0,
+            "y": 1.6,
+            "z": -1.0
+          },
+          "lookAt": {
+            "x": 0,
+            "y": 1.6,
+            "z": 2.5
+          }
         },
         {
-          "id": "vp-front-wall",
-          "name": "Nhìn tường trước",
-          "position": { "x": 0, "y": 1.6, "z": 3 },
-          "lookAt": { "x": 0, "y": 1.6, "z": -7 }
+          "id": "vp-left",
+          "name": "Tường tây",
+          "position": {
+            "x": -7,
+            "y": 1.6,
+            "z": 0
+          },
+          "lookAt": {
+            "x": -11,
+            "y": 1.6,
+            "z": 0
+          }
         },
         {
-          "id": "vp-left-wall",
-          "name": "Nhìn tường trái",
-          "position": { "x": 3, "y": 1.6, "z": 0 },
-          "lookAt": { "x": -5, "y": 1.6, "z": 0 }
-        },
-        {
-          "id": "vp-right-wall",
-          "name": "Nhìn tường phải",
-          "position": { "x": -3, "y": 1.6, "z": 0 },
-          "lookAt": { "x": 5, "y": 1.6, "z": 0 }
+          "id": "vp-right",
+          "name": "Tường đông",
+          "position": {
+            "x": 7,
+            "y": 1.6,
+            "z": 0
+          },
+          "lookAt": {
+            "x": 11,
+            "y": 1.6,
+            "z": 0
+          }
         }
       ],
       "slots": [
         {
-          "id": "slot-front-center",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường trước — trung tâm",
+          "id": "HALL-S-01",
+          "roomId": "room-hall",
+          "name": "HALL-S-01",
           "type": "image",
           "transform": {
-            "position": { "x": 0, "y": 2.1, "z": -7.85 },
-            "rotation": { "x": 0, "y": 0, "z": 0 },
-            "size": { "w": 2.4, "h": 1.8 }
-          },
-          "frameStyle": "classic",
-          "itemId": "item-khai-truong-1975",
-          "visible": true
-        },
-        {
-          "id": "slot-front-left",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường trước — trái",
-          "type": "image",
-          "transform": {
-            "position": { "x": -3.2, "y": 2.0, "z": -7.85 },
-            "rotation": { "x": 0, "y": 0, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
-          },
-          "frameStyle": "classic",
-          "itemId": "item-ban-lanh-dao-1975",
-          "visible": true
-        },
-        {
-          "id": "slot-front-right",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường trước — phải",
-          "type": "image",
-          "transform": {
-            "position": { "x": 3.2, "y": 2.0, "z": -7.85 },
-            "rotation": { "x": 0, "y": 0, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
-          },
-          "frameStyle": "classic",
-          "itemId": "item-co-so-vat-chat-1976",
-          "visible": true
-        },
-        {
-          "id": "slot-left-wall-1",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường trái — vị trí 1",
-          "type": "image",
-          "transform": {
-            "position": { "x": -5.85, "y": 2.0, "z": -4 },
-            "rotation": { "x": 0, "y": 1.5708, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
-          },
-          "frameStyle": "classic",
-          "itemId": "item-nhan-su-1977",
-          "visible": true
-        },
-        {
-          "id": "slot-left-wall-2",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường trái — vị trí 2",
-          "type": "image",
-          "transform": {
-            "position": { "x": -5.85, "y": 2.0, "z": 0 },
-            "rotation": { "x": 0, "y": 1.5708, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
-          },
-          "frameStyle": "classic",
-          "itemId": "item-san-pham-1978",
-          "visible": true
-        },
-        {
-          "id": "slot-left-wall-3",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường trái — vị trí 3",
-          "type": "image",
-          "transform": {
-            "position": { "x": -5.85, "y": 2.0, "z": 4 },
-            "rotation": { "x": 0, "y": 1.5708, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
+            "position": {
+              "x": -9.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
           },
           "frameStyle": "classic",
           "itemId": null,
           "visible": true
         },
         {
-          "id": "slot-right-wall-1",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường phải — vị trí 1",
+          "id": "HALL-S-02",
+          "roomId": "room-hall",
+          "name": "HALL-S-02",
           "type": "image",
           "transform": {
-            "position": { "x": 5.85, "y": 2.0, "z": -4 },
-            "rotation": { "x": 0, "y": -1.5708, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
-          },
-          "frameStyle": "classic",
-          "itemId": "item-hop-tac-1980",
-          "visible": true
-        },
-        {
-          "id": "slot-right-wall-2",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường phải — vị trí 2",
-          "type": "image",
-          "transform": {
-            "position": { "x": 5.85, "y": 2.0, "z": 0 },
-            "rotation": { "x": 0, "y": -1.5708, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
-          },
-          "frameStyle": "classic",
-          "itemId": "item-thanh-tuu-1982",
-          "visible": true
-        },
-        {
-          "id": "slot-right-wall-3",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Tường phải — vị trí 3",
-          "type": "image",
-          "transform": {
-            "position": { "x": 5.85, "y": 2.0, "z": 4 },
-            "rotation": { "x": 0, "y": -1.5708, "z": 0 },
-            "size": { "w": 1.6, "h": 1.2 }
+            "position": {
+              "x": -8.25,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
           },
           "frameStyle": "classic",
           "itemId": null,
           "visible": true
         },
         {
-          "id": "slot-poster-entrance",
-          "roomId": "room-thanh-lap-gallery",
-          "name": "Poster lối vào",
-          "type": "poster",
+          "id": "HALL-S-03",
+          "roomId": "room-hall",
+          "name": "HALL-S-03",
+          "type": "image",
           "transform": {
-            "position": { "x": 0, "y": 2.5, "z": 7.85 },
-            "rotation": { "x": 0, "y": 3.14159, "z": 0 },
-            "size": { "w": 3.0, "h": 2.0 }
+            "position": {
+              "x": -6.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
           },
-          "frameStyle": "none",
-          "itemId": "item-poster-giai-doan-1",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-S-04",
+          "roomId": "room-hall",
+          "name": "HALL-S-04",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -5.25,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-S-05",
+          "roomId": "room-hall",
+          "name": "HALL-S-05",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -3.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-05",
+          "visible": true
+        },
+        {
+          "id": "HALL-S-06",
+          "roomId": "room-hall",
+          "name": "HALL-S-06",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -2.25,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-01",
+          "visible": true
+        },
+        {
+          "id": "HALL-S-07",
+          "roomId": "room-hall",
+          "name": "HALL-S-07",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -0.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-02",
+          "visible": true
+        },
+        {
+          "id": "HALL-S-08",
+          "roomId": "room-hall",
+          "name": "HALL-S-08",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 0.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-03",
+          "visible": true
+        },
+        {
+          "id": "HALL-S-09",
+          "roomId": "room-hall",
+          "name": "HALL-S-09",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 2.25,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-04",
+          "visible": true
+        },
+        {
+          "id": "HALL-S-10",
+          "roomId": "room-hall",
+          "name": "HALL-S-10",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 3.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-S-11",
+          "roomId": "room-hall",
+          "name": "HALL-S-11",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 5.25,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-S-12",
+          "roomId": "room-hall",
+          "name": "HALL-S-12",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 6.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-S-13",
+          "roomId": "room-hall",
+          "name": "HALL-S-13",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 8.25,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-S-14",
+          "roomId": "room-hall",
+          "name": "HALL-S-14",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 9.75,
+              "y": 1.9,
+              "z": 7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-01",
+          "roomId": "room-hall",
+          "name": "HALL-N-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -9.45,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-02",
+          "roomId": "room-hall",
+          "name": "HALL-N-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -7.35,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-03",
+          "roomId": "room-hall",
+          "name": "HALL-N-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -5.25,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-04",
+          "roomId": "room-hall",
+          "name": "HALL-N-04",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -3.15,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-05",
+          "roomId": "room-hall",
+          "name": "HALL-N-05",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -1.05,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-06",
+          "roomId": "room-hall",
+          "name": "HALL-N-06",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 1.05,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-07",
+          "roomId": "room-hall",
+          "name": "HALL-N-07",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 3.15,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-08",
+          "roomId": "room-hall",
+          "name": "HALL-N-08",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 5.25,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-09",
+          "roomId": "room-hall",
+          "name": "HALL-N-09",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 7.35,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-N-10",
+          "roomId": "room-hall",
+          "name": "HALL-N-10",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 9.45,
+              "y": 1.9,
+              "z": -7.84
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-01",
+          "roomId": "room-hall",
+          "name": "HALL-W-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": 5.778
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-02",
+          "roomId": "room-hall",
+          "name": "HALL-W-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": 4.333
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-03",
+          "roomId": "room-hall",
+          "name": "HALL-W-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": 2.889
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-04",
+          "roomId": "room-hall",
+          "name": "HALL-W-04",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": 1.444
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-04",
+          "visible": true
+        },
+        {
+          "id": "HALL-W-05",
+          "roomId": "room-hall",
+          "name": "HALL-W-05",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": -0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-06",
+          "roomId": "room-hall",
+          "name": "HALL-W-06",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": -1.444
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-07",
+          "roomId": "room-hall",
+          "name": "HALL-W-07",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": -2.889
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-08",
+          "roomId": "room-hall",
+          "name": "HALL-W-08",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": -4.333
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-W-09",
+          "roomId": "room-hall",
+          "name": "HALL-W-09",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -11.84,
+              "y": 1.9,
+              "z": -5.778
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-01",
+          "roomId": "room-hall",
+          "name": "HALL-E-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": 5.778
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-02",
+          "roomId": "room-hall",
+          "name": "HALL-E-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": 4.333
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-03",
+          "roomId": "room-hall",
+          "name": "HALL-E-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": 2.889
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-04",
+          "roomId": "room-hall",
+          "name": "HALL-E-04",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": 1.444
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-05",
+          "visible": true
+        },
+        {
+          "id": "HALL-E-05",
+          "roomId": "room-hall",
+          "name": "HALL-E-05",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": -0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-06",
+          "roomId": "room-hall",
+          "name": "HALL-E-06",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": -1.444
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-07",
+          "roomId": "room-hall",
+          "name": "HALL-E-07",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": -2.889
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-08",
+          "roomId": "room-hall",
+          "name": "HALL-E-08",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": -4.333
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-E-09",
+          "roomId": "room-hall",
+          "name": "HALL-E-09",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 11.84,
+              "y": 1.9,
+              "z": -5.778
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.5,
+              "h": 1.1
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-BG-01",
+          "roomId": "room-hall",
+          "name": "HALL-BG-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -4.167,
+              "y": 2.0,
+              "z": -2.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.3,
+              "h": 1.0
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-01",
+          "visible": true
+        },
+        {
+          "id": "HALL-BG-02",
+          "roomId": "room-hall",
+          "name": "HALL-BG-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -2.5,
+              "y": 2.0,
+              "z": -2.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.3,
+              "h": 1.0
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-02",
+          "visible": true
+        },
+        {
+          "id": "HALL-BG-03",
+          "roomId": "room-hall",
+          "name": "HALL-BG-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -0.833,
+              "y": 2.0,
+              "z": -2.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.3,
+              "h": 1.0
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-03",
+          "visible": true
+        },
+        {
+          "id": "HALL-BG-04",
+          "roomId": "room-hall",
+          "name": "HALL-BG-04",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 0.833,
+              "y": 2.0,
+              "z": -2.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.3,
+              "h": 1.0
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-04",
+          "visible": true
+        },
+        {
+          "id": "HALL-BG-05",
+          "roomId": "room-hall",
+          "name": "HALL-BG-05",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 2.5,
+              "y": 2.0,
+              "z": -2.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.3,
+              "h": 1.0
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-05",
+          "visible": true
+        },
+        {
+          "id": "HALL-BG-06",
+          "roomId": "room-hall",
+          "name": "HALL-BG-06",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 4.167,
+              "y": 2.0,
+              "z": -2.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.3,
+              "h": 1.0
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-01",
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL1-A",
+          "roomId": "room-hall",
+          "name": "HALL-PNL1-A",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -7,
+              "y": 1.6,
+              "z": 4.125
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL1-B",
+          "roomId": "room-hall",
+          "name": "HALL-PNL1-B",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -7,
+              "y": 1.6,
+              "z": 3.875
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-01",
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL2-A",
+          "roomId": "room-hall",
+          "name": "HALL-PNL2-A",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 7,
+              "y": 1.6,
+              "z": 4.125
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL2-B",
+          "roomId": "room-hall",
+          "name": "HALL-PNL2-B",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 7,
+              "y": 1.6,
+              "z": 3.875
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-05",
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL3-A",
+          "roomId": "room-hall",
+          "name": "HALL-PNL3-A",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -7,
+              "y": 1.6,
+              "z": -5.875
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL3-B",
+          "roomId": "room-hall",
+          "name": "HALL-PNL3-B",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -7,
+              "y": 1.6,
+              "z": -6.125
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL4-A",
+          "roomId": "room-hall",
+          "name": "HALL-PNL4-A",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 7,
+              "y": 1.6,
+              "z": -5.875
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "HALL-PNL4-B",
+          "roomId": "room-hall",
+          "name": "HALL-PNL4-B",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 7,
+              "y": 1.6,
+              "z": -6.125
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 2.0,
+              "h": 1.5
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
           "visible": true
         }
+      ],
+      "portals": [
+        {
+          "id": "portal-to-side",
+          "targetRoomId": "room-side",
+          "label": "Sang phòng chuyên đề →",
+          "position": {
+            "x": 9,
+            "y": 1.6,
+            "z": 7.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 3.14159,
+            "z": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "room-side",
+      "periodId": "period-1975-1985",
+      "slug": "phong-chuyen-de",
+      "title": "Phòng chuyên đề",
+      "order": 2,
+      "template": "gallery",
+      "modelUrl": "/content/models/side.glb",
+      "wallTextureId": null,
+      "floorTextureId": null,
+      "ceilingTextureId": null,
+      "lightingPreset": "neutral",
+      "entryViewpointId": "vp-s-entry",
+      "viewpoints": [
+        {
+          "id": "vp-s-entry",
+          "name": "Cửa vào",
+          "position": {
+            "x": 0,
+            "y": 1.6,
+            "z": -3.5
+          },
+          "lookAt": {
+            "x": 0,
+            "y": 1.6,
+            "z": 0
+          }
+        },
+        {
+          "id": "vp-s-center",
+          "name": "Trung tâm",
+          "position": {
+            "x": 0,
+            "y": 1.6,
+            "z": 0
+          },
+          "lookAt": {
+            "x": 0,
+            "y": 1.6,
+            "z": 4
+          }
+        }
+      ],
+      "slots": [
+        {
+          "id": "SIDE-S-01",
+          "roomId": "room-side",
+          "name": "SIDE-S-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -3.667,
+              "y": 1.7,
+              "z": 4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-S-02",
+          "roomId": "room-side",
+          "name": "SIDE-S-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -2.2,
+              "y": 1.7,
+              "z": 4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-S-03",
+          "roomId": "room-side",
+          "name": "SIDE-S-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -0.733,
+              "y": 1.7,
+              "z": 4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-01",
+          "visible": true
+        },
+        {
+          "id": "SIDE-S-04",
+          "roomId": "room-side",
+          "name": "SIDE-S-04",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 0.733,
+              "y": 1.7,
+              "z": 4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-S-05",
+          "roomId": "room-side",
+          "name": "SIDE-S-05",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 2.2,
+              "y": 1.7,
+              "z": 4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-S-06",
+          "roomId": "room-side",
+          "name": "SIDE-S-06",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 3.667,
+              "y": 1.7,
+              "z": 4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 3.141593,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-N-01",
+          "roomId": "room-side",
+          "name": "SIDE-N-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -3.667,
+              "y": 1.7,
+              "z": -4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-N-02",
+          "roomId": "room-side",
+          "name": "SIDE-N-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -2.2,
+              "y": 1.7,
+              "z": -4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-N-03",
+          "roomId": "room-side",
+          "name": "SIDE-N-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -0.733,
+              "y": 1.7,
+              "z": -4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-03",
+          "visible": true
+        },
+        {
+          "id": "SIDE-N-04",
+          "roomId": "room-side",
+          "name": "SIDE-N-04",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 0.733,
+              "y": 1.7,
+              "z": -4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-N-05",
+          "roomId": "room-side",
+          "name": "SIDE-N-05",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 2.2,
+              "y": 1.7,
+              "z": -4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-N-06",
+          "roomId": "room-side",
+          "name": "SIDE-N-06",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 3.667,
+              "y": 1.7,
+              "z": -4.34
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-W-01",
+          "roomId": "room-side",
+          "name": "SIDE-W-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -5.84,
+              "y": 1.7,
+              "z": 2.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-W-02",
+          "roomId": "room-side",
+          "name": "SIDE-W-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -5.84,
+              "y": 1.7,
+              "z": -0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": "item-05",
+          "visible": true
+        },
+        {
+          "id": "SIDE-W-03",
+          "roomId": "room-side",
+          "name": "SIDE-W-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": -5.84,
+              "y": 1.7,
+              "z": -2.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": -1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-E-01",
+          "roomId": "room-side",
+          "name": "SIDE-E-01",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 5.84,
+              "y": 1.7,
+              "z": 2.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-E-02",
+          "roomId": "room-side",
+          "name": "SIDE-E-02",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 5.84,
+              "y": 1.7,
+              "z": -0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "SIDE-E-03",
+          "roomId": "room-side",
+          "name": "SIDE-E-03",
+          "type": "image",
+          "transform": {
+            "position": {
+              "x": 5.84,
+              "y": 1.7,
+              "z": -2.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 1.570796,
+              "z": 0.0
+            },
+            "size": {
+              "w": 1.1,
+              "h": 0.85
+            }
+          },
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        }
+      ],
+      "portals": [
+        {
+          "id": "portal-to-hall",
+          "targetRoomId": "room-hall",
+          "label": "← Trở về hội trường",
+          "position": {
+            "x": 0,
+            "y": 1.6,
+            "z": -3.8
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      ],
+      "modelOffset": [
+        -40,
+        0,
+        0
       ]
     }
   ],
   "items": [
     {
-      "id": "item-khai-truong-1975",
-      "title": "Lễ Khai Trương Thành Lập Công Ty (1975)",
+      "id": "item-01",
+      "title": "Ngày thành lập công ty",
       "year": 1975,
       "periodId": "period-1975-1985",
-      "shortDesc": "Lễ khai trương chính thức đánh dấu sự ra đời của công ty.",
-      "longDesc": "Ngày thành lập lịch sử đánh dấu **bước ngoặt** của hành trình 50 năm xây dựng và phát triển.\n\nBuổi lễ được tổ chức trang trọng với sự tham dự của các lãnh đạo địa phương và toàn thể cán bộ nhân viên sáng lập.\n\n## Ý nghĩa lịch sử\n\n- Đánh dấu sự ra đời chính thức của đơn vị\n- Xác lập nền tảng tổ chức và định hướng phát triển\n- Khẳng định sứ mệnh phục vụ cộng đồng",
-      "tags": ["khai-truong", "thanh-lap", "1975", "lich-su"],
+      "shortDesc": "Lễ thành lập công ty ngày 30/4/1975.",
+      "longDesc": "Ngày 30 tháng 4 năm 1975, công ty chính thức được thành lập với 12 nhân viên đầu tiên, đặt nền móng cho chặng đường 50 năm phát triển.",
+      "tags": [
+        "thành lập",
+        "lịch sử"
+      ],
       "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
+      "thumbUrl": "/content/images/photo-1975.svg",
+      "wallTextureUrl": "/content/images/photo-1975.png",
+      "fullUrl": "/content/images/photo-1975.svg",
       "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
+      "approvedBy": "Ban Giám đốc",
       "priority": 1,
       "status": "approved"
     },
     {
-      "id": "item-ban-lanh-dao-1975",
-      "title": "Ban Lãnh Đạo Đầu Tiên",
-      "year": 1975,
+      "id": "item-02",
+      "title": "Xưởng sản xuất đầu tiên",
+      "year": 1978,
       "periodId": "period-1975-1985",
-      "shortDesc": "Những người sáng lập và ban lãnh đạo đầu tiên của công ty.",
-      "longDesc": "Chân dung và tiểu sử ngắn của những cá nhân đã đặt nền móng cho công ty. Họ là những con người tâm huyết, đặt nền tảng vững chắc cho sự phát triển sau này.",
-      "tags": ["lanh-dao", "sang-lap", "1975"],
+      "shortDesc": "Xưởng sản xuất đầu tiên đi vào hoạt động năm 1978.",
+      "longDesc": "Với diện tích 500m², xưởng sản xuất đầu tiên của công ty tại Hà Nội đã đi vào hoạt động, đánh dấu bước chuyển từ thủ công sang sản xuất có quy trình.",
+      "tags": [
+        "sản xuất",
+        "xưởng"
+      ],
       "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
+      "thumbUrl": "/content/images/photo-1980.svg",
+      "wallTextureUrl": "/content/images/photo-1980.png",
+      "fullUrl": "/content/images/photo-1980.svg",
+      "source": "Phòng kỹ thuật",
+      "approvedBy": "Ban Giám đốc",
       "priority": 2,
       "status": "approved"
     },
     {
-      "id": "item-co-so-vat-chat-1976",
-      "title": "Cơ Sở Vật Chất Ban Đầu (1976)",
-      "year": 1976,
+      "id": "item-03",
+      "title": "Hội nghị toàn quốc 1985",
+      "year": 1985,
       "periodId": "period-1975-1985",
-      "shortDesc": "Trụ sở và trang thiết bị trong những năm đầu hoạt động.",
-      "longDesc": "Hình ảnh ghi lại trụ sở ban đầu, trang thiết bị và điều kiện làm việc trong những năm đầu thành lập. Dù còn nhiều khó khăn nhưng tinh thần làm việc luôn hăng say.",
-      "tags": ["co-so-vat-chat", "tru-so", "1976"],
+      "shortDesc": "Hội nghị mở rộng sản xuất lần đầu tiên quy mô toàn quốc.",
+      "longDesc": "Năm 1985, công ty tổ chức hội nghị toàn quốc lần đầu tiên với sự tham gia của hơn 200 đại biểu từ các chi nhánh trên khắp cả nước.",
+      "tags": [
+        "hội nghị",
+        "mở rộng"
+      ],
       "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
+      "thumbUrl": "/content/images/photo-1985.svg",
+      "wallTextureUrl": "/content/images/photo-1985.png",
+      "fullUrl": "/content/images/photo-1985.svg",
+      "source": "Phòng Truyền thông",
+      "approvedBy": "Ban Giám đốc",
       "priority": 3,
       "status": "approved"
     },
     {
-      "id": "item-nhan-su-1977",
-      "title": "Đội Ngũ Nhân Sự 1977",
-      "year": 1977,
+      "id": "item-04",
+      "title": "Kỷ niệm 20 năm thành lập",
+      "year": 1995,
       "periodId": "period-1975-1985",
-      "shortDesc": "Hình ảnh tập thể cán bộ nhân viên năm 1977.",
-      "longDesc": "Bức ảnh tập thể quý giá ghi lại đội ngũ cán bộ nhân viên công ty trong giai đoạn đầu. Mỗi gương mặt là một câu chuyện, một hành trình.",
-      "tags": ["nhan-su", "can-bo", "1977", "tap-the"],
+      "shortDesc": "Lễ kỷ niệm 20 năm thành lập với hơn 500 CBNV.",
+      "longDesc": "Lễ kỷ niệm 20 năm thành lập được tổ chức long trọng tại Cung Văn hóa Lao động với sự tham dự của lãnh đạo Bộ, đại diện các đối tác và toàn thể cán bộ nhân viên.",
+      "tags": [
+        "kỷ niệm",
+        "20 năm"
+      ],
       "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
+      "thumbUrl": "/content/images/photo-1995.svg",
+      "wallTextureUrl": "/content/images/photo-1995.png",
+      "fullUrl": "/content/images/photo-1995.svg",
+      "source": "Phòng Hành chính",
+      "approvedBy": "Ban Giám đốc",
       "priority": 4,
       "status": "approved"
     },
     {
-      "id": "item-san-pham-1978",
-      "title": "Sản Phẩm & Dịch Vụ Đầu Tiên (1978)",
-      "year": 1978,
+      "id": "item-05",
+      "title": "Chào mừng 50 năm",
+      "year": 2025,
       "periodId": "period-1975-1985",
-      "shortDesc": "Những sản phẩm và dịch vụ ra đời trong giai đoạn đầu.",
-      "longDesc": "Hình ảnh các sản phẩm và dịch vụ đầu tiên của công ty — những viên gạch đầu tiên xây dựng uy tín thương hiệu qua nhiều thập kỷ.",
-      "tags": ["san-pham", "dich-vu", "1978"],
+      "shortDesc": "Lễ kỷ niệm 50 năm thành lập công ty.",
+      "longDesc": "Năm 2025 đánh dấu nửa thế kỷ xây dựng và phát triển. Công ty hiện có hơn 5.000 CBNV, hoạt động tại 20 tỉnh thành với doanh thu hàng ngàn tỷ đồng mỗi năm.",
+      "tags": [
+        "kỷ niệm",
+        "50 năm"
+      ],
       "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
+      "thumbUrl": "/content/images/photo-2025.svg",
+      "wallTextureUrl": "/content/images/photo-2025.png",
+      "fullUrl": "/content/images/photo-2025.svg",
+      "source": "Ban Tổ chức",
+      "approvedBy": "Ban Giám đốc",
       "priority": 5,
-      "status": "approved"
-    },
-    {
-      "id": "item-hop-tac-1980",
-      "title": "Hợp Tác & Đối Ngoại (1980)",
-      "year": 1980,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Các hoạt động hợp tác và kết nối trong những năm đầu.",
-      "longDesc": "Ghi lại những hoạt động hợp tác, ký kết và kết nối đối tác trong những năm đầu hoạt động, đặt nền móng cho mạng lưới quan hệ lâu dài sau này.",
-      "tags": ["hop-tac", "doi-ngoai", "1980"],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
-      "priority": 6,
-      "status": "approved"
-    },
-    {
-      "id": "item-thanh-tuu-1982",
-      "title": "Thành Tựu Nổi Bật (1982)",
-      "year": 1982,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Những thành tựu và giải thưởng đầu tiên.",
-      "longDesc": "Những giải thưởng, bằng khen và thành tựu nổi bật đầu tiên mà công ty đạt được, khẳng định vị thế và uy tín trong ngành.",
-      "tags": ["thanh-tuu", "giai-thuong", "1982"],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
-      "priority": 7,
-      "status": "approved"
-    },
-    {
-      "id": "item-poster-giai-doan-1",
-      "title": "Tổng Kết Giai Đoạn 1975–1985",
-      "year": 1985,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Nhìn lại 10 năm đầu xây dựng và phát triển.",
-      "longDesc": "Tổng kết những dấu mốc lịch sử, con số và thành tựu trong 10 năm đầu tiên xây dựng công ty từ những ngày đầu gian khó.",
-      "tags": ["tong-ket", "poster", "1985", "lich-su"],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/placeholder-thumb.jpg",
-      "wallTextureUrl": "/content/images/placeholder-wall.jpg",
-      "fullUrl": "/content/images/placeholder-full.jpg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Truyền thông",
-      "priority": 8,
       "status": "approved"
     }
   ],
-  "textures": [
-    {
-      "id": "tex-wall-warm-stone",
-      "name": "Tường đá ấm",
-      "url": "/content/textures/wall-warm-stone.jpg",
-      "type": "wall"
-    },
-    {
-      "id": "tex-floor-parquet",
-      "name": "Sàn gỗ parquet",
-      "url": "/content/textures/floor-parquet.jpg",
-      "type": "floor"
-    }
-  ]
+  "textures": []
 }

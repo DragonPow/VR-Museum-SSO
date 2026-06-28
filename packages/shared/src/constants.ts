@@ -35,7 +35,7 @@ export const QUALITY_TIERS: Record<QualityTier, { dprMax: number; shadows: boole
 
 // ─── Room template default dimensions (meters) ────────────────────────────────
 export const ROOM_DIMENSIONS: Record<string, { width: number; height: number; depth: number }> = {
-  hall:     { width: 16, height: 5, depth: 24 },
+  hall:     { width: 24, height: 5, depth: 16 },
   gallery:  { width: 12, height: 4, depth: 16 },
   corridor: { width:  6, height: 4, depth: 20 },
   honor:    { width: 14, height: 6, depth: 14 },

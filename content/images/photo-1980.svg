@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#b0c0cc"/>
+      <stop offset="100%" stop-color="#d8ccb0"/>
+    </linearGradient>
+    <linearGradient id="gnd" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d0c4a0"/>
+      <stop offset="100%" stop-color="#cebb98"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="50%" cy="50%" r="75%">
+      <stop offset="60%" stop-color="rgba(0,0,0,0)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.35)"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b89040"/>
+      <stop offset="50%" stop-color="#e8c060"/>
+      <stop offset="100%" stop-color="#b89040"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="1200" height="420" fill="url(#sky)"/>
+  <!-- Ground -->
+  <rect y="420" width="1200" height="380" fill="url(#gnd)"/>
+  <!-- Building -->
+  <polygon points="300,420 300,240 360,240 360,200 400,200 400,240 550,240 550,170 600,135 650,170 650,240 800,240 800,260 840,260 840,240 900,240 900,420" fill="#7a5e3a"/>
+  <!-- Flag -->
+  <rect x="595" y="82" width="14" height="54" fill="#c01820"/>
+  <polygon points="609,90 645,102 609,114" fill="#e0c030"/>
+  <!-- People silhouettes -->
+  <g fill="#7a5e3a" opacity="0.85">
+    <ellipse cx="150" cy="402" rx="14" ry="18"/> <rect x="141" y="380" width="18" height="44"/>
+    <ellipse cx="220" cy="400" rx="12" ry="16"/> <rect x="212" y="380" width="16" height="42"/>
+    <ellipse cx="980" cy="402" rx="14" ry="18"/> <rect x="971" y="380" width="18" height="44"/>
+    <ellipse cx="1050" cy="400" rx="12" ry="16"/> <rect x="1042" y="380" width="16" height="42"/>
+  </g>
+  <!-- Vignette -->
+  <rect width="1200" height="800" fill="url(#vig)"/>
+  <!-- Border -->
+  <rect x="12" y="12" width="1176" height="776" fill="none" stroke="url(#gold)" stroke-width="5" rx="3"/>
+  <rect x="22" y="22" width="1156" height="756" fill="none" stroke="rgba(200,168,80,0.4)" stroke-width="1.5"/>
+  <!-- Corner marks -->
+  <g stroke="#c8a840" stroke-width="2.5" fill="none">
+    <path d="M12,55 L12,12 L55,12"/> <path d="M1145,12 L1188,12 L1188,55"/>
+    <path d="M1188,745 L1188,788 L1145,788"/> <path d="M55,788 L12,788 L12,745"/>
+  </g>
+  <!-- Year -->
+  <text x="600" y="675" text-anchor="middle" font-family="Georgia,serif" font-size="88" font-weight="700" fill="#c8a040" opacity="0.95">1980</text>
+  <text x="600" y="730" text-anchor="middle" font-family="Georgia,serif" font-size="34" fill="#f0e8d0">Xưởng Sản Xuất Đầu Tiên</text>
+</svg>

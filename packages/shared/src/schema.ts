@@ -70,6 +70,13 @@ export const RoomPortalSchema = z.object({
   rotation: Vec3Schema,
 })
 
+export const ObstacleZoneSchema = z.object({
+  minX: z.number(),
+  maxX: z.number(),
+  minZ: z.number(),
+  maxZ: z.number(),
+})
+
 export const RoomSchema = z.object({
   id: NonEmptyString,
   periodId: NonEmptyString,
@@ -77,6 +84,9 @@ export const RoomSchema = z.object({
   title: NonEmptyString,
   order: z.number().int().nonnegative(),
   template: z.enum(ROOM_TEMPLATES as [string, ...string[]]),
+  modelUrl: UrlString.nullable().default(null),
+  modelOffset: z.tuple([z.number(), z.number(), z.number()]).optional(),
+  obstacles: z.array(ObstacleZoneSchema).optional(),
   wallTextureId: NonEmptyString.nullable(),
   floorTextureId: NonEmptyString.nullable(),
   ceilingTextureId: NonEmptyString.nullable(),

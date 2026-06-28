@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Content } from '@vm/shared'
 import { SceneCanvas, RoomScene, buildRoomProps, useGyroToggle, shouldUseFallback } from '@vm/viewer'
 import type { Item } from '@vm/shared'
@@ -7,6 +7,7 @@ import { TimelineNav } from '../ui/TimelineNav.js'
 import { InfoModal } from '../ui/InfoModal.js'
 import { ViewpointNav } from '../ui/ViewpointNav.js'
 import { Minimap } from '../ui/Minimap.js'
+import { MobileControls } from '../ui/MobileControls.js'
 import { Gallery2D } from './Gallery2D.js'
 
 interface Props {
@@ -24,10 +25,11 @@ export function Tour({ content, onBack }: Props) {
   const { gyroEnabled, toggleGyro } = useGyroToggle()
   const isMobile = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent)
   const useFallback = shouldUseFallback()
+  const mobileMoveRef = useRef<{ dx: number; dz: number }>({ dx: 0, dz: 0 })
 
   useEffect(() => {
     setContent(content)
-  }, [content])
+  }, [content, setContent])
 
   if (!currentRoomId || !activeViewpointId) return null
 
@@ -60,7 +62,11 @@ export function Tour({ content, onBack }: Props) {
           items={items}
           textures={textures}
           activeViewpointId={activeViewpointId}
+          gyroEnabled={gyroEnabled}
+          mobileMoveRef={mobileMoveRef}
+          hideLabels={!!selectedItem}
           onSlotSelect={handleSlotSelect}
+          onNavigate={navigateToRoom}
         />
       </SceneCanvas>
 
@@ -73,15 +79,24 @@ export function Tour({ content, onBack }: Props) {
         onBack={onBack}
       />
 
-      {/* Viewpoint nav + gyro (bottom center) */}
+      {/* Viewpoint nav (bottom center) */}
       <ViewpointNav
         viewpoints={room.viewpoints}
         activeId={activeViewpointId}
         onSelect={setViewpoint}
         gyroEnabled={gyroEnabled}
         onGyroToggle={toggleGyro}
-        showGyro={isMobile}
+        showGyro={false}
       />
+
+      {/* Mobile: D-pad movement + gyro toggle (bottom left) */}
+      {isMobile && (
+        <MobileControls
+          moveRef={mobileMoveRef}
+          gyroEnabled={gyroEnabled}
+          onGyroToggle={toggleGyro}
+        />
+      )}
 
       {/* Minimap (bottom right) */}
       <Minimap
@@ -100,7 +115,7 @@ export function Tour({ content, onBack }: Props) {
       </div>
 
       {/* Drag hint — fades out after 4s */}
-      <DragHint />
+      <DragHint isMobile={isMobile} />
 
       {/* Info modal */}
       {selectedItem && (
@@ -110,10 +125,10 @@ export function Tour({ content, onBack }: Props) {
   )
 }
 
-function DragHint() {
+function DragHint({ isMobile }: { isMobile: boolean }) {
   const [visible, setVisible] = useState(true)
   useEffect(() => {
-    const t = setTimeout(() => setVisible(false), 4000)
+    const t = setTimeout(() => setVisible(false), 5000)
     return () => clearTimeout(t)
   }, [])
   if (!visible) return null
@@ -126,9 +141,12 @@ function DragHint() {
       padding: '10px 20px', fontSize: '13px',
       pointerEvents: 'none', zIndex: 5,
       textAlign: 'center', backdropFilter: 'blur(6px)',
-      animation: 'fadeout 1s 3s forwards',
+      animation: 'fadeout 1s 4s forwards',
+      maxWidth: '320px',
     }}>
-      🖱 Kéo để nhìn quanh · Click khung ảnh để xem chi tiết
+      {isMobile
+        ? '👆 Kéo để nhìn quanh · D-pad (trái) để di chuyển · Nhấn 📱 để bật cảm biến gyro'
+        : '🖱 Kéo để nhìn quanh · Click sàn để di chuyển · WASD / ↑↓←→ để đi bộ · Click khung ảnh để xem chi tiết'}
     </div>
   )
 }
