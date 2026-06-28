@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
+import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Slot, Item } from '@vm/shared'
 import { loadTexture, greyTexture } from './TextureManager.js'
@@ -122,31 +122,43 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
         </>
       )}
 
-      {/* Nameplate below frame — hidden when modal is open to avoid Html overlay on top of dialog */}
+      {/* Nameplate below frame — 3D planes so it sticks to the wall instead of billboarding */}
       {item && !hideLabel && (
-        <Html
-          position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.12), 0.07]}
-          center
-          distanceFactor={10}
-          occlude
-          style={{ pointerEvents: 'none', userSelect: 'none' }}
-        >
-          <div style={{
-            background: 'rgba(10,7,3,0.82)',
-            border: '1px solid rgba(200,168,90,0.5)',
-            borderRadius: '4px',
-            padding: '3px 10px',
-            whiteSpace: 'nowrap',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '11px', color: '#c8a85a', fontWeight: 700, letterSpacing: '0.05em' }}>
-              {item.year}
-            </div>
-            <div style={{ fontSize: '12px', color: '#f0e8d8', fontWeight: 600, marginTop: '1px' }}>
-              {item.title}
-            </div>
-          </div>
-        </Html>
+        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), 0.065]}>
+          {/* Gold border */}
+          <mesh position={[0, 0, -0.003]}>
+            <planeGeometry args={[Math.min(size.w + 0.04, 0.74), 0.28]} />
+            <meshBasicMaterial color="#c8a85a" transparent opacity={0.4} />
+          </mesh>
+          {/* Dark fill */}
+          <mesh>
+            <planeGeometry args={[Math.min(size.w + 0.02, 0.72), 0.26]} />
+            <meshBasicMaterial color="#080502" transparent opacity={0.85} />
+          </mesh>
+          {/* Year */}
+          <Text
+            position={[0, 0.06, 0.004]}
+            fontSize={0.065}
+            color="#c8a85a"
+            anchorX="center"
+            anchorY="middle"
+            letterSpacing={0.05}
+          >
+            {String(item.year)}
+          </Text>
+          {/* Title */}
+          <Text
+            position={[0, -0.055, 0.004]}
+            fontSize={0.072}
+            color="#f0e8d8"
+            anchorX="center"
+            anchorY="middle"
+            maxWidth={Math.min(size.w, 0.68)}
+            textAlign="center"
+          >
+            {item.title}
+          </Text>
+        </group>
       )}
     </group>
   )

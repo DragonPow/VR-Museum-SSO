@@ -1,17 +1,33 @@
-name = "virtual-museum-api"
-main = "src/index.ts"
-compatibility_date = "2024-12-30"
+name                = "virtual-museum-api"
+main                = "src/index.ts"
+compatibility_date  = "2024-12-30"
 compatibility_flags = ["nodejs_compat"]
 
+# ── R2 bucket ─────────────────────────────────────────────────────────────────
 [[r2_buckets]]
-binding = "MEDIA_BUCKET"
+binding     = "MEDIA_BUCKET"
 bucket_name = "virtual-museum-media"
 
+# ── Non-secret vars ───────────────────────────────────────────────────────────
 [vars]
-ALLOWED_ORIGIN = "https://YOUR-ADMIN-DOMAIN.pages.dev"
+# Origins allowed to call this Worker (CORS). Separate multiple with comma if needed.
+ALLOWED_ORIGIN = "https://virtual-museum-admin.pages.dev"
+# Public base URL for R2 (set after enabling R2 public access)
+# e.g. https://pub-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.r2.dev
+PUBLIC_R2_URL  = ""
 
-# Uncomment for local dev:
-# [[r2_buckets]]
-# binding = "MEDIA_BUCKET"
-# bucket_name = "virtual-museum-media"
-# preview_bucket_name = "virtual-museum-media-dev"
+# ── Local dev overrides ───────────────────────────────────────────────────────
+[env.dev]
+name = "virtual-museum-api-dev"
+
+[[env.dev.r2_buckets]]
+binding             = "MEDIA_BUCKET"
+bucket_name         = "virtual-museum-media"
+preview_bucket_name = "virtual-museum-media-dev"
+
+[env.dev.vars]
+ALLOWED_ORIGIN = "http://localhost:5174"
+PUBLIC_R2_URL  = ""
+
+# ── Secrets (never stored here — set via Cloudflare dashboard or CLI) ─────────
+# wrangler secret put JWT_SECRET          # shared secret used by Worker JWT auth (if not using CF Access)

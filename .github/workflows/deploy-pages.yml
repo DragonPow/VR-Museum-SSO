@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, chore/external-glb-room-support]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -32,10 +32,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Copy content to web public
+      - name: Copy content and headers to web public
         run: |
           mkdir -p apps/web/public
           cp -r content apps/web/public/content
+          cp infra/_headers apps/web/public/_headers
 
       - name: Build web app
         run: pnpm --filter web build

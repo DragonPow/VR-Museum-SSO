@@ -1,3 +1,22 @@
-# Cloudflare Pages deployment config
-# Deploy web:   pnpm --filter web build && wrangler pages deploy apps/web/dist --project-name=virtual-museum-web
-# Deploy admin: pnpm --filter admin build && wrangler pages deploy apps/admin/dist --project-name=virtual-museum-admin
+# ── Cloudflare Pages projects ─────────────────────────────────────────────────
+# This file documents the Pages project names used by wrangler.
+# Actual project creation is done once via dashboard or CLI:
+#   wrangler pages project create virtual-museum-web
+#   wrangler pages project create virtual-museum-admin
+
+[[pages_projects]]
+name       = "virtual-museum-web"
+build_dir  = "apps/web/dist"
+
+[[pages_projects]]
+name       = "virtual-museum-admin"
+build_dir  = "apps/admin/dist"
+
+# ── Manual deploy commands ────────────────────────────────────────────────────
+# Web (public site):
+#   pnpm --filter web build
+#   wrangler pages deploy apps/web/dist --project-name=virtual-museum-web
+#
+# Admin SPA:
+#   pnpm --filter admin build
+#   wrangler pages deploy apps/admin/dist --project-name=virtual-museum-admin

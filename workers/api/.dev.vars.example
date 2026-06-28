@@ -1,0 +1,5 @@
+# Rename to .dev.vars for local wrangler dev
+# wrangler dev will load these automatically (gitignored)
+JWT_SECRET=dev-secret-change-me
+PUBLIC_R2_URL=
+ALLOWED_ORIGIN=http://localhost:5174
