@@ -21,8 +21,10 @@ interface Props {
 }
 
 const DEFAULT_BOUNDS: RoomBounds = { minX: -5.5, maxX: 5.5, minZ: -7.5, maxZ: 7.5 }
-const MOVE_SPEED = 3.5   // m/s
-const EYE_HEIGHT = 1.6
+const MOVE_SPEED      = 4.5   // m/s keyboard
+const WALK_SPEED      = 3.2   // m/s click-to-walk
+const ACCEL_FACTOR    = 10    // velocity ramp speed (higher = snappier)
+const EYE_HEIGHT      = 1.6
 
 function toVec3(v: { x: number; y: number; z: number }) {
   return new THREE.Vector3(v.x, v.y, v.z)
@@ -75,12 +77,17 @@ export function NavController({
 }: Props) {
   const { camera, gl } = useThree()
 
-  const targetPos  = useRef(new THREE.Vector3(0, eyeHeight, 0))
-  const yaw        = useRef(Math.PI)
-  const pitch      = useRef(0)
-  const targetYaw  = useRef(Math.PI)
+  const targetPos   = useRef(new THREE.Vector3(0, eyeHeight, 0))
+  const yaw         = useRef(Math.PI)
+  const pitch       = useRef(0)
+  const targetYaw   = useRef(Math.PI)
   const targetPitch = useRef(0)
   const transitioning = useRef(false)
+
+  // Velocity for smooth keyboard acceleration/deceleration
+  const velocity    = useRef({ x: 0, z: 0 })
+  // Target position set by floor-click; advanced each frame at WALK_SPEED
+  const walkTarget  = useRef<THREE.Vector3 | null>(null)
 
   const isDragging  = useRef(false)
   const lastMouse   = useRef({ x: 0, y: 0 })
@@ -174,39 +181,70 @@ export function NavController({
 
   // ── Frame loop ──────────────────────────────────────────────────────────────
   useFrame((_, delta) => {
-    const t = Math.min(1, 6 * delta)
+    const t = Math.min(1, 8 * delta)
 
-    // Keyboard movement
-    // Camera world-forward = (-sin yaw, 0, -cos yaw)
-    // Camera world-right   = ( cos yaw, 0, -sin yaw)  [= forward × world-up]
-    if (keys.current.size > 0) {
-      const spd  = MOVE_SPEED * delta
+    // ── Keyboard: velocity-based movement with smooth acceleration ──────────────
+    {
       const sinY = Math.sin(yaw.current)
       const cosY = Math.cos(yaw.current)
 
-      let dx = 0, dz = 0
-      if (keys.current.has('KeyW') || keys.current.has('ArrowUp'))    { dx -= sinY * spd;  dz -= cosY * spd }
-      if (keys.current.has('KeyS') || keys.current.has('ArrowDown'))  { dx += sinY * spd;  dz += cosY * spd }
-      if (keys.current.has('KeyA') || keys.current.has('ArrowLeft'))  { dx -= cosY * spd;  dz += sinY * spd }
-      if (keys.current.has('KeyD') || keys.current.has('ArrowRight')) { dx += cosY * spd;  dz -= sinY * spd }
+      // Desired direction from held keys (unit vector, world space)
+      let wantX = 0, wantZ = 0
+      if (keys.current.has('KeyW') || keys.current.has('ArrowUp'))    { wantX -= sinY; wantZ -= cosY }
+      if (keys.current.has('KeyS') || keys.current.has('ArrowDown'))  { wantX += sinY; wantZ += cosY }
+      if (keys.current.has('KeyA') || keys.current.has('ArrowLeft'))  { wantX -= cosY; wantZ += sinY }
+      if (keys.current.has('KeyD') || keys.current.has('ArrowRight')) { wantX += cosY; wantZ -= sinY }
 
-      if (dx !== 0 || dz !== 0) {
+      // Normalise diagonal input so diagonal isn't faster
+      const len = Math.sqrt(wantX * wantX + wantZ * wantZ)
+      if (len > 1) { wantX /= len; wantZ /= len }
+
+      const targetVX = wantX * MOVE_SPEED
+      const targetVZ = wantZ * MOVE_SPEED
+
+      // Ease velocity toward target (start/stop feel natural, not instant)
+      const accel = Math.min(1, ACCEL_FACTOR * delta)
+      velocity.current.x += (targetVX - velocity.current.x) * accel
+      velocity.current.z += (targetVZ - velocity.current.z) * accel
+
+      const dx = velocity.current.x * delta
+      const dz = velocity.current.z * delta
+
+      if (Math.abs(dx) > 0.0001 || Math.abs(dz) > 0.0001) {
         applyMove(targetPos.current, dx, dz, bounds, obstacles)
+        walkTarget.current = null   // keyboard input cancels floor-click walk
         transitioning.current = false
       }
     }
 
-    // Mobile D-pad input: dz = forward(+1)/back(-1), dx = right(+1)/left(-1)
+    // ── Mobile D-pad (same accel model) ─────────────────────────────────────────
     const mob = mobileMoveRef?.current
     if (mob && (mob.dx !== 0 || mob.dz !== 0)) {
-      const spd  = MOVE_SPEED * delta
       const sinY = Math.sin(yaw.current)
       const cosY = Math.cos(yaw.current)
-      // forward = (-sinY, 0, -cosY),  right = (cosY, 0, -sinY)
-      const wdx = (-sinY * mob.dz + cosY * mob.dx) * spd
-      const wdz = (-cosY * mob.dz - sinY * mob.dx) * spd
-      applyMove(targetPos.current, wdx, wdz, bounds, obstacles)
+      const wdx = (-sinY * mob.dz + cosY * mob.dx)
+      const wdz = (-cosY * mob.dz - sinY * mob.dx)
+      const accel = Math.min(1, ACCEL_FACTOR * delta)
+      velocity.current.x += (wdx * MOVE_SPEED - velocity.current.x) * accel
+      velocity.current.z += (wdz * MOVE_SPEED - velocity.current.z) * accel
+      applyMove(targetPos.current, velocity.current.x * delta, velocity.current.z * delta, bounds, obstacles)
+      walkTarget.current = null
       transitioning.current = false
+    }
+
+    // ── Floor-click walk-to: advance targetPos at constant walking speed ─────────
+    if (walkTarget.current) {
+      const wt = walkTarget.current
+      const dx = wt.x - targetPos.current.x
+      const dz = wt.z - targetPos.current.z
+      const dist = Math.sqrt(dx * dx + dz * dz)
+      if (dist < 0.06) {
+        walkTarget.current = null
+      } else {
+        const step = Math.min(dist, WALK_SPEED * delta)
+        applyMove(targetPos.current, (dx / dist) * step, (dz / dist) * step, bounds, obstacles)
+        transitioning.current = false
+      }
     }
 
     // Smooth position lerp
@@ -234,14 +272,13 @@ export function NavController({
   const floorCZ = (bounds.minZ + bounds.maxZ) / 2
 
   const handleFloorClick = (e: { point: THREE.Vector3; stopPropagation: () => void }) => {
-    // Ignore if this was actually a drag (threshold: 6px travel)
     if (dragPx.current > 6) return
     e.stopPropagation()
     const tx = clamp(e.point.x, bounds.minX, bounds.maxX)
     const tz = clamp(e.point.z, bounds.minZ, bounds.maxZ)
     if (isBlocked(tx, tz, obstacles)) return
-    targetPos.current.set(tx, eyeHeight, tz)
-    transitioning.current = false
+    // Walk to destination at WALK_SPEED instead of teleporting
+    walkTarget.current = new THREE.Vector3(tx, eyeHeight, tz)
   }
 
   return (
