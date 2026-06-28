@@ -21,10 +21,11 @@ export default defineConfig({
             const mime: Record<string, string> = {
               json: 'application/json',
               gltf: 'model/gltf+json',
-              jpg: 'image/jpeg',
+              glb:  'model/gltf-binary',
+              jpg:  'image/jpeg',
               jpeg: 'image/jpeg',
-              png: 'image/png',
-              svg: 'image/svg+xml',
+              png:  'image/png',
+              svg:  'image/svg+xml',
               webp: 'image/webp',
             }
             res.setHeader('Content-Type', mime[ext] ?? 'application/octet-stream')

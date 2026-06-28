@@ -52,5 +52,12 @@ export function getPerfConfig(): PerfConfig {
 }
 
 export function shouldUseFallback(): boolean {
-  return getPerfConfig().tier === 'low'
+  // Fall back to 2D only when WebGL is entirely absent.
+  // Slow/software renderers get low-quality 3D, not no 3D.
+  try {
+    const canvas = document.createElement('canvas')
+    return !(canvas.getContext('webgl2') ?? canvas.getContext('webgl'))
+  } catch {
+    return true
+  }
 }

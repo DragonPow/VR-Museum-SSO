@@ -1,4 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
+import { useThree } from '@react-three/fiber'
+import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Slot, Item } from '@vm/shared'
 import { loadTexture, greyTexture } from './TextureManager.js'
@@ -15,6 +17,7 @@ const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 export function SlotFrame({ slot, item, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
   const matRef = useRef<THREE.MeshLambertMaterial>(null)
+  const { invalidate } = useThree()
   const { transform, frameStyle } = slot
   const { position, rotation, size } = transform
   const frameColor = FRAME_COLOR[frameStyle]
@@ -33,6 +36,7 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
         matRef.current.map = tex
         matRef.current.color.set('#ffffff')
         matRef.current.needsUpdate = true
+        invalidate()
       })
     } else {
       matRef.current.map = null
@@ -46,17 +50,18 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
 
   return (
     <group position={pos} rotation={rot}>
-      {/* Image plane */}
+      {/* Image plane — offset 6cm in local +z (= toward camera) to avoid z-fighting with wall */}
       <mesh
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
-        onPointerOut={() => setHovered(false)}
-        onClick={(e) => { e.stopPropagation(); onSelect(slot.id, item) }}
+        position={[0, 0, 0.06]}
+        onPointerOver={item ? (e) => { e.stopPropagation(); setHovered(true) } : undefined}
+        onPointerOut={item ? () => setHovered(false) : undefined}
+        onClick={item ? (e) => { e.stopPropagation(); onSelect(slot.id, item) } : undefined}
       >
         <planeGeometry args={[size.w, size.h]} />
         <meshLambertMaterial
           ref={matRef}
           map={item?.wallTextureUrl ? greyTexture() : null}
-          color={item ? '#ffffff' : '#e8e0d0'}
+          color={item ? '#ffffff' : '#d8cfbf'}
           emissive={hovered ? '#333300' : '#000000'}
           emissiveIntensity={hovered ? 0.15 : 0}
         />
@@ -96,12 +101,31 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
         </>
       )}
 
-      {/* Empty slot indicator */}
-      {!item && (
-        <mesh position={[0, 0, 0.001]}>
-          <planeGeometry args={[size.w - 0.05, size.h - 0.05]} />
-          <meshBasicMaterial color="#ccbbaa" transparent opacity={0.4} wireframe />
-        </mesh>
+      {/* Nameplate below frame */}
+      {item && (
+        <Html
+          position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.12), 0.07]}
+          center
+          distanceFactor={10}
+          occlude
+          style={{ pointerEvents: 'none', userSelect: 'none' }}
+        >
+          <div style={{
+            background: 'rgba(10,7,3,0.82)',
+            border: '1px solid rgba(200,168,90,0.5)',
+            borderRadius: '4px',
+            padding: '3px 10px',
+            whiteSpace: 'nowrap',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '11px', color: '#c8a85a', fontWeight: 700, letterSpacing: '0.05em' }}>
+              {item.year}
+            </div>
+            <div style={{ fontSize: '12px', color: '#f0e8d8', fontWeight: 600, marginTop: '1px' }}>
+              {item.title}
+            </div>
+          </div>
+        </Html>
       )}
     </group>
   )
