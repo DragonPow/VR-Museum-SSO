@@ -4,7 +4,15 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5174 },
+  server: {
+    port: 5174,
+    proxy: {
+      // Worker API (wrangler dev runs on 8787 by default)
+      '/api': { target: 'http://localhost:8787', changeOrigin: true },
+      // Seed content files from the public web app
+      '/content': { target: 'http://localhost:5173', changeOrigin: true },
+    },
+  },
   resolve: {
     alias: {
       '@vm/shared': resolve(__dirname, '../../packages/shared/src/index.ts'),
