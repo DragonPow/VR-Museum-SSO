@@ -1,0 +1,580 @@
+{
+  "id": "room-side",
+  "periodId": "period-1975-1985",
+  "slug": "phong-chuyen-de",
+  "title": "Phòng chuyên đề",
+  "order": 2,
+  "template": "gallery",
+  "modelUrl": "/content/models/side.glb",
+  "wallTextureId": null,
+  "floorTextureId": null,
+  "ceilingTextureId": null,
+  "lightingPreset": "neutral",
+  "entryViewpointId": "vp-s-entry",
+  "viewpoints": [
+    {
+      "id": "vp-s-entry",
+      "name": "Cửa vào",
+      "position": {
+        "x": 0,
+        "y": 1.6,
+        "z": -3.5
+      },
+      "lookAt": {
+        "x": 0,
+        "y": 1.6,
+        "z": 0
+      }
+    },
+    {
+      "id": "vp-s-center",
+      "name": "Trung tâm",
+      "position": {
+        "x": 0,
+        "y": 1.6,
+        "z": 0
+      },
+      "lookAt": {
+        "x": 0,
+        "y": 1.6,
+        "z": 4
+      }
+    }
+  ],
+  "slots": [
+    {
+      "id": "SIDE-S-01",
+      "roomId": "room-side",
+      "name": "SIDE-S-01",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -3.667,
+          "y": 1.7,
+          "z": 4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 3.141593,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-S-02",
+      "roomId": "room-side",
+      "name": "SIDE-S-02",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -2.2,
+          "y": 1.7,
+          "z": 4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 3.141593,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-S-03",
+      "roomId": "room-side",
+      "name": "SIDE-S-03",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -0.733,
+          "y": 1.7,
+          "z": 4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 3.141593,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": "item-01",
+      "visible": true
+    },
+    {
+      "id": "SIDE-S-04",
+      "roomId": "room-side",
+      "name": "SIDE-S-04",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 0.733,
+          "y": 1.7,
+          "z": 4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 3.141593,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-S-05",
+      "roomId": "room-side",
+      "name": "SIDE-S-05",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 2.2,
+          "y": 1.7,
+          "z": 4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 3.141593,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-S-06",
+      "roomId": "room-side",
+      "name": "SIDE-S-06",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 3.667,
+          "y": 1.7,
+          "z": 4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 3.141593,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-N-01",
+      "roomId": "room-side",
+      "name": "SIDE-N-01",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -3.667,
+          "y": 1.7,
+          "z": -4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-N-02",
+      "roomId": "room-side",
+      "name": "SIDE-N-02",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -2.2,
+          "y": 1.7,
+          "z": -4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-N-03",
+      "roomId": "room-side",
+      "name": "SIDE-N-03",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -0.733,
+          "y": 1.7,
+          "z": -4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": "item-03",
+      "visible": true
+    },
+    {
+      "id": "SIDE-N-04",
+      "roomId": "room-side",
+      "name": "SIDE-N-04",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 0.733,
+          "y": 1.7,
+          "z": -4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-N-05",
+      "roomId": "room-side",
+      "name": "SIDE-N-05",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 2.2,
+          "y": 1.7,
+          "z": -4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-N-06",
+      "roomId": "room-side",
+      "name": "SIDE-N-06",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 3.667,
+          "y": 1.7,
+          "z": -4.34
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-W-01",
+      "roomId": "room-side",
+      "name": "SIDE-W-01",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -5.84,
+          "y": 1.7,
+          "z": 2.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": -1.570796,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-W-02",
+      "roomId": "room-side",
+      "name": "SIDE-W-02",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -5.84,
+          "y": 1.7,
+          "z": -0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": -1.570796,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": "item-05",
+      "visible": true
+    },
+    {
+      "id": "SIDE-W-03",
+      "roomId": "room-side",
+      "name": "SIDE-W-03",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": -5.84,
+          "y": 1.7,
+          "z": -2.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": -1.570796,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-E-01",
+      "roomId": "room-side",
+      "name": "SIDE-E-01",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 5.84,
+          "y": 1.7,
+          "z": 2.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 1.570796,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-E-02",
+      "roomId": "room-side",
+      "name": "SIDE-E-02",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 5.84,
+          "y": 1.7,
+          "z": -0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 1.570796,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "SIDE-E-03",
+      "roomId": "room-side",
+      "name": "SIDE-E-03",
+      "type": "image",
+      "transform": {
+        "position": {
+          "x": 5.84,
+          "y": 1.7,
+          "z": -2.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 1.570796,
+          "z": 0.0
+        },
+        "size": {
+          "w": 1.1,
+          "h": 0.85
+        }
+      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    }
+  ],
+  "portals": [
+    {
+      "id": "portal-to-hall",
+      "targetRoomId": "room-hall",
+      "label": "← Trở về hội trường",
+      "position": {
+        "x": 0,
+        "y": 1.6,
+        "z": -3.8
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  ],
+  "modelOffset": [
+    -40,
+    0,
+    0
+  ],
+  "items": {
+    "item-01": {
+      "id": "item-01",
+      "title": "Ngày thành lập công ty",
+      "year": 1975,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Lễ thành lập công ty ngày 30/4/1975.",
+      "longDesc": "Ngày 30 tháng 4 năm 1975, công ty chính thức được thành lập với 12 nhân viên đầu tiên, đặt nền móng cho chặng đường 50 năm phát triển.",
+      "tags": [
+        "thành lập",
+        "lịch sử"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-1975.svg",
+      "wallTextureUrl": "/content/images/photo-1975.png",
+      "fullUrl": "/content/images/photo-1975.svg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 1,
+      "status": "approved"
+    },
+    "item-05": {
+      "id": "item-05",
+      "title": "Chào mừng 50 năm",
+      "year": 2025,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Lễ kỷ niệm 50 năm thành lập công ty.",
+      "longDesc": "Năm 2025 đánh dấu nửa thế kỷ xây dựng và phát triển. Công ty hiện có hơn 5.000 CBNV, hoạt động tại 20 tỉnh thành với doanh thu hàng ngàn tỷ đồng mỗi năm.",
+      "tags": [
+        "kỷ niệm",
+        "50 năm"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-2025.svg",
+      "wallTextureUrl": "/content/images/photo-2025.png",
+      "fullUrl": "/content/images/photo-2025.svg",
+      "source": "Ban Tổ chức",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 5,
+      "status": "approved"
+    },
+    "item-03": {
+      "id": "item-03",
+      "title": "Hội nghị toàn quốc 1985",
+      "year": 1985,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Hội nghị mở rộng sản xuất lần đầu tiên quy mô toàn quốc.",
+      "longDesc": "Năm 1985, công ty tổ chức hội nghị toàn quốc lần đầu tiên với sự tham gia của hơn 200 đại biểu từ các chi nhánh trên khắp cả nước.",
+      "tags": [
+        "hội nghị",
+        "mở rộng"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-1985.svg",
+      "wallTextureUrl": "/content/images/photo-1985.png",
+      "fullUrl": "/content/images/photo-1985.svg",
+      "source": "Phòng Truyền thông",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 3,
+      "status": "approved"
+    }
+  }
+}

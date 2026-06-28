@@ -1,7 +1,7 @@
 export { SceneCanvas } from './SceneCanvas.js'
 export { RoomScene } from './RoomScene.js'
 export { RoomModel } from './RoomModel.js'
-export { buildRoomProps } from './roomUtils.js'
+export { buildRoomProps, buildRoomDataProps } from './roomUtils.js'
 export { SlotFrame } from './SlotFrame.js'
 export { Portal } from './Portal.js'
 export { NavController } from './NavController.js'

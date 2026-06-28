@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { useThree } from '@react-three/fiber'
+import { useThree, useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Slot, Item } from '@vm/shared'
@@ -17,7 +17,9 @@ const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 
 export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
   const [hovered, setHovered] = useState(false)
-  const matRef = useRef<THREE.MeshLambertMaterial>(null)
+  const matRef  = useRef<THREE.MeshLambertMaterial>(null)
+  const groupRef = useRef<THREE.Group>(null)
+  const hasLoaded = useRef(false)
   const { invalidate } = useThree()
   const { transform, frameStyle } = slot
   const { position, rotation, size } = transform
@@ -28,29 +30,45 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
     return () => { document.body.style.cursor = 'auto' }
   }, [hovered])
 
+  // Reset lazy-load flag and clear texture when item changes
   useEffect(() => {
-    if (!matRef.current) return
-    const url = item?.wallTextureUrl
-    if (url) {
-      loadTexture(url, (tex) => {
+    hasLoaded.current = false
+    if (matRef.current) {
+      matRef.current.map = null
+      matRef.current.color.set(item ? '#d8cfbf' : '#d8cfbf')
+      matRef.current.needsUpdate = true
+    }
+  }, [item?.id])
+
+  // Lazy load: only fetch texture when slot is roughly facing the camera.
+  // Runs each frame (cheap dot-product) until texture is loaded.
+  useFrame(({ camera }) => {
+    if (hasLoaded.current || !item?.wallTextureUrl || !groupRef.current || !matRef.current) return
+
+    const slotPos = new THREE.Vector3()
+    groupRef.current.getWorldPosition(slotPos)
+    const camFwd = new THREE.Vector3()
+    camera.getWorldDirection(camFwd)
+    const toSlot = slotPos.clone().sub(camera.position).normalize()
+
+    // Load if slot is in the front hemisphere (dot > -0.2 ≈ 100° half-angle cone)
+    if (camFwd.dot(toSlot) > -0.2) {
+      hasLoaded.current = true
+      loadTexture(item.wallTextureUrl, (tex) => {
         if (!matRef.current) return
         matRef.current.map = tex
         matRef.current.color.set('#ffffff')
         matRef.current.needsUpdate = true
         invalidate()
       })
-    } else {
-      matRef.current.map = null
-      matRef.current.color.set('#e8e0d0')
-      matRef.current.needsUpdate = true
     }
-  }, [item?.wallTextureUrl])
+  })
 
   const pos = [position.x, position.y, position.z] as [number, number, number]
   const rot = [rotation.x, rotation.y, rotation.z] as [number, number, number]
 
   return (
-    <group position={pos} rotation={rot}>
+    <group ref={groupRef} position={pos} rotation={rot}>
       {/* Image plane — offset 6cm in local +z (= toward camera) to avoid z-fighting with wall */}
       <mesh
         position={[0, 0, 0.06]}

@@ -1,8 +1,8 @@
-import type { Period, Room } from '@vm/shared'
+import type { Period, RoomStub } from '@vm/shared'
 
 interface Props {
   periods: Period[]
-  rooms: Room[]
+  rooms: RoomStub[]
   currentRoomId: string | null
   onNavigate: (roomId: string) => void
   onBack: () => void

@@ -131,6 +131,32 @@ export const ContentSchema = z.object({
   textures: z.array(TextureAssetSchema),
 })
 
+// ─── Split-content schemas ─────────────────────────────────────────────────────
+
+export const RoomStubSchema = z.object({
+  id: NonEmptyString,
+  periodId: NonEmptyString,
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  title: NonEmptyString,
+  order: z.number().int().nonnegative(),
+  template: z.enum(ROOM_TEMPLATES as [string, ...string[]]),
+  dataUrl: UrlString,
+})
+
+export const ContentIndexSchema = z.object({
+  version: z.string(),
+  updatedAt: z.string(),
+  defaultRoomId: NonEmptyString,
+  totalItems: z.number().int().nonnegative(),
+  periods: z.array(PeriodSchema).min(1),
+  rooms: z.array(RoomStubSchema).min(1),
+  textures: z.array(TextureAssetSchema),
+})
+
+export const RoomDataSchema = RoomSchema.extend({
+  items: z.record(z.string(), ItemSchema),
+})
+
 // ─── Inferred types (re-export for consumers who prefer schema-inferred) ──────
 export type PeriodInput = z.input<typeof PeriodSchema>
 export type RoomInput = z.input<typeof RoomSchema>

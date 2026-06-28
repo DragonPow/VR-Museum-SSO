@@ -1,6 +1,6 @@
 import { ZodError } from 'zod'
-import { ContentSchema } from './schema.js'
-import type { Content } from './types.js'
+import { ContentSchema, ContentIndexSchema, RoomDataSchema } from './schema.js'
+import type { Content, ContentIndex, RoomData } from './types.js'
 
 export class ContentValidationError extends Error {
   constructor(
@@ -85,6 +85,28 @@ export function validateContentIntegrity(content: Content): string[] {
   }
 
   return errors
+}
+
+export function parseContentIndex(input: unknown): ContentIndex {
+  const result = ContentIndexSchema.safeParse(input)
+  if (!result.success) {
+    const summary = result.error.issues
+      .map((i) => `  [${i.path.join('.')}] ${i.message}`)
+      .join('\n')
+    throw new ContentValidationError(`ContentIndex validation failed:\n${summary}`, result.error.issues)
+  }
+  return result.data as ContentIndex
+}
+
+export function parseRoomData(input: unknown): RoomData {
+  const result = RoomDataSchema.safeParse(input)
+  if (!result.success) {
+    const summary = result.error.issues
+      .map((i) => `  [${i.path.join('.')}] ${i.message}`)
+      .join('\n')
+    throw new ContentValidationError(`RoomData validation failed:\n${summary}`, result.error.issues)
+  }
+  return result.data as RoomData
 }
 
 /** Parse + integrity check in one call. Returns typed Content or throws. */

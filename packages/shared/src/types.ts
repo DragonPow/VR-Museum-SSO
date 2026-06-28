@@ -134,3 +134,40 @@ export interface Content {
   items: Item[]
   textures: TextureAsset[]
 }
+
+// ─── Split-content types (lazy per-room loading) ───────────────────────────────
+
+/** Lightweight room descriptor stored in the index file — no slots or items. */
+export interface RoomStub {
+  id: string
+  periodId: string
+  slug: string
+  title: string
+  order: number
+  template: RoomTemplate
+  /** Path to the full per-room JSON file, e.g. "/content/room-hall.sample.json" */
+  dataUrl: string
+}
+
+/**
+ * Lightweight index file loaded on startup.
+ * Contains everything needed to render Landing + navigate rooms, but NOT
+ * the heavy slot/item data (that lives in per-room files).
+ */
+export interface ContentIndex {
+  version: string
+  updatedAt: string
+  defaultRoomId: string
+  totalItems: number
+  periods: Period[]
+  rooms: RoomStub[]
+  textures: TextureAsset[]
+}
+
+/**
+ * Per-room file loaded on demand when the user enters a room.
+ * Extends Room with the items that appear in that room's slots.
+ */
+export interface RoomData extends Room {
+  items: Record<string, Item>
+}

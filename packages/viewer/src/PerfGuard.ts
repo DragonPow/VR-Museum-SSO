@@ -46,7 +46,7 @@ export function getPerfConfig(): PerfConfig {
     dpr: [dprMin, dprMax] as [number, number],
     fxaa: cfg.fxaa,
     shadows: false, // always false — baked only
-    frameloop: tier === 'low' ? 'demand' : 'always',
+    frameloop: 'demand',  // NavController drives frames via invalidate(); idle GPU = 0 draw calls
   }
   return _cached
 }

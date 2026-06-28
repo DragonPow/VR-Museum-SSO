@@ -1,6 +1,6 @@
 import { useState, Component } from 'react'
 import type { ReactNode } from 'react'
-import { useContent } from './content/useContent.js'
+import { useContentIndex } from './content/useContentIndex.js'
 import { Landing } from './pages/Landing.js'
 import { Tour } from './pages/Tour.js'
 
@@ -30,7 +30,7 @@ type View = 'landing' | 'tour'
 
 export function App() {
   const [view, setView] = useState<View>('landing')
-  const state = useContent()
+  const state = useContentIndex()
 
   if (state.status === 'loading') {
     return <LoadingScreen />

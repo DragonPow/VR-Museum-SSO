@@ -1,5 +1,16 @@
-import type { Content, Room, Item } from '@vm/shared'
+import type { Content, Room, Item, RoomData, TextureAsset } from '@vm/shared'
 
+/** Build props for RoomScene from a lazily-loaded RoomData (preferred). */
+export function buildRoomDataProps(
+  roomData: RoomData,
+  textures: TextureAsset[],
+): { room: Room; items: Record<string, Item>; textures: Record<string, string> } {
+  const textureMap: Record<string, string> = {}
+  textures.forEach((t) => { textureMap[t.id] = t.url })
+  return { room: roomData, items: roomData.items, textures: textureMap }
+}
+
+/** Legacy: build props from the monolithic Content snapshot (kept for admin preview). */
 export function buildRoomProps(
   content: Content,
   roomId: string,

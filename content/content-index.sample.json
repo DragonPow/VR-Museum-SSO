@@ -1,0 +1,39 @@
+{
+  "version": "1",
+  "updatedAt": "2026-06-27T00:00:00.000Z",
+  "defaultRoomId": "room-hall",
+  "totalItems": 5,
+  "periods": [
+    {
+      "id": "period-1975-1985",
+      "slug": "1975-1985",
+      "title": "1975–1985 — Những ngày đầu",
+      "yearStart": 1975,
+      "yearEnd": 1985,
+      "order": 1,
+      "description": "Giai đoạn đặt nền móng và những bước trưởng thành đầu tiên của công ty.",
+      "themeColor": "#c8a85a"
+    }
+  ],
+  "textures": [],
+  "rooms": [
+    {
+      "id": "room-hall",
+      "periodId": "period-1975-1985",
+      "slug": "hoi-truong-chinh",
+      "title": "Hội trường chính",
+      "order": 1,
+      "template": "hall",
+      "dataUrl": "/content/room-room-hall.sample.json"
+    },
+    {
+      "id": "room-side",
+      "periodId": "period-1975-1985",
+      "slug": "phong-chuyen-de",
+      "title": "Phòng chuyên đề",
+      "order": 2,
+      "template": "gallery",
+      "dataUrl": "/content/room-room-side.sample.json"
+    }
+  ]
+}

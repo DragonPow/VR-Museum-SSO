@@ -1,12 +1,12 @@
-import type { Content } from '@vm/shared'
+import type { ContentIndex } from '@vm/shared'
 
 interface Props {
-  content: Content
+  content: ContentIndex
   onEnter: () => void
 }
 
 export function Landing({ content, onEnter }: Props) {
-  const totalItems = content.items.length
+  const totalItems = content.totalItems
   const totalRooms = content.rooms.length
   const totalPeriods = content.periods.length
   const yearStart = Math.min(...content.periods.map((p) => p.yearStart))

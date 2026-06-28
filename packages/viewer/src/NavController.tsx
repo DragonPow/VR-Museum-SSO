@@ -75,7 +75,7 @@ export function NavController({
   eyeHeight = EYE_HEIGHT,
   mobileMoveRef,
 }: Props) {
-  const { camera, gl } = useThree()
+  const { camera, gl, invalidate } = useThree()
 
   const targetPos   = useRef(new THREE.Vector3(0, eyeHeight, 0))
   const yaw         = useRef(Math.PI)
@@ -114,7 +114,8 @@ export function NavController({
       yaw.current   = y
       pitch.current = p
     }
-  }, [activeViewpointId, camera, viewpoints])
+    invalidate()  // kick off transition animation
+  }, [activeViewpointId, camera, viewpoints, invalidate])
 
   // ── Pointer drag → look around ──────────────────────────────────────────────
   useEffect(() => {
@@ -135,6 +136,7 @@ export function NavController({
       pitch.current   = clampPitch(pitch.current - dy * 0.0035)
       lastMouse.current  = { x: e.clientX, y: e.clientY }
       transitioning.current = false
+      invalidate()
     }
     const onUp = () => { isDragging.current = false }
 
@@ -154,8 +156,9 @@ export function NavController({
   useEffect(() => {
     const ARROW = new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'])
     const onDown = (e: KeyboardEvent) => {
+      if (!keys.current.has(e.code)) invalidate()  // bootstrap movement loop on first press
       keys.current.add(e.code)
-      if (ARROW.has(e.key)) e.preventDefault() // stop page scroll
+      if (ARROW.has(e.key)) e.preventDefault()
     }
     const onUp = (e: KeyboardEvent) => { keys.current.delete(e.code) }
     window.addEventListener('keydown', onDown)
@@ -174,6 +177,7 @@ export function NavController({
       if (e.alpha != null) yaw.current   = -degToRad(e.alpha)
       if (e.beta  != null) pitch.current  = clampPitch(degToRad(e.beta - 90))
       transitioning.current = false
+      invalidate()
     }
     window.addEventListener('deviceorientation', onOrientation, true)
     return () => window.removeEventListener('deviceorientation', onOrientation, true)
@@ -263,6 +267,16 @@ export function NavController({
     }
 
     camera.quaternion.setFromEuler(new THREE.Euler(pitch.current, yaw.current, 0, 'YXZ'))
+
+    // Request next frame only while something is still animating
+    const stillActive =
+      keys.current.size > 0 ||
+      walkTarget.current !== null ||
+      transitioning.current ||
+      Math.abs(velocity.current.x) > 0.001 ||
+      Math.abs(velocity.current.z) > 0.001 ||
+      camera.position.distanceTo(targetPos.current) > 0.001
+    if (stillActive) invalidate()
   })
 
   // ── Floor click → walk ──────────────────────────────────────────────────────
@@ -277,8 +291,8 @@ export function NavController({
     const tx = clamp(e.point.x, bounds.minX, bounds.maxX)
     const tz = clamp(e.point.z, bounds.minZ, bounds.maxZ)
     if (isBlocked(tx, tz, obstacles)) return
-    // Walk to destination at WALK_SPEED instead of teleporting
     walkTarget.current = new THREE.Vector3(tx, eyeHeight, tz)
+    invalidate()  // bootstrap walk-to loop
   }
 
   return (

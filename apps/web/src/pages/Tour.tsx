@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Content } from '@vm/shared'
-import { SceneCanvas, RoomScene, buildRoomProps, useGyroToggle, shouldUseFallback } from '@vm/viewer'
+import type { ContentIndex } from '@vm/shared'
+import { SceneCanvas, RoomScene, buildRoomDataProps, useGyroToggle, shouldUseFallback } from '@vm/viewer'
 import type { Item } from '@vm/shared'
-import { useMuseumStore } from '../store.js'
+import { useMuseumStore, useCurrentRoomStub } from '../store.js'
+import { useRoom } from '../content/useRoom.js'
 import { TimelineNav } from '../ui/TimelineNav.js'
 import { InfoModal } from '../ui/InfoModal.js'
 import { ViewpointNav } from '../ui/ViewpointNav.js'
@@ -11,15 +12,16 @@ import { MobileControls } from '../ui/MobileControls.js'
 import { Gallery2D } from './Gallery2D.js'
 
 interface Props {
-  content: Content
+  content: ContentIndex
   onBack: () => void
 }
 
 export function Tour({ content, onBack }: Props) {
   const {
-    currentRoomId, activeViewpointId,
-    selectedItem, selectedSlotId,
-    navigateToRoom, selectSlot, closeModal, setViewpoint, setContent,
+    index, currentRoomId, activeViewpointId,
+    selectedItem,
+    navigateToRoom, selectSlot, closeModal, setViewpoint,
+    setIndex, setActiveViewpoint,
   } = useMuseumStore()
 
   const { gyroEnabled, toggleGyro } = useGyroToggle()
@@ -27,31 +29,61 @@ export function Tour({ content, onBack }: Props) {
   const useFallback = shouldUseFallback()
   const mobileMoveRef = useRef<{ dx: number; dz: number }>({ dx: 0, dz: 0 })
 
+  // Sync index into store on first render
   useEffect(() => {
-    setContent(content)
-  }, [content, setContent])
+    if (!index) setIndex(content)
+  }, [content, index, setIndex])
 
-  if (!currentRoomId || !activeViewpointId) return null
+  const roomStub = useCurrentRoomStub()
+  const roomState = useRoom(roomStub)
 
-  const roomProps = buildRoomProps(content, currentRoomId)
-  if (!roomProps) return null
+  // Once room data loads, set the entry viewpoint (if not already set)
+  useEffect(() => {
+    if (roomState.status === 'ok' && !activeViewpointId) {
+      setActiveViewpoint(roomState.data.entryViewpointId)
+    }
+  }, [roomState.status, activeViewpointId, setActiveViewpoint, roomState])
 
-  const { room, items, textures } = roomProps
+  if (!currentRoomId || !roomStub) return null
 
   const handleSlotSelect = (slotId: string, item: Item | null) => {
     selectSlot(slotId, item)
   }
 
   if (useFallback) {
+    if (roomState.status !== 'ok') return <RoomLoadingScreen />
+    const itemsArr = Object.values(roomState.data.items)
+    const fakeContent = {
+      ...content,
+      rooms: [roomState.data],
+      items: itemsArr,
+      textures: content.textures,
+    } as any
     return (
       <Gallery2D
-        content={content}
+        content={fakeContent}
         currentRoomId={currentRoomId}
         onNavigate={navigateToRoom}
         onBack={onBack}
       />
     )
   }
+
+  if (roomState.status === 'loading' || roomState.status === 'idle') {
+    return <RoomLoadingScreen />
+  }
+  if (roomState.status === 'error') {
+    return (
+      <div style={{ ...centerStyle, color: '#c04040', fontSize: 14, flexDirection: 'column', gap: 8 }}>
+        <p>Không thể tải phòng: {roomState.message}</p>
+        <button style={retryBtn} onClick={() => navigateToRoom(currentRoomId)}>Thử lại</button>
+      </div>
+    )
+  }
+
+  if (!activeViewpointId) return <RoomLoadingScreen />
+
+  const { room, items, textures } = buildRoomDataProps(roomState.data, content.textures)
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -125,6 +157,15 @@ export function Tour({ content, onBack }: Props) {
   )
 }
 
+function RoomLoadingScreen() {
+  return (
+    <div style={{ ...centerStyle, flexDirection: 'column', gap: 12 }}>
+      <div style={spinnerStyle} />
+      <p style={{ color: '#7a7060', fontSize: 13 }}>Đang tải phòng…</p>
+    </div>
+  )
+}
+
 function DragHint({ isMobile }: { isMobile: boolean }) {
   const [visible, setVisible] = useState(true)
   useEffect(() => {
@@ -149,6 +190,26 @@ function DragHint({ isMobile }: { isMobile: boolean }) {
         : '🖱 Kéo để nhìn quanh · Click sàn để di chuyển · WASD / ↑↓←→ để đi bộ · Click khung ảnh để xem chi tiết'}
     </div>
   )
+}
+
+const centerStyle: React.CSSProperties = {
+  width: '100%', height: '100%',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  background: '#1a1410',
+}
+
+const spinnerStyle: React.CSSProperties = {
+  width: '36px', height: '36px',
+  border: '3px solid rgba(200,168,90,0.2)',
+  borderTop: '3px solid #c8a85a',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+}
+
+const retryBtn: React.CSSProperties = {
+  padding: '8px 20px', background: '#3a2e1e',
+  border: '1px solid #5a4a30', color: '#c8a85a',
+  borderRadius: 6, cursor: 'pointer',
 }
 
 const styles: Record<string, React.CSSProperties> = {
