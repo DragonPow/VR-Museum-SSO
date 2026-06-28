@@ -46,7 +46,13 @@ export interface Slot {
   roomId: string
   name: string
   type: SlotType
-  transform: SlotTransform
+  /**
+   * Position/rotation/size in 3D space.
+   * - Procedural rooms (no modelUrl): required, defined in JSON.
+   * - GLB-driven rooms: omitted in JSON; derived at runtime from the
+   *   corresponding VM_Slot_* mesh inside the .glb file.
+   */
+  transform?: SlotTransform
   frameStyle: FrameStyle
   itemId: string | null
   visible: boolean

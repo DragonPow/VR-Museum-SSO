@@ -56,7 +56,9 @@ export const SlotSchema = z.object({
   roomId: NonEmptyString,
   name: NonEmptyString,
   type: z.enum(SLOT_TYPES),
-  transform: SlotTransformSchema,
+  // Optional: GLB-driven rooms omit transform (derived from VM_Slot_* mesh at runtime).
+  // Procedural rooms (no modelUrl) must provide it.
+  transform: SlotTransformSchema.optional(),
   frameStyle: z.enum(FRAME_STYLES),
   itemId: NonEmptyString.nullable(),
   visible: z.boolean(),

@@ -22,7 +22,11 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
   const hasLoaded = useRef(false)
   const { invalidate } = useThree()
   const { transform, frameStyle } = slot
-  const { position, rotation, size } = transform
+  // Use safe defaults so hooks below always receive valid values.
+  // The null guard before JSX (after all hooks) prevents any rendering.
+  const position = transform?.position ?? { x: 0, y: 0, z: 0 }
+  const rotation = transform?.rotation ?? { x: 0, y: 0, z: 0 }
+  const size     = transform?.size     ?? { w: 1, h: 0.8 }
   const frameColor = FRAME_COLOR[frameStyle]
 
   useEffect(() => {
@@ -63,6 +67,9 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
       })
     }
   })
+
+  // Guard after all hooks — slot has no transform yet (GLB not extracted)
+  if (!transform) return null
 
   const pos = [position.x, position.y, position.z] as [number, number, number]
   const rot = [rotation.x, rotation.y, rotation.z] as [number, number, number]

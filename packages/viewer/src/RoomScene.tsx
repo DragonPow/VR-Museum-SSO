@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
-import type { Room, Item } from '@vm/shared'
+import { useCallback, useMemo, useState } from 'react'
+import type { Room, Item, Slot } from '@vm/shared'
 import { getRoomSurfaces, getRoomDimensions } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
 import { RoomModel } from './RoomModel.js'
+import type { ExtractedSlot } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
 import { Portal } from './Portal.js'
 import { NavController } from './NavController.js'
@@ -12,7 +13,7 @@ import type { RoomBounds } from './NavController.js'
 interface Props {
   room: Room
   items: Record<string, Item>
-  textures: Record<string, string> // textureId → url
+  textures: Record<string, string>
   activeViewpointId: string
   gyroEnabled?: boolean
   mobileMoveRef?: { current: { dx: number; dz: number } }
@@ -33,11 +34,11 @@ export function RoomScene({
   onNavigate,
 }: Props) {
   const surfaces = getRoomSurfaces(room.template)
-  const wallUrl = room.wallTextureId ? (textures[room.wallTextureId] ?? null) : null
-  const floorUrl = room.floorTextureId ? (textures[room.floorTextureId] ?? null) : null
+  const wallUrl    = room.wallTextureId    ? (textures[room.wallTextureId]    ?? null) : null
+  const floorUrl   = room.floorTextureId   ? (textures[room.floorTextureId]   ?? null) : null
   const ceilingUrl = room.ceilingTextureId ? (textures[room.ceilingTextureId] ?? null) : null
 
-  // Walkable bounds — 0.5 m inset from room walls so player can't clip through
+  // ── Walkable bounds ──────────────────────────────────────────────────────────
   const dim = getRoomDimensions(room.template)
   const WALL_MARGIN = 0.5
   const bounds: RoomBounds = {
@@ -47,30 +48,27 @@ export function RoomScene({
     maxZ:  (dim.depth  / 2 - WALL_MARGIN),
   }
 
-  // Derive collision obstacles from freestanding panel slot pairs (PNL-A / PNL-B).
-  // Each pair shares a base ID and is mounted on opposite sides of the same panel.
-  const panelObstacles = useMemo((): RoomBounds[] => {
+  // ── Collision obstacles ──────────────────────────────────────────────────────
+  const panelObstacles = useMemo(() => {
     const groups = new Map<string, typeof room.slots[0][]>()
     for (const slot of room.slots) {
       const m = slot.id.match(/^(.+PNL\d+)-[AB]$/i)
-      if (m && m[1]) {
-        const key = m[1]
-        if (!groups.has(key)) groups.set(key, [])
-        groups.get(key)!.push(slot)
+      if (m?.[1]) {
+        if (!groups.has(m[1])) groups.set(m[1], [])
+        groups.get(m[1])!.push(slot)
       }
     }
     const result: RoomBounds[] = []
     for (const slots of groups.values()) {
       if (slots.length < 2) continue
-      const xs = slots.map((s) => s.transform.position.x)
-      const zs = slots.map((s) => s.transform.position.z)
-      const hw = Math.max(...slots.map((s) => s.transform.size.w)) / 2
-      const MARGIN = 0.4
+      const xs  = slots.map((s) => s.transform?.position.x ?? 0)
+      const zs  = slots.map((s) => s.transform?.position.z ?? 0)
+      const hw  = Math.max(...slots.map((s) => (s.transform?.size.w ?? 1) / 2))
       result.push({
-        minX: Math.min(...xs) - hw - MARGIN,
-        maxX: Math.max(...xs) + hw + MARGIN,
-        minZ: Math.min(...zs) - MARGIN,
-        maxZ: Math.max(...zs) + MARGIN,
+        minX: Math.min(...xs) - hw - 0.4,
+        maxX: Math.max(...xs) + hw + 0.4,
+        minZ: Math.min(...zs) - 0.4,
+        maxZ: Math.max(...zs) + 0.4,
       })
     }
     return result
@@ -81,46 +79,74 @@ export function RoomScene({
     [panelObstacles, room.obstacles],
   )
 
+  // ── GLB slot extraction ──────────────────────────────────────────────────────
+  // When the room has a GLB model, VM_Slot_* meshes are the source of truth for
+  // slot positions. The JSON only provides metadata (itemId, frameStyle, etc.).
+  const [glbSlots, setGlbSlots] = useState<ExtractedSlot[]>([])
+  const handleSlotsExtracted = useCallback((slots: ExtractedSlot[]) => {
+    setGlbSlots(slots)
+  }, [])
+
+  // ── Resolve final slot list ──────────────────────────────────────────────────
+  const resolvedSlots = useMemo((): Slot[] => {
+    if (glbSlots.length > 0) {
+      // GLB-driven: merge extracted positions with JSON metadata
+      const jsonById = new Map(room.slots.map((s) => [s.id, s]))
+      return glbSlots
+        .map((gs): Slot => {
+          const json = jsonById.get(gs.id)
+          return {
+            id:          gs.id,
+            roomId:      room.id,
+            name:        json?.name       ?? gs.id,
+            type:        json?.type       ?? 'image',
+            frameStyle:  json?.frameStyle ?? 'classic',
+            itemId:      json?.itemId     ?? null,
+            visible:     json?.visible    ?? true,
+            transform:   gs.transform,   // always present from GLB
+          }
+        })
+        .filter((s) => s.visible)
+    }
+
+    // Procedural room or GLB not yet extracted: use JSON transforms directly
+    return room.slots.filter((s) => s.visible && s.transform != null)
+  }, [glbSlots, room.slots, room.id])
+
   return (
     <>
       <RoomLighting preset={room.lightingPreset} />
 
       {room.modelUrl ? (
-        <RoomModel url={room.modelUrl} {...(room.modelOffset != null ? { offset: room.modelOffset } : {})} />
+        <RoomModel
+          url={room.modelUrl}
+          {...(room.modelOffset != null ? { offset: room.modelOffset } : {})}
+          onSlotsExtracted={handleSlotsExtracted}
+        />
       ) : (
         <>
-          {/* Walls */}
           {surfaces.walls.map((wall) => (
             <RoomSurface key={wall.name} config={wall} textureUrl={wallUrl} color="#d4c9b8" />
           ))}
-
-          {/* Floor */}
-          <RoomSurface config={surfaces.floor} textureUrl={floorUrl} color="#8b7355" />
-
-          {/* Ceiling */}
+          <RoomSurface config={surfaces.floor}   textureUrl={floorUrl}   color="#8b7355" />
           <RoomSurface config={surfaces.ceiling} textureUrl={ceilingUrl} color="#f5f0e8" />
         </>
       )}
 
-      {/* Slots */}
-      {room.slots
-        .filter((s) => s.visible)
-        .map((slot) => (
-          <SlotFrame
-            key={slot.id}
-            slot={slot}
-            item={slot.itemId ? (items[slot.itemId] ?? null) : null}
-            onSelect={onSlotSelect}
-            hideLabel={hideLabels}
-          />
-        ))}
+      {resolvedSlots.map((slot) => (
+        <SlotFrame
+          key={slot.id}
+          slot={slot}
+          item={slot.itemId ? (items[slot.itemId] ?? null) : null}
+          onSelect={onSlotSelect}
+          hideLabel={hideLabels}
+        />
+      ))}
 
-      {/* Portals */}
       {onNavigate && room.portals?.map((portal) => (
         <Portal key={portal.id} portal={portal} onNavigate={onNavigate} />
       ))}
 
-      {/* Navigation controller — includes keyboard + floor-click + mobile D-pad movement */}
       <NavController
         viewpoints={room.viewpoints}
         activeViewpointId={activeViewpointId}
