@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { Viewpoint } from '@vm/shared'
@@ -95,6 +95,26 @@ export function NavController({
   const dragPx      = useRef(0)
 
   const keys = useRef(new Set<string>())
+
+  // ── Mount snap: set camera to entry viewpoint BEFORE first R3F frame ────────
+  // Canvas is unmounted/remounted on each room change, so `camera` starts at
+  // [0,0,0]. useLayoutEffect runs synchronously before paint/rAF, ensuring
+  // the camera never passes through the center obstacle on arrival.
+  useLayoutEffect(() => {
+    const vp = viewpoints.find((v) => v.id === activeViewpointId) ?? viewpoints[0]
+    if (!vp) return
+    const pos    = toVec3(vp.position)
+    const lookAt = toVec3(vp.lookAt)
+    const { yaw: initYaw, pitch: initPitch } = computeYawPitch(pos, lookAt)
+    camera.position.copy(pos)
+    targetPos.current.copy(pos)
+    yaw.current          = initYaw
+    pitch.current        = initPitch
+    targetYaw.current    = initYaw
+    targetPitch.current  = initPitch
+    transitioning.current = false
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // intentionally empty: component unmounts/remounts on every room change
 
   // ── Viewpoint change ────────────────────────────────────────────────────────
   useEffect(() => {
