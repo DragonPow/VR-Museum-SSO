@@ -64,6 +64,7 @@ export function Tour({ content, onBack }: Props) {
           activeViewpointId={activeViewpointId}
           gyroEnabled={gyroEnabled}
           mobileMoveRef={mobileMoveRef}
+          hideLabels={!!selectedItem}
           onSlotSelect={handleSlotSelect}
           onNavigate={navigateToRoom}
         />

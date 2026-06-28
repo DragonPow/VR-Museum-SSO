@@ -9,12 +9,13 @@ interface Props {
   slot: Slot
   item: Item | null
   onSelect: (slotId: string, item: Item | null) => void
+  hideLabel?: boolean
 }
 
 const FRAME_THICKNESS = 0.04
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 
-export function SlotFrame({ slot, item, onSelect }: Props) {
+export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
   const [hovered, setHovered] = useState(false)
   const matRef = useRef<THREE.MeshLambertMaterial>(null)
   const { invalidate } = useThree()
@@ -101,8 +102,8 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
         </>
       )}
 
-      {/* Nameplate below frame */}
-      {item && (
+      {/* Nameplate below frame — hidden when modal is open to avoid Html overlay on top of dialog */}
+      {item && !hideLabel && (
         <Html
           position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.12), 0.07]}
           center

@@ -16,6 +16,7 @@ interface Props {
   activeViewpointId: string
   gyroEnabled?: boolean
   mobileMoveRef?: { current: { dx: number; dz: number } }
+  hideLabels?: boolean
   onSlotSelect: (slotId: string, item: Item | null) => void
   onNavigate?: (roomId: string) => void
 }
@@ -27,6 +28,7 @@ export function RoomScene({
   activeViewpointId,
   gyroEnabled = false,
   mobileMoveRef,
+  hideLabels = false,
   onSlotSelect,
   onNavigate,
 }: Props) {
@@ -109,6 +111,7 @@ export function RoomScene({
             slot={slot}
             item={slot.itemId ? (items[slot.itemId] ?? null) : null}
             onSelect={onSlotSelect}
+            hideLabel={hideLabels}
           />
         ))}
 
