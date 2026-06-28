@@ -38,9 +38,10 @@ jobs:
           cp -r content apps/web/public/content
 
       - name: Build web app
-        run: pnpm --filter web build -- --base=/VR-Museum-SSO/
+        run: pnpm --filter web build
         env:
           NODE_ENV: production
+          VITE_BASE_URL: /VR-Museum-SSO/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

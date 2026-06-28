@@ -7,7 +7,7 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ok'; data: Content }
 
-const CONTENT_URL = import.meta.env.VITE_CONTENT_URL ?? '/content/content.sample.json'
+const CONTENT_URL = import.meta.env['VITE_CONTENT_URL'] ?? `${import.meta.env.BASE_URL}content/content.sample.json`
 
 let _cache: Content | null = null
 

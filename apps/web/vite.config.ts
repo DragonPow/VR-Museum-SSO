@@ -7,6 +7,7 @@ import { join } from 'path'
 const CONTENT_DIR = resolve(__dirname, '../../content')
 
 export default defineConfig({
+  base: process.env['VITE_BASE_URL'] ?? '/',
   plugins: [
     react(),
     // Serve the monorepo /content directory at /content in dev
