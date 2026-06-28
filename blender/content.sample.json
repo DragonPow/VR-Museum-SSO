@@ -1,0 +1,1996 @@
+{
+  "version": 1,
+  "siteTitle": "Phòng Truyền Thống Ảo — Kỷ niệm 50 năm",
+  "coordinateSystem": {
+    "note": "Toạ độ slot lấy từ Blender Z-up (sàn z=0). GLB export Y-up cho three.js. Viewer cần thống nhất 1 quy ước; xem mapping trong README.",
+    "up": "z-up-source",
+    "eyeHeight": 1.6
+  },
+  "periods": [
+    {
+      "id": "period-1975-1985",
+      "title": "1975–1985 — Những ngày đầu",
+      "order": 1,
+      "rooms": [
+        {
+          "id": "room-hall",
+          "title": "Hội trường chính",
+          "template": "hall",
+          "modelUrl": "/content/models/hall.glb",
+          "lightingPreset": "warm",
+          "viewpoints": [
+            {
+              "id": "vp-entry",
+              "position": [
+                0,
+                1.6,
+                -7.5
+              ],
+              "lookAt": [
+                0,
+                1.6,
+                2.5
+              ]
+            },
+            {
+              "id": "vp-center",
+              "position": [
+                0,
+                1.6,
+                -1.0
+              ],
+              "lookAt": [
+                0,
+                1.6,
+                2.5
+              ]
+            },
+            {
+              "id": "vp-left",
+              "position": [
+                -7,
+                1.6,
+                0
+              ],
+              "lookAt": [
+                -11,
+                1.6,
+                0
+              ]
+            },
+            {
+              "id": "vp-right",
+              "position": [
+                7,
+                1.6,
+                0
+              ],
+              "lookAt": [
+                11,
+                1.6,
+                0
+              ]
+            }
+          ],
+          "portals": [
+            {
+              "id": "portal-to-side",
+              "toRoomId": "room-side",
+              "position": [
+                9,
+                1.6,
+                7.5
+              ],
+              "label": "Sang phòng chuyên đề"
+            }
+          ],
+          "slots": [
+            {
+              "id": "HALL-S-01",
+              "transform": {
+                "position": [
+                  -9.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-02",
+              "transform": {
+                "position": [
+                  -8.25,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-03",
+              "transform": {
+                "position": [
+                  -6.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-04",
+              "transform": {
+                "position": [
+                  -5.25,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-05",
+              "transform": {
+                "position": [
+                  -3.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-06",
+              "transform": {
+                "position": [
+                  -2.25,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-07",
+              "transform": {
+                "position": [
+                  -0.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-08",
+              "transform": {
+                "position": [
+                  0.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-09",
+              "transform": {
+                "position": [
+                  2.25,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-10",
+              "transform": {
+                "position": [
+                  3.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-11",
+              "transform": {
+                "position": [
+                  5.25,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-12",
+              "transform": {
+                "position": [
+                  6.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-13",
+              "transform": {
+                "position": [
+                  8.25,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-S-14",
+              "transform": {
+                "position": [
+                  9.75,
+                  -7.84,
+                  1.9
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-01",
+              "transform": {
+                "position": [
+                  -9.45,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-02",
+              "transform": {
+                "position": [
+                  -7.35,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-03",
+              "transform": {
+                "position": [
+                  -5.25,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-04",
+              "transform": {
+                "position": [
+                  -3.15,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-05",
+              "transform": {
+                "position": [
+                  -1.05,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-06",
+              "transform": {
+                "position": [
+                  1.05,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-07",
+              "transform": {
+                "position": [
+                  3.15,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-08",
+              "transform": {
+                "position": [
+                  5.25,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-09",
+              "transform": {
+                "position": [
+                  7.35,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-N-10",
+              "transform": {
+                "position": [
+                  9.45,
+                  7.84,
+                  1.9
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-01",
+              "transform": {
+                "position": [
+                  -11.84,
+                  -5.778,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-02",
+              "transform": {
+                "position": [
+                  -11.84,
+                  -4.333,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-03",
+              "transform": {
+                "position": [
+                  -11.84,
+                  -2.889,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-04",
+              "transform": {
+                "position": [
+                  -11.84,
+                  -1.444,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-05",
+              "transform": {
+                "position": [
+                  -11.84,
+                  0.0,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-06",
+              "transform": {
+                "position": [
+                  -11.84,
+                  1.444,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-07",
+              "transform": {
+                "position": [
+                  -11.84,
+                  2.889,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-08",
+              "transform": {
+                "position": [
+                  -11.84,
+                  4.333,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-W-09",
+              "transform": {
+                "position": [
+                  -11.84,
+                  5.778,
+                  1.9
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-01",
+              "transform": {
+                "position": [
+                  11.84,
+                  -5.778,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-02",
+              "transform": {
+                "position": [
+                  11.84,
+                  -4.333,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-03",
+              "transform": {
+                "position": [
+                  11.84,
+                  -2.889,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-04",
+              "transform": {
+                "position": [
+                  11.84,
+                  -1.444,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-05",
+              "transform": {
+                "position": [
+                  11.84,
+                  0.0,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-06",
+              "transform": {
+                "position": [
+                  11.84,
+                  1.444,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-07",
+              "transform": {
+                "position": [
+                  11.84,
+                  2.889,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-08",
+              "transform": {
+                "position": [
+                  11.84,
+                  4.333,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-E-09",
+              "transform": {
+                "position": [
+                  11.84,
+                  5.778,
+                  1.9
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.5,
+                "height": 1.1
+              }
+            },
+            {
+              "id": "HALL-BG-01",
+              "transform": {
+                "position": [
+                  -4.167,
+                  2.34,
+                  2.0
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.3,
+                "height": 1.0
+              }
+            },
+            {
+              "id": "HALL-BG-02",
+              "transform": {
+                "position": [
+                  -2.5,
+                  2.34,
+                  2.0
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.3,
+                "height": 1.0
+              }
+            },
+            {
+              "id": "HALL-BG-03",
+              "transform": {
+                "position": [
+                  -0.833,
+                  2.34,
+                  2.0
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.3,
+                "height": 1.0
+              }
+            },
+            {
+              "id": "HALL-BG-04",
+              "transform": {
+                "position": [
+                  0.833,
+                  2.34,
+                  2.0
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.3,
+                "height": 1.0
+              }
+            },
+            {
+              "id": "HALL-BG-05",
+              "transform": {
+                "position": [
+                  2.5,
+                  2.34,
+                  2.0
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.3,
+                "height": 1.0
+              }
+            },
+            {
+              "id": "HALL-BG-06",
+              "transform": {
+                "position": [
+                  4.167,
+                  2.34,
+                  2.0
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.3,
+                "height": 1.0
+              }
+            },
+            {
+              "id": "HALL-PNL1-A",
+              "transform": {
+                "position": [
+                  -7,
+                  -4.125,
+                  1.6
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 2.0,
+                "height": 1.5
+              }
+            },
+            {
+              "id": "HALL-PNL1-B",
+              "transform": {
+                "position": [
+                  -7,
+                  -3.875,
+                  1.6
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 2.0,
+                "height": 1.5
+              }
+            },
+            {
+              "id": "HALL-PNL2-A",
+              "transform": {
+                "position": [
+                  7,
+                  -4.125,
+                  1.6
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 2.0,
+                "height": 1.5
+              }
+            },
+            {
+              "id": "HALL-PNL2-B",
+              "transform": {
+                "position": [
+                  7,
+                  -3.875,
+                  1.6
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 2.0,
+                "height": 1.5
+              }
+            },
+            {
+              "id": "HALL-PNL3-A",
+              "transform": {
+                "position": [
+                  -7,
+                  5.875,
+                  1.6
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 2.0,
+                "height": 1.5
+              }
+            },
+            {
+              "id": "HALL-PNL3-B",
+              "transform": {
+                "position": [
+                  -7,
+                  6.125,
+                  1.6
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 2.0,
+                "height": 1.5
+              }
+            },
+            {
+              "id": "HALL-PNL4-A",
+              "transform": {
+                "position": [
+                  7,
+                  5.875,
+                  1.6
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 2.0,
+                "height": 1.5
+              }
+            },
+            {
+              "id": "HALL-PNL4-B",
+              "transform": {
+                "position": [
+                  7,
+                  6.125,
+                  1.6
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 2.0,
+                "height": 1.5
+              }
+            }
+          ],
+          "items": [
+            {
+              "id": "item-HALL-S-01",
+              "slotId": "HALL-S-01",
+              "title": "Ảnh tư liệu 1",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-02",
+              "slotId": "HALL-S-02",
+              "title": "Ảnh tư liệu 2",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-03",
+              "slotId": "HALL-S-03",
+              "title": "Ảnh tư liệu 3",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-04",
+              "slotId": "HALL-S-04",
+              "title": "Ảnh tư liệu 4",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-05",
+              "slotId": "HALL-S-05",
+              "title": "Ảnh tư liệu 5",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-06",
+              "slotId": "HALL-S-06",
+              "title": "Ảnh tư liệu 6",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-07",
+              "slotId": "HALL-S-07",
+              "title": "Ảnh tư liệu 7",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-08",
+              "slotId": "HALL-S-08",
+              "title": "Ảnh tư liệu 8",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-09",
+              "slotId": "HALL-S-09",
+              "title": "Ảnh tư liệu 9",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-10",
+              "slotId": "HALL-S-10",
+              "title": "Ảnh tư liệu 10",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-11",
+              "slotId": "HALL-S-11",
+              "title": "Ảnh tư liệu 11",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-12",
+              "slotId": "HALL-S-12",
+              "title": "Ảnh tư liệu 12",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-13",
+              "slotId": "HALL-S-13",
+              "title": "Ảnh tư liệu 13",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-S-14",
+              "slotId": "HALL-S-14",
+              "title": "Ảnh tư liệu 14",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-01",
+              "slotId": "HALL-N-01",
+              "title": "Ảnh tư liệu 15",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-02",
+              "slotId": "HALL-N-02",
+              "title": "Ảnh tư liệu 16",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-03",
+              "slotId": "HALL-N-03",
+              "title": "Ảnh tư liệu 17",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-04",
+              "slotId": "HALL-N-04",
+              "title": "Ảnh tư liệu 18",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-05",
+              "slotId": "HALL-N-05",
+              "title": "Ảnh tư liệu 19",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-06",
+              "slotId": "HALL-N-06",
+              "title": "Ảnh tư liệu 20",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-07",
+              "slotId": "HALL-N-07",
+              "title": "Ảnh tư liệu 21",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-08",
+              "slotId": "HALL-N-08",
+              "title": "Ảnh tư liệu 22",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-09",
+              "slotId": "HALL-N-09",
+              "title": "Ảnh tư liệu 23",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-N-10",
+              "slotId": "HALL-N-10",
+              "title": "Ảnh tư liệu 24",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-01",
+              "slotId": "HALL-W-01",
+              "title": "Ảnh tư liệu 25",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-02",
+              "slotId": "HALL-W-02",
+              "title": "Ảnh tư liệu 26",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-03",
+              "slotId": "HALL-W-03",
+              "title": "Ảnh tư liệu 27",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-04",
+              "slotId": "HALL-W-04",
+              "title": "Ảnh tư liệu 28",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-05",
+              "slotId": "HALL-W-05",
+              "title": "Ảnh tư liệu 29",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-06",
+              "slotId": "HALL-W-06",
+              "title": "Ảnh tư liệu 30",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-07",
+              "slotId": "HALL-W-07",
+              "title": "Ảnh tư liệu 31",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-08",
+              "slotId": "HALL-W-08",
+              "title": "Ảnh tư liệu 32",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-W-09",
+              "slotId": "HALL-W-09",
+              "title": "Ảnh tư liệu 33",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-01",
+              "slotId": "HALL-E-01",
+              "title": "Ảnh tư liệu 34",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-02",
+              "slotId": "HALL-E-02",
+              "title": "Ảnh tư liệu 35",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-03",
+              "slotId": "HALL-E-03",
+              "title": "Ảnh tư liệu 36",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-04",
+              "slotId": "HALL-E-04",
+              "title": "Ảnh tư liệu 37",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-05",
+              "slotId": "HALL-E-05",
+              "title": "Ảnh tư liệu 38",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-06",
+              "slotId": "HALL-E-06",
+              "title": "Ảnh tư liệu 39",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-07",
+              "slotId": "HALL-E-07",
+              "title": "Ảnh tư liệu 40",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-08",
+              "slotId": "HALL-E-08",
+              "title": "Ảnh tư liệu 41",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-E-09",
+              "slotId": "HALL-E-09",
+              "title": "Ảnh tư liệu 42",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-BG-01",
+              "slotId": "HALL-BG-01",
+              "title": "Ảnh tư liệu 43",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-BG-02",
+              "slotId": "HALL-BG-02",
+              "title": "Ảnh tư liệu 44",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-BG-03",
+              "slotId": "HALL-BG-03",
+              "title": "Ảnh tư liệu 45",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-BG-04",
+              "slotId": "HALL-BG-04",
+              "title": "Ảnh tư liệu 46",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-BG-05",
+              "slotId": "HALL-BG-05",
+              "title": "Ảnh tư liệu 47",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-BG-06",
+              "slotId": "HALL-BG-06",
+              "title": "Ảnh tư liệu 48",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL1-A",
+              "slotId": "HALL-PNL1-A",
+              "title": "Ảnh tư liệu 49",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL1-B",
+              "slotId": "HALL-PNL1-B",
+              "title": "Ảnh tư liệu 50",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL2-A",
+              "slotId": "HALL-PNL2-A",
+              "title": "Ảnh tư liệu 51",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL2-B",
+              "slotId": "HALL-PNL2-B",
+              "title": "Ảnh tư liệu 52",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL3-A",
+              "slotId": "HALL-PNL3-A",
+              "title": "Ảnh tư liệu 53",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL3-B",
+              "slotId": "HALL-PNL3-B",
+              "title": "Ảnh tư liệu 54",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL4-A",
+              "slotId": "HALL-PNL4-A",
+              "title": "Ảnh tư liệu 55",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-HALL-PNL4-B",
+              "slotId": "HALL-PNL4-B",
+              "title": "Ảnh tư liệu 56",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            }
+          ]
+        },
+        {
+          "id": "room-side",
+          "title": "Phòng chuyên đề",
+          "template": "gallery",
+          "modelUrl": "/content/models/side.glb",
+          "lightingPreset": "neutral",
+          "viewpoints": [
+            {
+              "id": "vp-s-entry",
+              "position": [
+                40,
+                1.6,
+                -3.5
+              ],
+              "lookAt": [
+                40,
+                1.6,
+                0
+              ]
+            },
+            {
+              "id": "vp-s-center",
+              "position": [
+                40,
+                1.6,
+                0
+              ],
+              "lookAt": [
+                40,
+                1.6,
+                4
+              ]
+            }
+          ],
+          "portals": [
+            {
+              "id": "portal-to-hall",
+              "toRoomId": "room-hall",
+              "position": [
+                40,
+                1.6,
+                -3.8
+              ],
+              "label": "Về hội trường"
+            }
+          ],
+          "slots": [
+            {
+              "id": "SIDE-S-01",
+              "transform": {
+                "position": [
+                  36.333,
+                  -4.34,
+                  1.7
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-S-02",
+              "transform": {
+                "position": [
+                  37.8,
+                  -4.34,
+                  1.7
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-S-03",
+              "transform": {
+                "position": [
+                  39.267,
+                  -4.34,
+                  1.7
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-S-04",
+              "transform": {
+                "position": [
+                  40.733,
+                  -4.34,
+                  1.7
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-S-05",
+              "transform": {
+                "position": [
+                  42.2,
+                  -4.34,
+                  1.7
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-S-06",
+              "transform": {
+                "position": [
+                  43.667,
+                  -4.34,
+                  1.7
+                ],
+                "normal": "+Y",
+                "rotationYdeg": 0,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-N-01",
+              "transform": {
+                "position": [
+                  36.333,
+                  4.34,
+                  1.7
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-N-02",
+              "transform": {
+                "position": [
+                  37.8,
+                  4.34,
+                  1.7
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-N-03",
+              "transform": {
+                "position": [
+                  39.267,
+                  4.34,
+                  1.7
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-N-04",
+              "transform": {
+                "position": [
+                  40.733,
+                  4.34,
+                  1.7
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-N-05",
+              "transform": {
+                "position": [
+                  42.2,
+                  4.34,
+                  1.7
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-N-06",
+              "transform": {
+                "position": [
+                  43.667,
+                  4.34,
+                  1.7
+                ],
+                "normal": "-Y",
+                "rotationYdeg": 180,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-W-01",
+              "transform": {
+                "position": [
+                  34.16,
+                  -2.0,
+                  1.7
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-W-02",
+              "transform": {
+                "position": [
+                  34.16,
+                  0.0,
+                  1.7
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-W-03",
+              "transform": {
+                "position": [
+                  34.16,
+                  2.0,
+                  1.7
+                ],
+                "normal": "+X",
+                "rotationYdeg": 90,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-E-01",
+              "transform": {
+                "position": [
+                  45.84,
+                  -2.0,
+                  1.7
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-E-02",
+              "transform": {
+                "position": [
+                  45.84,
+                  0.0,
+                  1.7
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.1,
+                "height": 0.85
+              }
+            },
+            {
+              "id": "SIDE-E-03",
+              "transform": {
+                "position": [
+                  45.84,
+                  2.0,
+                  1.7
+                ],
+                "normal": "-X",
+                "rotationYdeg": -90,
+                "width": 1.1,
+                "height": 0.85
+              }
+            }
+          ],
+          "items": [
+            {
+              "id": "item-SIDE-S-01",
+              "slotId": "SIDE-S-01",
+              "title": "Ảnh tư liệu 1",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-S-02",
+              "slotId": "SIDE-S-02",
+              "title": "Ảnh tư liệu 2",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-S-03",
+              "slotId": "SIDE-S-03",
+              "title": "Ảnh tư liệu 3",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-S-04",
+              "slotId": "SIDE-S-04",
+              "title": "Ảnh tư liệu 4",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-S-05",
+              "slotId": "SIDE-S-05",
+              "title": "Ảnh tư liệu 5",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-S-06",
+              "slotId": "SIDE-S-06",
+              "title": "Ảnh tư liệu 6",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-N-01",
+              "slotId": "SIDE-N-01",
+              "title": "Ảnh tư liệu 7",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-N-02",
+              "slotId": "SIDE-N-02",
+              "title": "Ảnh tư liệu 8",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-N-03",
+              "slotId": "SIDE-N-03",
+              "title": "Ảnh tư liệu 9",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-N-04",
+              "slotId": "SIDE-N-04",
+              "title": "Ảnh tư liệu 10",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-N-05",
+              "slotId": "SIDE-N-05",
+              "title": "Ảnh tư liệu 11",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-N-06",
+              "slotId": "SIDE-N-06",
+              "title": "Ảnh tư liệu 12",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-W-01",
+              "slotId": "SIDE-W-01",
+              "title": "Ảnh tư liệu 13",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-W-02",
+              "slotId": "SIDE-W-02",
+              "title": "Ảnh tư liệu 14",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-W-03",
+              "slotId": "SIDE-W-03",
+              "title": "Ảnh tư liệu 15",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-E-01",
+              "slotId": "SIDE-E-01",
+              "title": "Ảnh tư liệu 16",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-E-02",
+              "slotId": "SIDE-E-02",
+              "title": "Ảnh tư liệu 17",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            },
+            {
+              "id": "item-SIDE-E-03",
+              "slotId": "SIDE-E-03",
+              "title": "Ảnh tư liệu 18",
+              "year": "",
+              "description": "",
+              "tags": [],
+              "thumbUrl": "/content/images/placeholder-thumb.webp",
+              "wallTextureUrl": "/content/images/placeholder-wall.webp",
+              "fullUrl": "/content/images/placeholder-full.webp"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
