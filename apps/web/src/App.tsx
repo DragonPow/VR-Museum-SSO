@@ -5,9 +5,9 @@ import { Landing } from './pages/Landing.js'
 import { Tour } from './pages/Tour.js'
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
-  state = { error: null }
+  override state = { error: null }
   static getDerivedStateFromError(e: Error) { return { error: e.message } }
-  render() {
+  override render() {
     if (this.state.error) {
       return (
         <div style={{ ...centerStyle, flexDirection: 'column', gap: 12, padding: 24 }}>

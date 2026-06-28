@@ -54,9 +54,11 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
       {/* Image plane — offset 6cm in local +z (= toward camera) to avoid z-fighting with wall */}
       <mesh
         position={[0, 0, 0.06]}
-        onPointerOver={item ? (e) => { e.stopPropagation(); setHovered(true) } : undefined}
-        onPointerOut={item ? () => setHovered(false) : undefined}
-        onClick={item ? (e) => { e.stopPropagation(); onSelect(slot.id, item) } : undefined}
+        {...(item ? {
+          onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
+          onPointerOut:  () => setHovered(false),
+          onClick:       (e) => { e.stopPropagation(); onSelect(slot.id, item) },
+        } : {})}
       >
         <planeGeometry args={[size.w, size.h]} />
         <meshLambertMaterial
