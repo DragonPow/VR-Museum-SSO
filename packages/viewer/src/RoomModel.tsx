@@ -54,13 +54,20 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
         obj.getWorldScale(wscale)
         euler.setFromQuaternion(quat, 'YXZ')
 
-        // Size: use LOCAL geometry bbox × world scale so artist can set scale in Blender
-        let w = 1, h = 0.8  // sensible defaults if geometry has no bbox
+        // Size: sort all 3 world-space extents and take the two largest.
+        // This handles both front/back-wall slots (thin in local Z after GLTF export)
+        // and side-wall slots (thin in local X), without needing to know thinAxis.
+        let w = 1, h = 0.8
         if (obj.geometry) {
           obj.geometry.computeBoundingBox()
           const bb = obj.geometry.boundingBox!
-          w = (bb.max.x - bb.min.x) * Math.abs(wscale.x)
-          h = (bb.max.y - bb.min.y) * Math.abs(wscale.y)
+          const extents = [
+            (bb.max.x - bb.min.x) * Math.abs(wscale.x),
+            (bb.max.y - bb.min.y) * Math.abs(wscale.y),
+            (bb.max.z - bb.min.z) * Math.abs(wscale.z),
+          ].sort((a, b) => b - a)   // descending
+          w = extents[0]!   // largest  = face width
+          h = extents[1]!   // second   = face height
         }
 
         extracted.push({

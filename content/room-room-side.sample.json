@@ -43,451 +43,163 @@
   ],
   "slots": [
     {
-      "id": "SIDE-S-01",
+      "id": "VM_Slot_SIDE_001",
       "roomId": "room-side",
       "name": "SIDE-S-01",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -3.667,
-          "y": 1.7,
-          "z": 4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "SIDE-S-02",
+      "id": "VM_Slot_SIDE_002",
       "roomId": "room-side",
       "name": "SIDE-S-02",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -2.2,
-          "y": 1.7,
-          "z": 4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "SIDE-S-03",
+      "id": "VM_Slot_SIDE_003",
       "roomId": "room-side",
       "name": "SIDE-S-03",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -0.733,
-          "y": 1.7,
-          "z": 4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-01",
       "visible": true
     },
     {
-      "id": "SIDE-S-04",
+      "id": "VM_Slot_SIDE_004",
       "roomId": "room-side",
       "name": "SIDE-S-04",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 0.733,
-          "y": 1.7,
-          "z": 4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "SIDE-S-05",
+      "id": "VM_Slot_SIDE_005",
       "roomId": "room-side",
       "name": "SIDE-S-05",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 2.2,
-          "y": 1.7,
-          "z": 4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "SIDE-S-06",
+      "id": "VM_Slot_SIDE_006",
       "roomId": "room-side",
       "name": "SIDE-S-06",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 3.667,
-          "y": 1.7,
-          "z": 4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "SIDE-N-01",
-      "roomId": "room-side",
-      "name": "SIDE-N-01",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -3.667,
-          "y": 1.7,
-          "z": -4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "SIDE-N-02",
-      "roomId": "room-side",
-      "name": "SIDE-N-02",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -2.2,
-          "y": 1.7,
-          "z": -4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "SIDE-N-03",
-      "roomId": "room-side",
-      "name": "SIDE-N-03",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -0.733,
-          "y": 1.7,
-          "z": -4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": "item-03",
-      "visible": true
-    },
-    {
-      "id": "SIDE-N-04",
-      "roomId": "room-side",
-      "name": "SIDE-N-04",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 0.733,
-          "y": 1.7,
-          "z": -4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "SIDE-N-05",
-      "roomId": "room-side",
-      "name": "SIDE-N-05",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 2.2,
-          "y": 1.7,
-          "z": -4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "SIDE-N-06",
-      "roomId": "room-side",
-      "name": "SIDE-N-06",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 3.667,
-          "y": 1.7,
-          "z": -4.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "SIDE-W-01",
+      "id": "VM_Slot_SIDE_007",
       "roomId": "room-side",
       "name": "SIDE-W-01",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -5.84,
-          "y": 1.7,
-          "z": 2.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "SIDE-W-02",
+      "id": "VM_Slot_SIDE_008",
+      "roomId": "room-side",
+      "name": "SIDE-E-01",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_009",
       "roomId": "room-side",
       "name": "SIDE-W-02",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -5.84,
-          "y": 1.7,
-          "z": -0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-05",
       "visible": true
     },
     {
-      "id": "SIDE-W-03",
-      "roomId": "room-side",
-      "name": "SIDE-W-03",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -5.84,
-          "y": 1.7,
-          "z": -2.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "SIDE-E-01",
-      "roomId": "room-side",
-      "name": "SIDE-E-01",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 5.84,
-          "y": 1.7,
-          "z": 2.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "SIDE-E-02",
+      "id": "VM_Slot_SIDE_010",
       "roomId": "room-side",
       "name": "SIDE-E-02",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 5.84,
-          "y": 1.7,
-          "z": -0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "SIDE-E-03",
+      "id": "VM_Slot_SIDE_011",
+      "roomId": "room-side",
+      "name": "SIDE-W-03",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_012",
       "roomId": "room-side",
       "name": "SIDE-E-03",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 5.84,
-          "y": 1.7,
-          "z": -2.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.1,
-          "h": 0.85
-        }
-      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_013",
+      "roomId": "room-side",
+      "name": "SIDE-N-01",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_014",
+      "roomId": "room-side",
+      "name": "SIDE-N-02",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_015",
+      "roomId": "room-side",
+      "name": "SIDE-N-03",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": "item-03",
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_016",
+      "roomId": "room-side",
+      "name": "SIDE-N-04",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_017",
+      "roomId": "room-side",
+      "name": "SIDE-N-05",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_SIDE_018",
+      "roomId": "room-side",
+      "name": "SIDE-N-06",
+      "type": "image",
       "frameStyle": "classic",
       "itemId": null,
       "visible": true

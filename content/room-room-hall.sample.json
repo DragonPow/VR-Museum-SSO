@@ -85,1401 +85,505 @@
   ],
   "slots": [
     {
-      "id": "HALL-S-01",
+      "id": "VM_Slot_HALL_001",
       "roomId": "room-hall",
       "name": "HALL-S-01",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -9.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-02",
+      "id": "VM_Slot_HALL_002",
       "roomId": "room-hall",
       "name": "HALL-S-02",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -8.25,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-03",
+      "id": "VM_Slot_HALL_003",
       "roomId": "room-hall",
       "name": "HALL-S-03",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -6.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-04",
+      "id": "VM_Slot_HALL_004",
       "roomId": "room-hall",
       "name": "HALL-S-04",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -5.25,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-05",
+      "id": "VM_Slot_HALL_005",
       "roomId": "room-hall",
       "name": "HALL-S-05",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -3.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-05",
       "visible": true
     },
     {
-      "id": "HALL-S-06",
+      "id": "VM_Slot_HALL_006",
       "roomId": "room-hall",
       "name": "HALL-S-06",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -2.25,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-01",
       "visible": true
     },
     {
-      "id": "HALL-S-07",
+      "id": "VM_Slot_HALL_007",
       "roomId": "room-hall",
       "name": "HALL-S-07",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -0.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-02",
       "visible": true
     },
     {
-      "id": "HALL-S-08",
+      "id": "VM_Slot_HALL_008",
       "roomId": "room-hall",
       "name": "HALL-S-08",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 0.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-03",
       "visible": true
     },
     {
-      "id": "HALL-S-09",
+      "id": "VM_Slot_HALL_009",
       "roomId": "room-hall",
       "name": "HALL-S-09",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 2.25,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-04",
       "visible": true
     },
     {
-      "id": "HALL-S-10",
+      "id": "VM_Slot_HALL_010",
       "roomId": "room-hall",
       "name": "HALL-S-10",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 3.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-11",
+      "id": "VM_Slot_HALL_011",
       "roomId": "room-hall",
       "name": "HALL-S-11",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 5.25,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-12",
+      "id": "VM_Slot_HALL_012",
       "roomId": "room-hall",
       "name": "HALL-S-12",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 6.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-13",
+      "id": "VM_Slot_HALL_013",
       "roomId": "room-hall",
       "name": "HALL-S-13",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 8.25,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-S-14",
+      "id": "VM_Slot_HALL_014",
       "roomId": "room-hall",
       "name": "HALL-S-14",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 9.75,
-          "y": 1.9,
-          "z": 7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-N-01",
-      "roomId": "room-hall",
-      "name": "HALL-N-01",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -9.45,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-02",
-      "roomId": "room-hall",
-      "name": "HALL-N-02",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -7.35,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-03",
-      "roomId": "room-hall",
-      "name": "HALL-N-03",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -5.25,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-04",
-      "roomId": "room-hall",
-      "name": "HALL-N-04",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -3.15,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-05",
-      "roomId": "room-hall",
-      "name": "HALL-N-05",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -1.05,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-06",
-      "roomId": "room-hall",
-      "name": "HALL-N-06",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 1.05,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-07",
-      "roomId": "room-hall",
-      "name": "HALL-N-07",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 3.15,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-08",
-      "roomId": "room-hall",
-      "name": "HALL-N-08",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 5.25,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-09",
-      "roomId": "room-hall",
-      "name": "HALL-N-09",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 7.35,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-N-10",
-      "roomId": "room-hall",
-      "name": "HALL-N-10",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 9.45,
-          "y": 1.9,
-          "z": -7.84
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-W-01",
+      "id": "VM_Slot_HALL_015",
       "roomId": "room-hall",
       "name": "HALL-W-01",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": 5.778
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-W-02",
-      "roomId": "room-hall",
-      "name": "HALL-W-02",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": 4.333
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-W-03",
-      "roomId": "room-hall",
-      "name": "HALL-W-03",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": 2.889
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-W-04",
-      "roomId": "room-hall",
-      "name": "HALL-W-04",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": 1.444
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": "item-04",
-      "visible": true
-    },
-    {
-      "id": "HALL-W-05",
-      "roomId": "room-hall",
-      "name": "HALL-W-05",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": -0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-W-06",
-      "roomId": "room-hall",
-      "name": "HALL-W-06",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": -1.444
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-W-07",
-      "roomId": "room-hall",
-      "name": "HALL-W-07",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": -2.889
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-W-08",
-      "roomId": "room-hall",
-      "name": "HALL-W-08",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": -4.333
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-W-09",
-      "roomId": "room-hall",
-      "name": "HALL-W-09",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -11.84,
-          "y": 1.9,
-          "z": -5.778
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": -1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-E-01",
+      "id": "VM_Slot_HALL_016",
       "roomId": "room-hall",
       "name": "HALL-E-01",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": 5.778
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-E-02",
+      "id": "VM_Slot_HALL_017",
+      "roomId": "room-hall",
+      "name": "HALL-W-02",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_018",
       "roomId": "room-hall",
       "name": "HALL-E-02",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": 4.333
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-E-03",
+      "id": "VM_Slot_HALL_019",
       "roomId": "room-hall",
-      "name": "HALL-E-03",
+      "name": "HALL-PNL1-A",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": 2.889
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-E-04",
+      "id": "VM_Slot_HALL_020",
       "roomId": "room-hall",
-      "name": "HALL-E-04",
+      "name": "HALL-PNL2-A",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": 1.444
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": "item-05",
-      "visible": true
-    },
-    {
-      "id": "HALL-E-05",
-      "roomId": "room-hall",
-      "name": "HALL-E-05",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": -0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-E-06",
+      "id": "VM_Slot_HALL_021",
       "roomId": "room-hall",
-      "name": "HALL-E-06",
+      "name": "HALL-PNL1-B",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": -1.444
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-E-07",
-      "roomId": "room-hall",
-      "name": "HALL-E-07",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": -2.889
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-E-08",
-      "roomId": "room-hall",
-      "name": "HALL-E-08",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": -4.333
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-E-09",
-      "roomId": "room-hall",
-      "name": "HALL-E-09",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 11.84,
-          "y": 1.9,
-          "z": -5.778
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 1.570796,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.5,
-          "h": 1.1
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-BG-01",
-      "roomId": "room-hall",
-      "name": "HALL-BG-01",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -4.167,
-          "y": 2.0,
-          "z": -2.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.3,
-          "h": 1.0
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-01",
       "visible": true
     },
     {
-      "id": "HALL-BG-02",
+      "id": "VM_Slot_HALL_022",
+      "roomId": "room-hall",
+      "name": "HALL-PNL2-B",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": "item-05",
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_023",
+      "roomId": "room-hall",
+      "name": "HALL-W-03",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_024",
+      "roomId": "room-hall",
+      "name": "HALL-E-03",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_025",
+      "roomId": "room-hall",
+      "name": "HALL-W-04",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": "item-04",
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_026",
+      "roomId": "room-hall",
+      "name": "HALL-E-04",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": "item-05",
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_027",
+      "roomId": "room-hall",
+      "name": "HALL-W-05",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_028",
+      "roomId": "room-hall",
+      "name": "HALL-E-05",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_029",
+      "roomId": "room-hall",
+      "name": "HALL-W-06",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_030",
+      "roomId": "room-hall",
+      "name": "HALL-E-06",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_031",
+      "roomId": "room-hall",
+      "name": "HALL-BG-01",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": "item-01",
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_032",
       "roomId": "room-hall",
       "name": "HALL-BG-02",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -2.5,
-          "y": 2.0,
-          "z": -2.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.3,
-          "h": 1.0
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-02",
       "visible": true
     },
     {
-      "id": "HALL-BG-03",
+      "id": "VM_Slot_HALL_033",
       "roomId": "room-hall",
       "name": "HALL-BG-03",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -0.833,
-          "y": 2.0,
-          "z": -2.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.3,
-          "h": 1.0
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-03",
       "visible": true
     },
     {
-      "id": "HALL-BG-04",
+      "id": "VM_Slot_HALL_034",
       "roomId": "room-hall",
       "name": "HALL-BG-04",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 0.833,
-          "y": 2.0,
-          "z": -2.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.3,
-          "h": 1.0
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-04",
       "visible": true
     },
     {
-      "id": "HALL-BG-05",
+      "id": "VM_Slot_HALL_035",
       "roomId": "room-hall",
       "name": "HALL-BG-05",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 2.5,
-          "y": 2.0,
-          "z": -2.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.3,
-          "h": 1.0
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-05",
       "visible": true
     },
     {
-      "id": "HALL-BG-06",
+      "id": "VM_Slot_HALL_036",
       "roomId": "room-hall",
       "name": "HALL-BG-06",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 4.167,
-          "y": 2.0,
-          "z": -2.34
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 1.3,
-          "h": 1.0
-        }
-      },
       "frameStyle": "classic",
       "itemId": "item-01",
       "visible": true
     },
     {
-      "id": "HALL-PNL1-A",
+      "id": "VM_Slot_HALL_037",
       "roomId": "room-hall",
-      "name": "HALL-PNL1-A",
+      "name": "HALL-W-07",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -7,
-          "y": 1.6,
-          "z": 4.125
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-PNL1-B",
+      "id": "VM_Slot_HALL_038",
       "roomId": "room-hall",
-      "name": "HALL-PNL1-B",
+      "name": "HALL-E-07",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -7,
-          "y": 1.6,
-          "z": 3.875
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": "item-01",
-      "visible": true
-    },
-    {
-      "id": "HALL-PNL2-A",
-      "roomId": "room-hall",
-      "name": "HALL-PNL2-A",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": 7,
-          "y": 1.6,
-          "z": 4.125
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-PNL2-B",
+      "id": "VM_Slot_HALL_039",
       "roomId": "room-hall",
-      "name": "HALL-PNL2-B",
+      "name": "HALL-W-08",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 7,
-          "y": 1.6,
-          "z": 3.875
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
       "frameStyle": "classic",
-      "itemId": "item-05",
+      "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-PNL3-A",
+      "id": "VM_Slot_HALL_040",
+      "roomId": "room-hall",
+      "name": "HALL-E-08",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_041",
+      "roomId": "room-hall",
+      "name": "HALL-W-09",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_042",
+      "roomId": "room-hall",
+      "name": "HALL-E-09",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_043",
       "roomId": "room-hall",
       "name": "HALL-PNL3-A",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": -7,
-          "y": 1.6,
-          "z": -5.875
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-PNL3-B",
-      "roomId": "room-hall",
-      "name": "HALL-PNL3-B",
-      "type": "image",
-      "transform": {
-        "position": {
-          "x": -7,
-          "y": 1.6,
-          "z": -6.125
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
-      "frameStyle": "classic",
-      "itemId": null,
-      "visible": true
-    },
-    {
-      "id": "HALL-PNL4-A",
+      "id": "VM_Slot_HALL_044",
       "roomId": "room-hall",
       "name": "HALL-PNL4-A",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 7,
-          "y": 1.6,
-          "z": -5.875
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
     },
     {
-      "id": "HALL-PNL4-B",
+      "id": "VM_Slot_HALL_045",
+      "roomId": "room-hall",
+      "name": "HALL-PNL3-B",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_046",
       "roomId": "room-hall",
       "name": "HALL-PNL4-B",
       "type": "image",
-      "transform": {
-        "position": {
-          "x": 7,
-          "y": 1.6,
-          "z": -6.125
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 3.141593,
-          "z": 0.0
-        },
-        "size": {
-          "w": 2.0,
-          "h": 1.5
-        }
-      },
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_047",
+      "roomId": "room-hall",
+      "name": "HALL-N-01",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_048",
+      "roomId": "room-hall",
+      "name": "HALL-N-02",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_049",
+      "roomId": "room-hall",
+      "name": "HALL-N-03",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_050",
+      "roomId": "room-hall",
+      "name": "HALL-N-04",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_051",
+      "roomId": "room-hall",
+      "name": "HALL-N-05",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_052",
+      "roomId": "room-hall",
+      "name": "HALL-N-06",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_053",
+      "roomId": "room-hall",
+      "name": "HALL-N-07",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_054",
+      "roomId": "room-hall",
+      "name": "HALL-N-08",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_055",
+      "roomId": "room-hall",
+      "name": "HALL-N-09",
+      "type": "image",
+      "frameStyle": "classic",
+      "itemId": null,
+      "visible": true
+    },
+    {
+      "id": "VM_Slot_HALL_056",
+      "roomId": "room-hall",
+      "name": "HALL-N-10",
+      "type": "image",
       "frameStyle": "classic",
       "itemId": null,
       "visible": true
