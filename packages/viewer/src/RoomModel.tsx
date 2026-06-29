@@ -52,8 +52,9 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
 
         // Size: two largest world-space extents (handles side-wall thinAxis=X correctly).
         // Rotation: Blender bakes orientation into vertex positions, so GLTF node
-        // rotation is always identity. We infer the correct Y-rotation from thinAxis
-        // + world position so the replacement PlaneGeometry faces room interior.
+        // rotation is always identity. We compute the face normal from the first
+        // triangle of the mesh geometry and map it to a Y-rotation for the
+        // replacement PlaneGeometry (default normal = +Z).
         let w = 1, h = 0.8, yaw = 0
         if (obj.geometry) {
           obj.geometry.computeBoundingBox()
@@ -66,15 +67,34 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
           w = extents[0]!
           h = extents[1]!
 
-          if (extentX <= extentY && extentX <= extentZ) {
-            // thinAxis=X → slot on a side wall → face ±X toward room interior
-            // right wall (x>0): face -X → Y = +π/2; left wall (x<0): face +X → Y = -π/2
-            yaw = pos.x > 0 ? Math.PI / 2 : -Math.PI / 2
-          } else if (pos.z > 7.0) {
-            // thinAxis=Z on the front/entry wall → face into room (-Z direction)
-            yaw = Math.PI
+          // Compute face normal from first 3 vertices of the mesh
+          const posAttr = obj.geometry.getAttribute('position')
+          if (posAttr && posAttr.count >= 3) {
+            const v0 = new THREE.Vector3(posAttr.getX(0), posAttr.getY(0), posAttr.getZ(0))
+            const v1 = new THREE.Vector3(posAttr.getX(1), posAttr.getY(1), posAttr.getZ(1))
+            const v2 = new THREE.Vector3(posAttr.getX(2), posAttr.getY(2), posAttr.getZ(2))
+            const localNormal = v1.sub(v0).cross(v2.sub(v0)).normalize()
+
+            // Apply world quaternion (node rotation; identity for all VM_Slot_* meshes
+            // since Blender applied rotations into vertex positions, but kept for correctness)
+            const quat = new THREE.Quaternion()
+            obj.getWorldQuaternion(quat)
+            localNormal.applyQuaternion(quat)
+
+            if (Math.abs(localNormal.x) > 0.5) {
+              // Side wall slot (thinAxis=X): normal along ±X
+              // normal +X → face +X → Y = -π/2 ; normal -X → face -X → Y = +π/2
+              yaw = localNormal.x > 0 ? -Math.PI / 2 : Math.PI / 2
+            } else if (localNormal.z < -0.5) {
+              // Faces -Z: column inner face / panel back face
+              yaw = Math.PI
+            } else {
+              // Faces +Z: back wall, centerpiece, column outer face — already correct.
+              // Exception: front/entry wall (z > 7) also has normal +Z in mesh but must
+              // face inward (-Z) — use position to distinguish.
+              yaw = pos.z > 7.0 ? Math.PI : 0
+            }
           }
-          // else thinAxis=Z at z≤7: face +Z (back wall, centerpiece, column faces)
         }
 
         extracted.push({
