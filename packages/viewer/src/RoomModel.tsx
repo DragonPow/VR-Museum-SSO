@@ -82,9 +82,12 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
             localNormal.applyQuaternion(quat)
 
             if (Math.abs(localNormal.x) > 0.5) {
-              // Side wall slot (thinAxis=X): normal along ±X
-              // normal +X → face +X → Y = -π/2 ; normal -X → face -X → Y = +π/2
-              yaw = localNormal.x > 0 ? -Math.PI / 2 : Math.PI / 2
+              // Side wall slot (thinAxis=X). Both left and right wall meshes export
+              // with the same face normal (+X) due to Blender convention, so we
+              // cannot rely on the normal direction here — use world position instead.
+              // right wall (x>0): face -X into room → Y = -π/2
+              // left wall  (x<0): face +X into room → Y = +π/2
+              yaw = pos.x > 0 ? -Math.PI / 2 : Math.PI / 2
             } else if (localNormal.z < -0.5) {
               // Faces -Z: column inner face / panel back face
               yaw = Math.PI

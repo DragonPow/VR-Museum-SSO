@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { useThree, useFrame } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Slot, Item } from '@vm/shared'
@@ -19,7 +19,6 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
   const [hovered, setHovered] = useState(false)
   const matRef  = useRef<THREE.MeshLambertMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
-  const hasLoaded = useRef(false)
   const { invalidate } = useThree()
   const { transform, frameStyle } = slot
   // Use safe defaults so hooks below always receive valid values.
@@ -34,39 +33,29 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
     return () => { document.body.style.cursor = 'auto' }
   }, [hovered])
 
-  // Reset lazy-load flag and clear texture when item changes
+  // Clear texture immediately when item changes
   useEffect(() => {
-    hasLoaded.current = false
     if (matRef.current) {
       matRef.current.map = null
-      matRef.current.color.set(item ? '#d8cfbf' : '#d8cfbf')
+      matRef.current.color.set('#d8cfbf')
       matRef.current.needsUpdate = true
+      invalidate()
     }
-  }, [item?.id])
+  }, [item?.id, invalidate])
 
-  // Lazy load: only fetch texture when slot is roughly facing the camera.
-  // Runs each frame (cheap dot-product) until texture is loaded.
-  useFrame(({ camera }) => {
-    if (hasLoaded.current || !item?.wallTextureUrl || !groupRef.current || !matRef.current) return
-
-    const slotPos = new THREE.Vector3()
-    groupRef.current.getWorldPosition(slotPos)
-    const camFwd = new THREE.Vector3()
-    camera.getWorldDirection(camFwd)
-    const toSlot = slotPos.clone().sub(camera.position).normalize()
-
-    // Load if slot is in the front hemisphere (dot > -0.2 ≈ 100° half-angle cone)
-    if (camFwd.dot(toSlot) > -0.2) {
-      hasLoaded.current = true
-      loadTexture(item.wallTextureUrl, (tex) => {
-        if (!matRef.current) return
-        matRef.current.map = tex
-        matRef.current.color.set('#ffffff')
-        matRef.current.needsUpdate = true
-        invalidate()
-      })
-    }
-  })
+  // Load texture as soon as item is available.
+  // Using useEffect instead of useFrame so textures load even in frameloop='demand'
+  // mode where useFrame only fires on interaction-driven renders.
+  useEffect(() => {
+    if (!item?.wallTextureUrl || !matRef.current) return
+    loadTexture(item.wallTextureUrl, (tex) => {
+      if (!matRef.current) return
+      matRef.current.map = tex
+      matRef.current.color.set('#ffffff')
+      matRef.current.needsUpdate = true
+      invalidate()
+    })
+  }, [item?.wallTextureUrl, invalidate])
 
   // Guard after all hooks — slot has no transform yet (GLB not extracted)
   if (!transform) return null
@@ -89,9 +78,10 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
         <meshLambertMaterial
           ref={matRef}
           map={item?.wallTextureUrl ? greyTexture() : null}
-          color={item ? '#ffffff' : '#d8cfbf'}
+          color={item ? '#d8cfbf' : '#d8cfbf'}
           emissive={hovered ? '#333300' : '#000000'}
           emissiveIntensity={hovered ? 0.15 : 0}
+          side={THREE.DoubleSide}
         />
       </mesh>
 
@@ -109,22 +99,22 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
           {/* Top */}
           <mesh position={[0, size.h / 2 + FRAME_THICKNESS / 2, 0.001]}>
             <planeGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS]} />
-            <meshLambertMaterial color={frameColor} />
+            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
           </mesh>
           {/* Bottom */}
           <mesh position={[0, -(size.h / 2 + FRAME_THICKNESS / 2), 0.001]}>
             <planeGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS]} />
-            <meshLambertMaterial color={frameColor} />
+            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
           </mesh>
           {/* Left */}
           <mesh position={[-(size.w / 2 + FRAME_THICKNESS / 2), 0, 0.001]}>
             <planeGeometry args={[FRAME_THICKNESS, size.h]} />
-            <meshLambertMaterial color={frameColor} />
+            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
           </mesh>
           {/* Right */}
           <mesh position={[size.w / 2 + FRAME_THICKNESS / 2, 0, 0.001]}>
             <planeGeometry args={[FRAME_THICKNESS, size.h]} />
-            <meshLambertMaterial color={frameColor} />
+            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
           </mesh>
         </>
       )}
