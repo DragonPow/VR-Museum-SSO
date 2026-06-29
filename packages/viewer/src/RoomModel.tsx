@@ -44,38 +44,45 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
 
       // ── VM_Slot_* → extract transform, then hide ───────────────────────────
       if (obj.name.startsWith(VM_SLOT_PREFIX)) {
-        const pos  = new THREE.Vector3()
-        const quat = new THREE.Quaternion()
+        const pos    = new THREE.Vector3()
         const wscale = new THREE.Vector3()
-        const euler = new THREE.Euler()
 
         obj.getWorldPosition(pos)
-        obj.getWorldQuaternion(quat)
         obj.getWorldScale(wscale)
-        euler.setFromQuaternion(quat, 'YXZ')
 
-        // Size: sort all 3 world-space extents and take the two largest.
-        // This handles both front/back-wall slots (thin in local Z after GLTF export)
-        // and side-wall slots (thin in local X), without needing to know thinAxis.
-        let w = 1, h = 0.8
+        // Size: two largest world-space extents (handles side-wall thinAxis=X correctly).
+        // Rotation: Blender bakes orientation into vertex positions, so GLTF node
+        // rotation is always identity. We infer the correct Y-rotation from thinAxis
+        // + world position so the replacement PlaneGeometry faces room interior.
+        let w = 1, h = 0.8, yaw = 0
         if (obj.geometry) {
           obj.geometry.computeBoundingBox()
           const bb = obj.geometry.boundingBox!
-          const extents = [
-            (bb.max.x - bb.min.x) * Math.abs(wscale.x),
-            (bb.max.y - bb.min.y) * Math.abs(wscale.y),
-            (bb.max.z - bb.min.z) * Math.abs(wscale.z),
-          ].sort((a, b) => b - a)   // descending
-          w = extents[0]!   // largest  = face width
-          h = extents[1]!   // second   = face height
+          const extentX = (bb.max.x - bb.min.x) * Math.abs(wscale.x)
+          const extentY = (bb.max.y - bb.min.y) * Math.abs(wscale.y)
+          const extentZ = (bb.max.z - bb.min.z) * Math.abs(wscale.z)
+
+          const extents = [extentX, extentY, extentZ].sort((a, b) => b - a)
+          w = extents[0]!
+          h = extents[1]!
+
+          if (extentX <= extentY && extentX <= extentZ) {
+            // thinAxis=X → slot on a side wall → face ±X toward room interior
+            // right wall (x>0): face -X → Y = +π/2; left wall (x<0): face +X → Y = -π/2
+            yaw = pos.x > 0 ? Math.PI / 2 : -Math.PI / 2
+          } else if (pos.z > 7.0) {
+            // thinAxis=Z on the front/entry wall → face into room (-Z direction)
+            yaw = Math.PI
+          }
+          // else thinAxis=Z at z≤7: face +Z (back wall, centerpiece, column faces)
         }
 
         extracted.push({
           id: obj.name,
           transform: {
-            position: { x: pos.x,     y: pos.y,     z: pos.z     },
-            rotation: { x: euler.x,   y: euler.y,   z: euler.z   },
-            size:     { w,             h                           },
+            position: { x: pos.x, y: pos.y, z: pos.z },
+            rotation: { x: 0,     y: yaw,   z: 0     },
+            size:     { w,        h                   },
           },
         })
 

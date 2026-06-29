@@ -216,7 +216,7 @@
       "name": "HALL-W-01",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-04",
       "visible": true
     },
     {
@@ -225,7 +225,7 @@
       "name": "HALL-E-01",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-01",
       "visible": true
     },
     {
@@ -234,7 +234,7 @@
       "name": "HALL-W-02",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-05",
       "visible": true
     },
     {
@@ -243,7 +243,7 @@
       "name": "HALL-E-02",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-02",
       "visible": true
     },
     {
@@ -288,7 +288,7 @@
       "name": "HALL-W-03",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-01",
       "visible": true
     },
     {
@@ -297,7 +297,7 @@
       "name": "HALL-E-03",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-03",
       "visible": true
     },
     {
@@ -324,7 +324,7 @@
       "name": "HALL-W-05",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-02",
       "visible": true
     },
     {
@@ -333,7 +333,7 @@
       "name": "HALL-E-05",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-04",
       "visible": true
     },
     {
@@ -342,7 +342,7 @@
       "name": "HALL-W-06",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-03",
       "visible": true
     },
     {
@@ -351,7 +351,7 @@
       "name": "HALL-E-06",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-05",
       "visible": true
     },
     {
@@ -414,7 +414,7 @@
       "name": "HALL-W-07",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-04",
       "visible": true
     },
     {
@@ -423,7 +423,7 @@
       "name": "HALL-E-07",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-01",
       "visible": true
     },
     {
@@ -432,7 +432,7 @@
       "name": "HALL-W-08",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-05",
       "visible": true
     },
     {
@@ -441,7 +441,7 @@
       "name": "HALL-E-08",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-02",
       "visible": true
     },
     {
@@ -450,7 +450,7 @@
       "name": "HALL-W-09",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-01",
       "visible": true
     },
     {
@@ -459,7 +459,7 @@
       "name": "HALL-E-09",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-03",
       "visible": true
     },
     {
@@ -504,7 +504,7 @@
       "name": "HALL-N-01",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-02",
       "visible": true
     },
     {
@@ -522,7 +522,7 @@
       "name": "HALL-N-03",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-03",
       "visible": true
     },
     {
@@ -540,7 +540,7 @@
       "name": "HALL-N-05",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-04",
       "visible": true
     },
     {
@@ -558,7 +558,7 @@
       "name": "HALL-N-07",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-05",
       "visible": true
     },
     {
@@ -576,7 +576,7 @@
       "name": "HALL-N-09",
       "type": "image",
       "frameStyle": "classic",
-      "itemId": null,
+      "itemId": "item-01",
       "visible": true
     },
     {
