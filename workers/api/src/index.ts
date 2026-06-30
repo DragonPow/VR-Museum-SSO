@@ -16,18 +16,19 @@ export default {
 
     // CORS preflight
     if (request.method === 'OPTIONS') {
-      return cors(new Response(null, { status: 204 }), env.ALLOWED_ORIGIN)
+      return cors(new Response(null, { status: 204 }), origin, env.ALLOWED_ORIGIN)
     }
 
     try {
       const res = await route(request, url, env)
-      return cors(res, env.ALLOWED_ORIGIN)
+      return cors(res, origin, env.ALLOWED_ORIGIN)
     } catch (err) {
       return cors(
         new Response(JSON.stringify({ error: String(err) }), {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
         }),
+        origin,
         env.ALLOWED_ORIGIN,
       )
     }
@@ -123,10 +124,22 @@ function json(data: unknown, status = 200): Response {
   })
 }
 
-function cors(res: Response, allowedOrigin: string): Response {
+function cors(res: Response, requestOrigin: string, allowedOrigin: string): Response {
   const headers = new Headers(res.headers)
-  headers.set('Access-Control-Allow-Origin', allowedOrigin || '*')
+  headers.set('Access-Control-Allow-Origin', resolveAllowedOrigin(requestOrigin, allowedOrigin))
   headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  headers.set('Vary', 'Origin')
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers })
+}
+
+function resolveAllowedOrigin(requestOrigin: string, allowedOrigin: string): string {
+  const origins = allowedOrigin
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  if (origins.length === 0 || origins.includes('*')) return '*'
+  if (requestOrigin && origins.includes(requestOrigin)) return requestOrigin
+  return origins[0]
 }
