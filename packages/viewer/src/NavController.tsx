@@ -156,7 +156,7 @@ export function NavController({
       dragPx.current += Math.abs(dx) + Math.abs(dy)
       // Panorama convention: drag right → scene pans right (camera turns left → yaw increases).
       // Touch gets higher sensitivity because touch events tend to fire with smaller deltas.
-      const sens = e.pointerType === 'touch' ? 0.008 : 0.005
+      const sens = e.pointerType === 'touch' ? 0.005 : 0.003
       yaw.current    += dx * sens
       pitch.current   = clampPitch(pitch.current + dy * sens)
       lastMouse.current  = { x: e.clientX, y: e.clientY }

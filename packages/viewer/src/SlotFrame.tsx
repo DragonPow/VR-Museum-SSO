@@ -13,6 +13,7 @@ interface Props {
 }
 
 const FRAME_THICKNESS = 0.04
+const FRAME_DEPTH     = 0.05   // how far the frame box protrudes from the wall
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 
 export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
@@ -65,9 +66,9 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
 
   return (
     <group ref={groupRef} position={pos} rotation={rot}>
-      {/* Image plane — offset 6cm in local +z (= toward camera) to avoid z-fighting with wall */}
+      {/* Canvas — recessed 1 cm behind the frame face */}
       <mesh
-        position={[0, 0, 0.06]}
+        position={[0, 0, FRAME_DEPTH - 0.01]}
         {...(item ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
@@ -85,43 +86,43 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
         />
       </mesh>
 
-      {/* Hover glow outline */}
+      {/* Hover glow — behind frame base */}
       {hovered && (
         <mesh position={[0, 0, -0.005]}>
-          <planeGeometry args={[size.w + 0.06, size.h + 0.06]} />
-          <meshBasicMaterial color="#f0d060" transparent opacity={0.35} />
+          <planeGeometry args={[size.w + FRAME_THICKNESS * 2 + 0.04, size.h + FRAME_THICKNESS * 2 + 0.04]} />
+          <meshBasicMaterial color="#f0d060" transparent opacity={0.3} />
         </mesh>
       )}
 
-      {/* Frame border */}
+      {/* Frame — 4 box beams that protrude FRAME_DEPTH from the wall */}
       {frameColor && (
         <>
           {/* Top */}
-          <mesh position={[0, size.h / 2 + FRAME_THICKNESS / 2, 0.001]}>
-            <planeGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS]} />
-            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
+          <mesh position={[0, size.h / 2 + FRAME_THICKNESS / 2, FRAME_DEPTH / 2]}>
+            <boxGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS, FRAME_DEPTH]} />
+            <meshLambertMaterial color={frameColor} />
           </mesh>
           {/* Bottom */}
-          <mesh position={[0, -(size.h / 2 + FRAME_THICKNESS / 2), 0.001]}>
-            <planeGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS]} />
-            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
+          <mesh position={[0, -(size.h / 2 + FRAME_THICKNESS / 2), FRAME_DEPTH / 2]}>
+            <boxGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS, FRAME_DEPTH]} />
+            <meshLambertMaterial color={frameColor} />
           </mesh>
           {/* Left */}
-          <mesh position={[-(size.w / 2 + FRAME_THICKNESS / 2), 0, 0.001]}>
-            <planeGeometry args={[FRAME_THICKNESS, size.h]} />
-            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
+          <mesh position={[-(size.w / 2 + FRAME_THICKNESS / 2), 0, FRAME_DEPTH / 2]}>
+            <boxGeometry args={[FRAME_THICKNESS, size.h, FRAME_DEPTH]} />
+            <meshLambertMaterial color={frameColor} />
           </mesh>
           {/* Right */}
-          <mesh position={[size.w / 2 + FRAME_THICKNESS / 2, 0, 0.001]}>
-            <planeGeometry args={[FRAME_THICKNESS, size.h]} />
-            <meshLambertMaterial color={frameColor} side={THREE.DoubleSide} />
+          <mesh position={[size.w / 2 + FRAME_THICKNESS / 2, 0, FRAME_DEPTH / 2]}>
+            <boxGeometry args={[FRAME_THICKNESS, size.h, FRAME_DEPTH]} />
+            <meshLambertMaterial color={frameColor} />
           </mesh>
         </>
       )}
 
-      {/* Nameplate below frame — 3D planes so it sticks to the wall instead of billboarding */}
+      {/* Nameplate below frame */}
       {item && !hideLabel && (
-        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), 0.065]}>
+        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), FRAME_DEPTH]}>
           {/* Gold border */}
           <mesh position={[0, 0, -0.003]}>
             <planeGeometry args={[Math.min(size.w + 0.04, 0.74), 0.28]} />
