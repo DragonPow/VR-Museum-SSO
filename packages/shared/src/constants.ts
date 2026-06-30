@@ -43,3 +43,4 @@ export const ROOM_DIMENSIONS: Record<string, { width: number; height: number; de
 
 // ─── Content version ──────────────────────────────────────────────────────────
 export const CONTENT_VERSION = '1'
+export { DEFAULT_CONTENT, contentIndexFromContent, roomDataFromContent } from './defaultContent.js'
