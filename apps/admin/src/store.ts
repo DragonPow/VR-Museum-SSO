@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { DEFAULT_CONTENT, parseContent } from '@vm/shared'
 import type { Content, Item } from '@vm/shared'
+
+const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 interface DraftStore {
   content: Content | null
@@ -31,24 +34,15 @@ export const useDraftStore = create<DraftStore>()(
         set({ loading: true, error: null })
 
         try {
-          const res = await fetch('/api/draft')
+          const res = await fetch(`${API_BASE}/api/draft`)
           if (res.ok) {
-            const content = await res.json() as Content
+            const content = parseContent(await res.json())
             set({ content, loading: false })
             return
           }
         } catch {}
 
-        try {
-          const res = await fetch('/content/content.sample.json')
-          if (res.ok) {
-            const content = await res.json() as Content
-            set({ content, loading: false })
-            return
-          }
-        } catch {}
-
-        set({ loading: false, error: 'Không tải được nội dung. Kiểm tra worker API hoặc web dev server.' })
+        set({ content: DEFAULT_CONTENT, loading: false, dirty: true })
       },
 
       loadContent: (content) => set({ content, dirty: false }),
