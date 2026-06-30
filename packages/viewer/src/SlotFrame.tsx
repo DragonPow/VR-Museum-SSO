@@ -13,7 +13,8 @@ interface Props {
 }
 
 const FRAME_THICKNESS = 0.04
-const FRAME_DEPTH     = 0.05   // how far the frame box protrudes from the wall
+const FRAME_DEPTH     = 0.05   // how far the frame protrudes from the wall
+const FRAME_BASE      = 0.01   // gap between wall surface and back of frame (prevents z-fighting)
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 
 export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
@@ -68,7 +69,7 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
     <group ref={groupRef} position={pos} rotation={rot}>
       {/* Canvas — recessed 1 cm behind the frame face */}
       <mesh
-        position={[0, 0, FRAME_DEPTH - 0.01]}
+        position={[0, 0, FRAME_BASE + FRAME_DEPTH - 0.01]}
         {...(item ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
@@ -98,22 +99,22 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
       {frameColor && (
         <>
           {/* Top */}
-          <mesh position={[0, size.h / 2 + FRAME_THICKNESS / 2, FRAME_DEPTH / 2]}>
+          <mesh position={[0, size.h / 2 + FRAME_THICKNESS / 2, FRAME_BASE + FRAME_DEPTH / 2]}>
             <boxGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS, FRAME_DEPTH]} />
             <meshLambertMaterial color={frameColor} />
           </mesh>
           {/* Bottom */}
-          <mesh position={[0, -(size.h / 2 + FRAME_THICKNESS / 2), FRAME_DEPTH / 2]}>
+          <mesh position={[0, -(size.h / 2 + FRAME_THICKNESS / 2), FRAME_BASE + FRAME_DEPTH / 2]}>
             <boxGeometry args={[size.w + FRAME_THICKNESS * 2, FRAME_THICKNESS, FRAME_DEPTH]} />
             <meshLambertMaterial color={frameColor} />
           </mesh>
           {/* Left */}
-          <mesh position={[-(size.w / 2 + FRAME_THICKNESS / 2), 0, FRAME_DEPTH / 2]}>
+          <mesh position={[-(size.w / 2 + FRAME_THICKNESS / 2), 0, FRAME_BASE + FRAME_DEPTH / 2]}>
             <boxGeometry args={[FRAME_THICKNESS, size.h, FRAME_DEPTH]} />
             <meshLambertMaterial color={frameColor} />
           </mesh>
           {/* Right */}
-          <mesh position={[size.w / 2 + FRAME_THICKNESS / 2, 0, FRAME_DEPTH / 2]}>
+          <mesh position={[size.w / 2 + FRAME_THICKNESS / 2, 0, FRAME_BASE + FRAME_DEPTH / 2]}>
             <boxGeometry args={[FRAME_THICKNESS, size.h, FRAME_DEPTH]} />
             <meshLambertMaterial color={frameColor} />
           </mesh>
@@ -122,7 +123,7 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
 
       {/* Nameplate below frame */}
       {item && !hideLabel && (
-        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), FRAME_DEPTH]}>
+        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), FRAME_BASE + FRAME_DEPTH]}>
           {/* Gold border */}
           <mesh position={[0, 0, -0.003]}>
             <planeGeometry args={[Math.min(size.w + 0.04, 0.74), 0.28]} />
