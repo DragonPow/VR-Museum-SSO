@@ -1,4 +1,4 @@
-import { parseContent } from '@vm/shared'
+import { DEFAULT_CONTENT, parseContent } from '@vm/shared'
 
 interface Env {
   MEDIA_BUCKET: R2Bucket
@@ -46,7 +46,7 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
   if (method === 'GET' && pathname === '/api/draft') {
     const obj = await env.MEDIA_BUCKET.get(DRAFT_KEY)
       ?? await env.MEDIA_BUCKET.get(CONTENT_KEY)
-    if (!obj) return json({ error: 'No draft found' }, 404)
+    if (!obj) return json(DEFAULT_CONTENT)
     const body = await obj.text()
     return new Response(body, { headers: { 'Content-Type': 'application/json' } })
   }
