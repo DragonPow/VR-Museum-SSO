@@ -43,6 +43,14 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return json({ ok: true })
   }
 
+  // GET /api/content — public content endpoint used by the web app if R2 is empty/private.
+  if (method === 'GET' && pathname === '/api/content') {
+    const obj = await env.MEDIA_BUCKET.get(CONTENT_KEY)
+    if (!obj) return seedDefaultContent(env)
+    const body = await obj.text()
+    return new Response(body, { headers: { 'Content-Type': 'application/json' } })
+  }
+
   // GET /api/draft — return draft (fallback to published content.json; bootstrap R2 if empty)
   if (method === 'GET' && pathname === '/api/draft') {
     const obj = await env.MEDIA_BUCKET.get(DRAFT_KEY)
