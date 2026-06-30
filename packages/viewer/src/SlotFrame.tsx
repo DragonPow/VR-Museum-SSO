@@ -71,7 +71,7 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
           'none' = Blender frame present: sit at canvas face depth (~2 cm).
           Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
-        position={[0, 0, frameColor === null ? 0.02 : FRAME_BASE + FRAME_DEPTH - 0.01]}
+        position={[0, 0, frameColor === null ? 0 : FRAME_BASE + FRAME_DEPTH - 0.01]}
         {...(item ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
