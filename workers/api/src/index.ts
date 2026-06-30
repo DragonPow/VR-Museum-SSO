@@ -42,11 +42,11 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return json({ ok: true })
   }
 
-  // GET /api/draft — return draft (fallback to published content.json)
+  // GET /api/draft — return draft (fallback to published content.json; bootstrap R2 if empty)
   if (method === 'GET' && pathname === '/api/draft') {
     const obj = await env.MEDIA_BUCKET.get(DRAFT_KEY)
       ?? await env.MEDIA_BUCKET.get(CONTENT_KEY)
-    if (!obj) return json(DEFAULT_CONTENT)
+    if (!obj) return seedDefaultContent(env)
     const body = await obj.text()
     return new Response(body, { headers: { 'Content-Type': 'application/json' } })
   }
@@ -96,10 +96,24 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     await env.MEDIA_BUCKET.put(CONTENT_KEY, body, {
       httpMetadata: { contentType: 'application/json' },
     })
+    await env.MEDIA_BUCKET.put(DRAFT_KEY, body, {
+      httpMetadata: { contentType: 'application/json' },
+    })
     return json({ ok: true, publishedAt: new Date().toISOString() })
   }
 
   return json({ error: 'Not found' }, 404)
+}
+
+async function seedDefaultContent(env: Env): Promise<Response> {
+  const body = JSON.stringify(DEFAULT_CONTENT, null, 2)
+  await env.MEDIA_BUCKET.put(DRAFT_KEY, body, {
+    httpMetadata: { contentType: 'application/json' },
+  })
+  await env.MEDIA_BUCKET.put(CONTENT_KEY, body, {
+    httpMetadata: { contentType: 'application/json' },
+  })
+  return new Response(body, { headers: { 'Content-Type': 'application/json' } })
 }
 
 function json(data: unknown, status = 200): Response {
