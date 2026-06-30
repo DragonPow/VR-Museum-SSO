@@ -88,29 +88,33 @@ export function RoomScene({
   }, [])
 
   // ── Resolve final slot list ──────────────────────────────────────────────────
-  const resolvedSlots = useMemo((): Slot[] => {
+  const resolvedSlots = useMemo((): (Slot & { hasBlenderFrame: boolean })[] => {
     if (glbSlots.length > 0) {
       // GLB-driven: merge extracted positions with JSON metadata
       const jsonById = new Map(room.slots.map((s) => [s.id, s]))
       return glbSlots
-        .map((gs): Slot => {
+        .map((gs): Slot & { hasBlenderFrame: boolean } => {
           const json = jsonById.get(gs.id)
           return {
-            id:          gs.id,
-            roomId:      room.id,
-            name:        json?.name       ?? gs.id,
-            type:        json?.type       ?? 'image',
-            frameStyle:  json?.frameStyle ?? 'classic',
-            itemId:      json?.itemId     ?? null,
-            visible:     json?.visible    ?? true,
-            transform:   gs.transform,   // always present from GLB
+            id:              gs.id,
+            roomId:          room.id,
+            name:            json?.name       ?? gs.id,
+            type:            json?.type       ?? 'image',
+            // When Blender already provides a 3D Frame primitive, suppress R3F frame boxes
+            frameStyle:      gs.hasBlenderFrame ? 'none' : (json?.frameStyle ?? 'classic'),
+            itemId:          json?.itemId     ?? null,
+            visible:         json?.visible    ?? true,
+            transform:       gs.transform,
+            hasBlenderFrame: gs.hasBlenderFrame,
           }
         })
         .filter((s) => s.visible)
     }
 
     // Procedural room or GLB not yet extracted: use JSON transforms directly
-    return room.slots.filter((s) => s.visible && s.transform != null)
+    return room.slots
+      .filter((s) => s.visible && s.transform != null)
+      .map((s) => ({ ...s, hasBlenderFrame: false }))
   }, [glbSlots, room.slots, room.id])
 
   return (

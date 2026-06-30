@@ -67,9 +67,11 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
 
   return (
     <group ref={groupRef} position={pos} rotation={rot}>
-      {/* Canvas — recessed 1 cm behind the frame face */}
+      {/* Canvas — position depends on whether Blender supplies the frame.
+          'none' = Blender frame present: sit at canvas face depth (~2 cm).
+          Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
-        position={[0, 0, FRAME_BASE + FRAME_DEPTH - 0.01]}
+        position={[0, 0, frameColor === null ? 0.02 : FRAME_BASE + FRAME_DEPTH - 0.01]}
         {...(item ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
@@ -123,7 +125,7 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
 
       {/* Nameplate below frame */}
       {item && !hideLabel && (
-        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), FRAME_BASE + FRAME_DEPTH]}>
+        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), frameColor === null ? 0.03 : FRAME_BASE + FRAME_DEPTH]}>
           {/* Gold border */}
           <mesh position={[0, 0, -0.003]}>
             <planeGeometry args={[Math.min(size.w + 0.04, 0.74), 0.28]} />
