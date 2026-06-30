@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react'
-import { parseContentIndex } from '@vm/shared'
-import type { ContentIndex } from '@vm/shared'
+import {
+  DEFAULT_CONTENT,
+  contentIndexFromContent,
+  parseContent,
+  parseContentIndex,
+  roomDataFromContent,
+} from '@vm/shared'
+import type { Content, ContentIndex, Room } from '@vm/shared'
 
-type State =
+ type State =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'ok'; data: ContentIndex }
@@ -10,7 +16,8 @@ type State =
 const BASE = import.meta.env.BASE_URL
 const INDEX_URL =
   import.meta.env['VITE_CONTENT_INDEX_URL'] ??
-  `${BASE}content/content-index.sample.json`
+  import.meta.env['VITE_CONTENT_URL'] ??
+  ''
 
 function rebaseUrls(value: unknown): unknown {
   if (typeof value === 'string') {
@@ -25,6 +32,23 @@ function rebaseUrls(value: unknown): unknown {
   return value
 }
 
+function roomDataUrl(content: Content, room: Room): string {
+  const data = roomDataFromContent(content, room)
+  return `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data))}`
+}
+
+function indexFromContent(content: Content): ContentIndex {
+  return contentIndexFromContent(content, (room) => roomDataUrl(content, room))
+}
+
+function parseIndexPayload(raw: unknown): ContentIndex {
+  try {
+    return parseContentIndex(rebaseUrls(raw))
+  } catch {
+    return indexFromContent(parseContent(rebaseUrls(raw)))
+  }
+}
+
 let _cache: ContentIndex | null = null
 
 export function useContentIndex(): State {
@@ -34,18 +58,28 @@ export function useContentIndex(): State {
 
   useEffect(() => {
     if (_cache) return
+
+    if (!INDEX_URL) {
+      const data = indexFromContent(DEFAULT_CONTENT)
+      _cache = data
+      setState({ status: 'ok', data })
+      return
+    }
+
     fetch(INDEX_URL)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
       })
       .then((raw) => {
-        const data = parseContentIndex(rebaseUrls(raw))
+        const data = parseIndexPayload(raw)
         _cache = data
         setState({ status: 'ok', data })
       })
-      .catch((err: unknown) => {
-        setState({ status: 'error', message: String(err) })
+      .catch(() => {
+        const data = indexFromContent(DEFAULT_CONTENT)
+        _cache = data
+        setState({ status: 'ok', data })
       })
   }, [])
 
