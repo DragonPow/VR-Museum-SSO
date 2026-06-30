@@ -91,8 +91,10 @@ export function NavController({
 
   const isDragging  = useRef(false)
   const lastMouse   = useRef({ x: 0, y: 0 })
-  // track pointer travel distance to distinguish click vs drag
   const dragPx      = useRef(0)
+  // Gyro base: anchors device orientation to current camera orientation on first event
+  const gyroBase    = useRef<{ alpha: number; beta: number; yaw: number; pitch: number } | null>(null)
+  const gyroSmooth  = useRef({ yaw: 0, pitch: 0 })
 
   const keys = useRef(new Set<string>())
 
@@ -152,8 +154,11 @@ export function NavController({
       const dx = e.clientX - lastMouse.current.x
       const dy = e.clientY - lastMouse.current.y
       dragPx.current += Math.abs(dx) + Math.abs(dy)
-      yaw.current    -= dx * 0.0035
-      pitch.current   = clampPitch(pitch.current - dy * 0.0035)
+      // Panorama convention: drag right → scene pans right (camera turns left → yaw increases).
+      // Touch gets higher sensitivity because touch events tend to fire with smaller deltas.
+      const sens = e.pointerType === 'touch' ? 0.008 : 0.005
+      yaw.current    += dx * sens
+      pitch.current   = clampPitch(pitch.current + dy * sens)
       lastMouse.current  = { x: e.clientX, y: e.clientY }
       transitioning.current = false
       invalidate()
@@ -190,17 +195,50 @@ export function NavController({
   }, [])
 
   // ── Gyroscope ───────────────────────────────────────────────────────────────
+  // Uses RELATIVE orientation (delta from when gyro was enabled) so there is no
+  // sudden jump when toggled. alpha=compass heading (increases clockwise), beta=tilt.
+  // Low-pass smoothing (α=0.25) kills sensor jitter without adding visible lag.
   useEffect(() => {
     if (!gyroEnabled || typeof window === 'undefined') return
+    gyroBase.current   = null  // reset anchor on each enable
+    gyroSmooth.current = { yaw: yaw.current, pitch: pitch.current }
+
     const onOrientation = (e: DeviceOrientationEvent) => {
-      if (e.alpha == null && e.beta == null) return
-      if (e.alpha != null) yaw.current   = -degToRad(e.alpha)
-      if (e.beta  != null) pitch.current  = clampPitch(degToRad(e.beta - 90))
+      if (e.alpha == null || e.beta == null) return
+
+      if (!gyroBase.current) {
+        // First event: anchor device orientation to current camera look direction
+        gyroBase.current = { alpha: e.alpha, beta: e.beta, yaw: yaw.current, pitch: pitch.current }
+        gyroSmooth.current = { yaw: yaw.current, pitch: pitch.current }
+        return
+      }
+
+      const base = gyroBase.current
+      let dAlpha = e.alpha - base.alpha
+      if (dAlpha >  180) dAlpha -= 360   // wrap to [-180, 180]
+      if (dAlpha < -180) dAlpha += 360
+
+      // alpha increases clockwise (turning right) → camera turns right → yaw decreases
+      const targetYaw   = base.yaw   - degToRad(dAlpha)
+      // beta increases when tilting forward (looking down) → pitch decreases
+      const targetPitch = clampPitch(base.pitch - degToRad(e.beta - base.beta))
+
+      // Exponential moving average to smooth sensor noise
+      const a = 0.25
+      gyroSmooth.current.yaw   += (targetYaw   - gyroSmooth.current.yaw)   * a
+      gyroSmooth.current.pitch += (targetPitch - gyroSmooth.current.pitch) * a
+
+      yaw.current   = gyroSmooth.current.yaw
+      pitch.current = gyroSmooth.current.pitch
       transitioning.current = false
       invalidate()
     }
+
     window.addEventListener('deviceorientation', onOrientation, true)
-    return () => window.removeEventListener('deviceorientation', onOrientation, true)
+    return () => {
+      window.removeEventListener('deviceorientation', onOrientation, true)
+      gyroBase.current = null
+    }
   }, [gyroEnabled])
 
   // ── Frame loop ──────────────────────────────────────────────────────────────
