@@ -1,7 +1,12 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import type { Viewpoint } from '@vm/shared'
+import type { Viewpoint, Vec3 } from '@vm/shared'
+
+export interface CameraState {
+  position: Vec3
+  lookAt: Vec3
+}
 
 export interface RoomBounds {
   minX: number; maxX: number
@@ -18,6 +23,11 @@ interface Props {
   eyeHeight?: number
   /** Written by MobileControls D-pad; read each frame. dx = right(-1..1), dz = forward(-1..1) */
   mobileMoveRef?: { current: { dx: number; dz: number } }
+  /** Admin editor: updated every frame with current camera position + look-at */
+  cameraStateRef?: React.MutableRefObject<CameraState | null>
+  /** Admin editor: when true, floor clicks call onPortalPlace instead of walking */
+  portalPlaceMode?: boolean
+  onPortalPlace?: (pos: { x: number; z: number }) => void
 }
 
 const DEFAULT_BOUNDS: RoomBounds = { minX: -5.5, maxX: 5.5, minZ: -7.5, maxZ: 7.5 }
@@ -74,6 +84,9 @@ export function NavController({
   obstacles = [],
   eyeHeight = EYE_HEIGHT,
   mobileMoveRef,
+  cameraStateRef,
+  portalPlaceMode = false,
+  onPortalPlace,
 }: Props) {
   const { camera, gl, invalidate } = useThree()
 
@@ -148,6 +161,8 @@ export function NavController({
       dragPx.current     = 0
       lastMouse.current  = { x: e.clientX, y: e.clientY }
       canvas.setPointerCapture(e.pointerId)
+      if (indicatorRef.current) indicatorRef.current.visible = false
+      document.body.style.cursor = 'auto'
     }
     const onMove = (e: PointerEvent) => {
       if (!isDragging.current || gyroEnabled) return
@@ -326,6 +341,19 @@ export function NavController({
 
     camera.quaternion.setFromEuler(new THREE.Euler(pitch.current, yaw.current, 0, 'YXZ'))
 
+    // Update camera state for admin editor viewpoint capture
+    if (cameraStateRef) {
+      const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion)
+      cameraStateRef.current = {
+        position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+        lookAt: {
+          x: camera.position.x + dir.x * 5,
+          y: camera.position.y + dir.y * 5,
+          z: camera.position.z + dir.z * 5,
+        },
+      }
+    }
+
     // Request next frame only while something is still animating
     const stillActive =
       keys.current.size > 0 ||
@@ -343,24 +371,76 @@ export function NavController({
   const floorCX = (bounds.minX + bounds.maxX) / 2
   const floorCZ = (bounds.minZ + bounds.maxZ) / 2
 
+  // Walk-here indicator — updated via ref to avoid React re-renders on every mousemove
+  const indicatorRef = useRef<THREE.Group>(null)
+
   const handleFloorClick = (e: { point: THREE.Vector3; stopPropagation: () => void }) => {
     if (dragPx.current > 6) return
     e.stopPropagation()
     const tx = clamp(e.point.x, bounds.minX, bounds.maxX)
     const tz = clamp(e.point.z, bounds.minZ, bounds.maxZ)
+    if (portalPlaceMode && onPortalPlace) {
+      onPortalPlace({ x: tx, z: tz })
+      return
+    }
     if (isBlocked(tx, tz, obstacles)) return
     walkTarget.current = new THREE.Vector3(tx, eyeHeight, tz)
-    invalidate()  // bootstrap walk-to loop
+    invalidate()
+  }
+
+  const handleFloorMove = (e: { point: THREE.Vector3; stopPropagation: () => void }) => {
+    if (isDragging.current) return
+    e.stopPropagation()
+    const ind = indicatorRef.current
+    if (ind) {
+      ind.position.set(e.point.x, 0.018, e.point.z)
+      ind.visible = true
+    }
+    document.body.style.cursor = portalPlaceMode ? 'cell' : 'crosshair'
+    invalidate()
+  }
+
+  const handleFloorLeave = () => {
+    if (indicatorRef.current) indicatorRef.current.visible = false
+    document.body.style.cursor = 'auto'
+    invalidate()
   }
 
   return (
-    <mesh
-      position={[floorCX, 0.015, floorCZ]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      onClick={handleFloorClick}
-    >
-      <planeGeometry args={[floorW, floorD]} />
-      <meshBasicMaterial visible={false} />
-    </mesh>
+    <>
+      <mesh
+        position={[floorCX, 0.015, floorCZ]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        onClick={handleFloorClick}
+        onPointerMove={handleFloorMove}
+        onPointerLeave={handleFloorLeave}
+      >
+        <planeGeometry args={[floorW, floorD]} />
+        <meshBasicMaterial visible={false} />
+      </mesh>
+
+      {/* Walk-here indicator: ring + inner dot, appears at cursor position on floor */}
+      <group ref={indicatorRef} visible={false}>
+        {/* Outer ring */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.18, 0.26, 40]} />
+          <meshBasicMaterial color="#f0d060" transparent opacity={0.85} depthWrite={false} />
+        </mesh>
+        {/* Inner filled circle */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.12, 32]} />
+          <meshBasicMaterial color="#f0d060" transparent opacity={0.25} depthWrite={false} />
+        </mesh>
+        {/* Crosshair lines */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.28, 0.03]} />
+          <meshBasicMaterial color="#f0d060" transparent opacity={0.6} depthWrite={false} />
+        </mesh>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.03, 0.28]} />
+          <meshBasicMaterial color="#f0d060" transparent opacity={0.6} depthWrite={false} />
+        </mesh>
+      </group>
+    </>
   )
 }

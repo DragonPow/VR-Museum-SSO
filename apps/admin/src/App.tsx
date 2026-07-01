@@ -7,6 +7,8 @@ import { Library } from './pages/Library.js'
 import { Assign } from './pages/Assign.js'
 import { Preview } from './pages/Preview.js'
 import { Publish } from './pages/Publish.js'
+import { Rooms } from './pages/Rooms.js'
+import { RoomEditor } from './pages/RoomEditor.js'
 
 export function App() {
   const init = useDraftStore((s) => s.init)
@@ -24,6 +26,8 @@ export function App() {
           <Route path="/assign" element={<Assign />} />
           <Route path="/preview" element={<Preview />} />
           <Route path="/publish" element={<Publish />} />
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/rooms/:id" element={<RoomEditor />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

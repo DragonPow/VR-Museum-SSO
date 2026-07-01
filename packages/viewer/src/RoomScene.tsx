@@ -1,14 +1,15 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { Room, Item, Slot } from '@vm/shared'
+import type { Room, Item, Slot, Vec3 } from '@vm/shared'
 import { getRoomSurfaces, getRoomDimensions } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
 import { RoomModel } from './RoomModel.js'
 import type { ExtractedSlot } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
-import { Portal } from './Portal.js'
+import { FloorPortal } from './FloorPortal.js'
 import { NavController } from './NavController.js'
 import type { RoomBounds } from './NavController.js'
+import type { CameraState } from './NavController.js'
 
 interface Props {
   room: Room
@@ -20,6 +21,13 @@ interface Props {
   hideLabels?: boolean
   onSlotSelect: (slotId: string, item: Item | null) => void
   onNavigate?: (roomId: string) => void
+  /** Admin editor: receives live camera position+lookAt each frame */
+  cameraStateRef?: React.MutableRefObject<CameraState | null>
+  /** Admin editor: when true, floor clicks call onPortalPlace instead of walking */
+  portalPlaceMode?: boolean
+  onPortalPlace?: (pos: { x: number; z: number }) => void
+  /** Admin editor: override walkable bounds (e.g. large plane for GLB rooms) */
+  boundsOverride?: RoomBounds
 }
 
 export function RoomScene({
@@ -32,6 +40,10 @@ export function RoomScene({
   hideLabels = false,
   onSlotSelect,
   onNavigate,
+  cameraStateRef,
+  portalPlaceMode = false,
+  onPortalPlace,
+  boundsOverride,
 }: Props) {
   const surfaces = getRoomSurfaces(room.template)
   const wallUrl    = room.wallTextureId    ? (textures[room.wallTextureId]    ?? null) : null
@@ -41,12 +53,13 @@ export function RoomScene({
   // ── Walkable bounds ──────────────────────────────────────────────────────────
   const dim = getRoomDimensions(room.template)
   const WALL_MARGIN = 0.5
-  const bounds: RoomBounds = {
+  const templateBounds: RoomBounds = {
     minX: -(dim.width  / 2 - WALL_MARGIN),
     maxX:  (dim.width  / 2 - WALL_MARGIN),
     minZ: -(dim.depth  / 2 - WALL_MARGIN),
     maxZ:  (dim.depth  / 2 - WALL_MARGIN),
   }
+  const bounds: RoomBounds = boundsOverride ?? templateBounds
 
   // ── Collision obstacles ──────────────────────────────────────────────────────
   const panelObstacles = useMemo(() => {
@@ -147,8 +160,12 @@ export function RoomScene({
         />
       ))}
 
-      {onNavigate && room.portals?.map((portal) => (
-        <Portal key={portal.id} portal={portal} onNavigate={onNavigate} />
+      {room.portals?.map((portal) => (
+        <FloorPortal
+          key={portal.id}
+          portal={portal}
+          onNavigate={onNavigate ?? (() => {})}
+        />
       ))}
 
       <NavController
@@ -157,6 +174,9 @@ export function RoomScene({
         gyroEnabled={gyroEnabled}
         bounds={bounds}
         obstacles={allObstacles}
+        portalPlaceMode={portalPlaceMode}
+        {...(cameraStateRef != null ? { cameraStateRef } : {})}
+        {...(onPortalPlace != null ? { onPortalPlace } : {})}
         {...(mobileMoveRef != null ? { mobileMoveRef } : {})}
       />
     </>

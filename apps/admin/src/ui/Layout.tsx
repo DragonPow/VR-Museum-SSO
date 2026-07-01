@@ -3,6 +3,7 @@ import { useDraftStore } from '../store.js'
 
 const NAV = [
   { to: '/',         label: 'Dashboard',         icon: '🏠' },
+  { to: '/rooms',    label: 'Quản lý phòng',     icon: '🚪' },
   { to: '/library',  label: 'Thư viện ảnh',      icon: '🖼' },
   { to: '/assign',   label: 'Gán ảnh vào slot',  icon: '📌' },
   { to: '/preview',  label: 'Xem trước 3D',      icon: '👁' },
