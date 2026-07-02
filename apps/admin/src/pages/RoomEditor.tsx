@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDraftStore } from '../store.js'
 import { SceneCanvas, RoomScene } from '@vm/viewer'
@@ -136,6 +136,8 @@ export function RoomEditor() {
   } | null>(null)
   const [portalLabel, setPortalLabel] = useState('')
   const [portalTargetId, setPortalTargetId] = useState('')
+  const [modelUrlInput, setModelUrlInput] = useState('')
+  const [modelUrlError, setModelUrlError] = useState<string | null>(null)
 
   const cameraStateRef = useRef<CameraState | null>(null)
   const modelFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -158,6 +160,11 @@ export function RoomEditor() {
 
   const items = Object.fromEntries(content.items.map((it) => [it.id, it]))
   const textures = Object.fromEntries(content.textures.map((t) => [t.id, t.url]))
+
+  useEffect(() => {
+    setModelUrlInput(room.modelUrl ?? '')
+    setModelUrlError(null)
+  }, [room.id, room.modelUrl])
 
   const currentVpId = activeVpId || room.entryViewpointId || room.viewpoints[0]?.id || '__none'
 
@@ -253,6 +260,26 @@ export function RoomEditor() {
   const handleUploadModel = async (file: File) => {
     const nextUrl = await uploadModel(file)
     updateRoom(room.id, { modelUrl: nextUrl })
+    setModelUrlInput(nextUrl)
+    setModelUrlError(null)
+  }
+
+  const handleApplyModelUrl = () => {
+    const nextUrl = modelUrlInput.trim()
+
+    if (!nextUrl) {
+      updateRoom(room.id, { modelUrl: null })
+      setModelUrlError(null)
+      return
+    }
+
+    if (!/\.(glb|gltf)(\?.*)?$/i.test(nextUrl)) {
+      setModelUrlError('Model URL phải kết thúc bằng .glb hoặc .gltf')
+      return
+    }
+
+    updateRoom(room.id, { modelUrl: nextUrl })
+    setModelUrlError(null)
   }
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -272,14 +299,22 @@ export function RoomEditor() {
             <label style={styles.label}>URL file GLB / GLTF</label>
             <input
               style={styles.input}
-              value={room.modelUrl ?? ''}
-              onChange={(e) => updateRoom(room.id, { modelUrl: e.target.value.trim() || null })}
-              placeholder="/content/hall.glb"
+              value={modelUrlInput}
+              onChange={(e) => {
+                setModelUrlInput(e.target.value)
+                if (modelUrlError) setModelUrlError(null)
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleApplyModelUrl()}
+              placeholder="/content/models/hall.glb"
             />
             <div style={styles.hint}>
-              Paste path như `/content/models/hall.glb` hoặc upload trực tiếp file model.
+              URL chỉ được áp dụng khi bấm nút bên dưới, tránh làm hỏng preview khi đang gõ.
             </div>
+            {modelUrlError && <div style={styles.errorText}>{modelUrlError}</div>}
             <div style={styles.inlineActions}>
+              <button style={styles.btnPrimary} onClick={handleApplyModelUrl}>
+                Áp dụng model URL
+              </button>
               <button
                 style={styles.btnSecondary}
                 onClick={() => modelFileInputRef.current?.click()}
@@ -289,7 +324,11 @@ export function RoomEditor() {
               {room.modelUrl && (
                 <button
                   style={styles.btnCancel}
-                  onClick={() => updateRoom(room.id, { modelUrl: null })}
+                  onClick={() => {
+                    setModelUrlInput('')
+                    updateRoom(room.id, { modelUrl: null })
+                    setModelUrlError(null)
+                  }}
                 >
                   Bỏ model
                 </button>
@@ -649,6 +688,7 @@ const styles: Record<string, React.CSSProperties> = {
     boxSizing: 'border-box',
   },
   hint: { fontSize: '11px', color: '#5a4a2a', lineHeight: 1.5 },
+  errorText: { fontSize: '12px', color: '#d07070' },
   empty: { fontSize: '12px', color: '#5a4a2a', fontStyle: 'italic' },
   fieldGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   fieldRow2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' },

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DEFAULT_CONTENT, parseContent } from '@vm/shared'
-import type { Content, Item, Room, Viewpoint, RoomPortal } from '@vm/shared'
+import type { Content, Item, Period, Room, Viewpoint, RoomPortal } from '@vm/shared'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
@@ -21,6 +21,9 @@ interface DraftStore {
   reset: () => void
 
   // Room management
+  addPeriod: (period: Period) => void
+  updatePeriod: (id: string, patch: Partial<Period>) => void
+  removePeriod: (id: string) => void
   addRoom: (room: Room) => void
   removeRoom: (id: string) => void
   updateRoom: (id: string, patch: Partial<Room>) => void
@@ -42,17 +45,29 @@ export const useDraftStore = create<DraftStore>()(
       error: null,
 
       init: async () => {
-        if (get().content) return
+        const localContent = get().content
+        const localDirty = get().dirty
+
+        if (localContent && localDirty) {
+          set({ loading: false, error: null })
+          return
+        }
+
         set({ loading: true, error: null })
 
         try {
           const res = await fetch(`${API_BASE}/api/draft`)
           if (res.ok) {
             const content = parseContent(await res.json())
-            set({ content, loading: false })
+            set({ content, loading: false, dirty: false })
             return
           }
         } catch {}
+
+        if (localContent) {
+          set({ content: localContent, loading: false, error: null })
+          return
+        }
 
         set({ content: DEFAULT_CONTENT, loading: false, dirty: true })
       },
@@ -115,6 +130,41 @@ export const useDraftStore = create<DraftStore>()(
       markClean: () => set({ dirty: false }),
 
       reset: () => set({ content: null, dirty: false, error: null }),
+
+      addPeriod: (period) =>
+        set((s) => {
+          if (!s.content) return s
+          return {
+            content: { ...s.content, periods: [...s.content.periods, period] },
+            dirty: true,
+          }
+        }),
+
+      updatePeriod: (id, patch) =>
+        set((s) => {
+          if (!s.content) return s
+          return {
+            content: {
+              ...s.content,
+              periods: s.content.periods.map((period) =>
+                period.id !== id ? period : { ...period, ...patch },
+              ),
+            },
+            dirty: true,
+          }
+        }),
+
+      removePeriod: (id) =>
+        set((s) => {
+          if (!s.content) return s
+          return {
+            content: {
+              ...s.content,
+              periods: s.content.periods.filter((period) => period.id !== id),
+            },
+            dirty: true,
+          }
+        }),
 
       addRoom: (room) =>
         set((s) => {
