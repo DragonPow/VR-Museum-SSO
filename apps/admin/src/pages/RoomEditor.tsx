@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDraftStore } from '../store.js'
 import { SceneCanvas, RoomScene } from '@vm/viewer'
@@ -11,6 +11,30 @@ type EditMode = 'none' | 'place-portal'
 
 const EDIT_BOUNDS: RoomBounds = { minX: -30, maxX: 30, minZ: -30, maxZ: 30 }
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
+
+class SceneErrorBoundary extends React.Component<
+  { resetKey: string; children: React.ReactNode; fallback: (message: string) => React.ReactNode },
+  { error: string | null }
+> {
+  override state = { error: null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error: error.message }
+  }
+
+  override componentDidUpdate(prevProps: Readonly<{ resetKey: string }>) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.error) {
+      this.setState({ error: null })
+    }
+  }
+
+  override render() {
+    if (this.state.error) {
+      return this.props.fallback(this.state.error)
+    }
+    return this.props.children
+  }
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -456,21 +480,34 @@ export function RoomEditor() {
 
       {/* ── 3D canvas ── */}
       <div style={styles.canvasWrap}>
-        <SceneCanvas>
-          <RoomScene
-            room={room}
-            items={items}
-            textures={textures}
-            activeViewpointId={currentVpId}
-            hideLabels
-            onSlotSelect={() => {}}
-            cameraStateRef={cameraStateRef}
-            portalPlaceMode={editMode === 'place-portal'}
-            onPortalPlace={handlePortalPlace}
-            assetBaseUrl={ASSET_BASE_URL}
-            {...(room.modelUrl ? { boundsOverride: EDIT_BOUNDS } : {})}
-          />
-        </SceneCanvas>
+        <SceneErrorBoundary
+          resetKey={room.modelUrl ?? '__no-model__'}
+          fallback={(message) => (
+            <div style={styles.canvasError}>
+              <div style={styles.canvasErrorTitle}>Khong the tai model 3D</div>
+              <div style={styles.canvasErrorText}>{message}</div>
+              <div style={styles.canvasErrorHint}>
+                Ban van co the sua Model URL, bo model, hoac upload lai file dung o cot ben trai.
+              </div>
+            </div>
+          )}
+        >
+          <SceneCanvas>
+            <RoomScene
+              room={room}
+              items={items}
+              textures={textures}
+              activeViewpointId={currentVpId}
+              hideLabels
+              onSlotSelect={() => {}}
+              cameraStateRef={cameraStateRef}
+              portalPlaceMode={editMode === 'place-portal'}
+              onPortalPlace={handlePortalPlace}
+              assetBaseUrl={ASSET_BASE_URL}
+              {...(room.modelUrl ? { boundsOverride: EDIT_BOUNDS } : {})}
+            />
+          </SceneCanvas>
+        </SceneErrorBoundary>
 
         {editMode === 'place-portal' && (
           <div style={styles.canvasOverlay}>Click vào sàn để đặt vị trí cổng</div>
@@ -652,6 +689,32 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     position: 'relative',
     overflow: 'hidden',
+  },
+  canvasError: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '24px',
+    textAlign: 'center',
+    background: '#050505',
+    color: '#d8d0c0',
+  },
+  canvasErrorTitle: { fontSize: '18px', fontWeight: 700, color: '#f0e8d8' },
+  canvasErrorText: {
+    fontSize: '12px',
+    color: '#d07070',
+    maxWidth: '560px',
+    wordBreak: 'break-word',
+  },
+  canvasErrorHint: {
+    fontSize: '12px',
+    color: '#8a7a60',
+    maxWidth: '560px',
+    lineHeight: 1.6,
   },
   canvasOverlay: {
     position: 'absolute',

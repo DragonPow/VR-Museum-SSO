@@ -1,16 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ROOM_TEMPLATES } from '@vm/shared'
-import type { Period, Room, RoomTemplate, LightingPreset } from '@vm/shared'
+import type { Period, Room, LightingPreset } from '@vm/shared'
 import { useDraftStore } from '../store.js'
 import { nanoid } from '../util/nanoid.js'
-
-const TEMPLATE_LABELS: Record<RoomTemplate, string> = {
-  hall: 'Hall (sảnh lớn)',
-  gallery: 'Gallery (phòng tranh)',
-  corridor: 'Corridor (hành lang)',
-  honor: 'Honor (phòng danh dự)',
-}
 
 const DEFAULT_PERIOD_COLOR = '#c8a85a'
 
@@ -31,7 +23,6 @@ export function Rooms() {
 
   const [title, setTitle] = useState('')
   const [periodId, setPeriodId] = useState('')
-  const [template, setTemplate] = useState<RoomTemplate>('hall')
 
   const [periodTitle, setPeriodTitle] = useState('')
   const [periodYears, setPeriodYears] = useState('')
@@ -139,7 +130,7 @@ export function Rooms() {
       slug: slugify(title),
       title: title.trim(),
       order,
-      template,
+      template: 'gallery',
       modelUrl: null,
       wallTextureId: null,
       floorTextureId: null,
@@ -154,7 +145,6 @@ export function Rooms() {
     addRoom(room)
     setTitle('')
     setPeriodId('')
-    setTemplate('hall')
     setShowAddRoom(false)
     navigate(`/rooms/${room.id}`)
   }
@@ -306,8 +296,8 @@ export function Rooms() {
           <div>
             <div style={styles.sectionTitle}>Phòng</div>
             <div style={styles.hint}>
-              Template là preset dựng phòng procedural của engine. Nếu bạn dùng GLB thì template chỉ
-              còn là fallback.
+              Phong moi mac dinh dung fallback procedural tam thoi. Sau do hay upload GLB trong
+              editor de dung mo hinh that.
             </div>
           </div>
         </div>
@@ -342,20 +332,10 @@ export function Rooms() {
                   ))}
                 </select>
               </div>
-              <div style={styles.field}>
-                <label style={styles.label}>Template</label>
-                <select
-                  style={styles.input}
-                  value={template}
-                  onChange={(e) => setTemplate(e.target.value as RoomTemplate)}
-                >
-                  {ROOM_TEMPLATES.map((value) => (
-                    <option key={value} value={value}>
-                      {TEMPLATE_LABELS[value]}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            </div>
+
+            <div style={styles.hint}>
+              Template procedural se duoc gan ngam de viewer co fallback khi phong chua co GLB.
             </div>
 
             <div style={styles.addActions}>
@@ -390,7 +370,7 @@ export function Rooms() {
                   <div style={styles.info}>
                     <div style={styles.roomName}>{room.title}</div>
                     <div style={styles.meta}>
-                      {period?.title ?? '—'} · {room.modelUrl ? 'GLB' : room.template} · {vpCount}{' '}
+                      {period?.title ?? '—'} · {room.modelUrl ? 'GLB' : 'Chua co GLB'} · {vpCount}{' '}
                       viewpoint{vpCount !== 1 ? 's' : ''} · {portalCount} portal
                       {portalCount !== 1 ? 's' : ''} · {slotCount} slot{slotCount !== 1 ? 's' : ''}
                     </div>
