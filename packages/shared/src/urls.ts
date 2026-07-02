@@ -46,7 +46,7 @@ export function resolveAssetBaseUrl(
 
 export function rebaseAssetUrls<T>(value: T, options: ResolveAssetUrlOptions = {}): T {
   if (typeof value === 'string') {
-    return resolveAssetUrl(value, options) as T
+    return shouldResolveAssetString(value) ? (resolveAssetUrl(value, options) as T) : value
   }
 
   if (Array.isArray(value)) {
@@ -60,6 +60,17 @@ export function rebaseAssetUrls<T>(value: T, options: ResolveAssetUrlOptions = {
   }
 
   return value
+}
+
+function shouldResolveAssetString(value: string): boolean {
+  return (
+    ABSOLUTE_URL_RE.test(value) ||
+    value.startsWith('/') ||
+    value.startsWith('./') ||
+    value.startsWith('../') ||
+    value.startsWith('blob:') ||
+    value.startsWith('data:')
+  )
 }
 
 function trimTrailingSlash(value: string | null | undefined): string {
