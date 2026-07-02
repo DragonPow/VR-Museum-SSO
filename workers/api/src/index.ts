@@ -3,10 +3,10 @@ import { DEFAULT_CONTENT, parseContent } from '@vm/shared'
 interface Env {
   MEDIA_BUCKET: R2Bucket
   ALLOWED_ORIGIN: string
-  PUBLIC_R2_URL: string  // e.g. https://pub-xxx.r2.dev  (optional)
+  PUBLIC_R2_URL: string // e.g. https://pub-xxx.r2.dev  (optional)
 }
 
-const DRAFT_KEY   = 'draft.json'
+const DRAFT_KEY = 'draft.json'
 const CONTENT_KEY = 'content.json'
 
 export default {
@@ -53,8 +53,7 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
 
   // GET /api/draft — return draft (fallback to published content.json; bootstrap R2 if empty)
   if (method === 'GET' && pathname === '/api/draft') {
-    const obj = await env.MEDIA_BUCKET.get(DRAFT_KEY)
-      ?? await env.MEDIA_BUCKET.get(CONTENT_KEY)
+    const obj = (await env.MEDIA_BUCKET.get(DRAFT_KEY)) ?? (await env.MEDIA_BUCKET.get(CONTENT_KEY))
     if (!obj) return seedDefaultContent(env)
     const body = await obj.text()
     return new Response(body, { headers: { 'Content-Type': 'application/json' } })
@@ -73,10 +72,14 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
   if (method === 'POST' && pathname === '/api/upload') {
     const form = await request.formData()
     const file = form.get('file') as File | null
-    const key  = form.get('key') as string | null
+    const key = form.get('key') as string | null
 
     if (!file || !key) return json({ error: 'Missing file or key' }, 400)
-    if (!key.startsWith('media/')) return json({ error: 'Invalid key prefix' }, 400)
+    const isMediaAsset = key.startsWith('media/')
+    const isRoomModel = key.startsWith('content/models/')
+    if (!isMediaAsset && !isRoomModel) {
+      return json({ error: 'Invalid key prefix' }, 400)
+    }
 
     await env.MEDIA_BUCKET.put(key, file.stream(), {
       httpMetadata: { contentType: file.type || 'application/octet-stream' },
@@ -149,5 +152,5 @@ function resolveAllowedOrigin(requestOrigin: string, allowedOrigin: string): str
 
   if (origins.length === 0 || origins.includes('*')) return '*'
   if (requestOrigin && origins.includes(requestOrigin)) return requestOrigin
-  return origins[0]
+  return origins[0] ?? '*'
 }

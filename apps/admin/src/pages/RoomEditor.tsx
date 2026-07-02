@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useDraftStore } from '../store.js'
 import { SceneCanvas, RoomScene } from '@vm/viewer'
 import type { RoomBounds, CameraState } from '@vm/viewer'
+import { uploadModel } from '../api.js'
 import { nanoid } from '../util/nanoid.js'
 import type { Viewpoint, RoomPortal } from '@vm/shared'
 
 type EditMode = 'none' | 'place-portal'
 
 const EDIT_BOUNDS: RoomBounds = { minX: -30, maxX: 30, minZ: -30, maxZ: 30 }
+const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -22,17 +24,39 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 const sectionStyles: Record<string, React.CSSProperties> = {
-  root: { display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '16px', borderBottom: '1px solid #1a1008' },
-  title: { fontSize: '11px', fontWeight: 600, color: '#6a5a40', textTransform: 'uppercase', letterSpacing: '0.06em' },
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    paddingBottom: '16px',
+    borderBottom: '1px solid #1a1008',
+  },
+  title: {
+    fontSize: '11px',
+    fontWeight: 600,
+    color: '#6a5a40',
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
 }
 
-function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+function Dialog({
+  title,
+  onClose,
+  children,
+}: {
+  title: string
+  onClose: () => void
+  children: React.ReactNode
+}) {
   return (
     <div style={dlgStyles.overlay} onClick={onClose}>
       <div style={dlgStyles.box} onClick={(e) => e.stopPropagation()}>
         <div style={dlgStyles.header}>
           <span style={dlgStyles.title}>{title}</span>
-          <button style={dlgStyles.closeBtn} onClick={onClose}>×</button>
+          <button style={dlgStyles.closeBtn} onClick={onClose}>
+            ×
+          </button>
         </div>
         <div style={dlgStyles.body}>{children}</div>
       </div>
@@ -42,21 +66,37 @@ function Dialog({ title, onClose, children }: { title: string; onClose: () => vo
 
 const dlgStyles: Record<string, React.CSSProperties> = {
   overlay: {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
   },
   box: {
-    background: '#120d07', border: '1px solid #3a2e1e', borderRadius: '12px',
-    width: '360px', display: 'flex', flexDirection: 'column',
+    background: '#120d07',
+    border: '1px solid #3a2e1e',
+    borderRadius: '12px',
+    width: '360px',
+    display: 'flex',
+    flexDirection: 'column',
   },
   header: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '16px 20px', borderBottom: '1px solid #2a1e10',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '16px 20px',
+    borderBottom: '1px solid #2a1e10',
   },
   title: { fontSize: '15px', fontWeight: 600, color: '#f0e8d8' },
   closeBtn: {
-    background: 'none', border: 'none', color: '#9a9080', fontSize: '20px',
-    cursor: 'pointer', lineHeight: 1,
+    background: 'none',
+    border: 'none',
+    color: '#9a9080',
+    fontSize: '20px',
+    cursor: 'pointer',
+    lineHeight: 1,
   },
   body: { padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' },
 }
@@ -67,40 +107,56 @@ export function RoomEditor() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const content   = useDraftStore((s) => s.content)
-  const updateRoom        = useDraftStore((s) => s.updateRoom)
-  const addViewpoint      = useDraftStore((s) => s.addViewpoint)
-  const removeViewpoint   = useDraftStore((s) => s.removeViewpoint)
+  const content = useDraftStore((s) => s.content)
+  const updateRoom = useDraftStore((s) => s.updateRoom)
+  const addViewpoint = useDraftStore((s) => s.addViewpoint)
+  const updateViewpoint = useDraftStore((s) => s.updateViewpoint)
+  const removeViewpoint = useDraftStore((s) => s.removeViewpoint)
   const setEntryViewpoint = useDraftStore((s) => s.setEntryViewpoint)
-  const addPortal         = useDraftStore((s) => s.addPortal)
-  const removePortal      = useDraftStore((s) => s.removePortal)
+  const addPortal = useDraftStore((s) => s.addPortal)
+  const updatePortal = useDraftStore((s) => s.updatePortal)
+  const removePortal = useDraftStore((s) => s.removePortal)
 
-  const room       = content?.rooms.find((r) => r.id === id)
+  const room = content?.rooms.find((r) => r.id === id)
   const otherRooms = content?.rooms.filter((r) => r.id !== id) ?? []
 
-  const [activeVpId,   setActiveVpId]   = useState<string>('')
-  const [editMode,     setEditMode]     = useState<EditMode>('none')
+  const [activeVpId, setActiveVpId] = useState<string>('')
+  const [editMode, setEditMode] = useState<EditMode>('none')
 
   // Viewpoint dialog
-  const [vpDialog,  setVpDialog]  = useState<{ state: CameraState } | null>(null)
-  const [vpName,    setVpName]    = useState('')
+  const [vpDialog, setVpDialog] = useState<{ state: CameraState; vpId?: string } | null>(null)
+  const [vpName, setVpName] = useState('')
   const [vpIsEntry, setVpIsEntry] = useState(false)
 
   // Portal dialog
-  const [portalDialog,   setPortalDialog]   = useState<{ x: number; z: number } | null>(null)
-  const [portalLabel,    setPortalLabel]    = useState('')
+  const [portalDialog, setPortalDialog] = useState<{
+    x: number
+    z: number
+    portalId?: string
+  } | null>(null)
+  const [portalLabel, setPortalLabel] = useState('')
   const [portalTargetId, setPortalTargetId] = useState('')
 
   const cameraStateRef = useRef<CameraState | null>(null)
+  const modelFileInputRef = useRef<HTMLInputElement | null>(null)
 
   // ── Guard ────────────────────────────────────────────────────────────────────
-  if (!room || !content) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#9a9080' }}>
-      Phòng không tồn tại.
-    </div>
-  )
+  if (!room || !content)
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          color: '#9a9080',
+        }}
+      >
+        Phòng không tồn tại.
+      </div>
+    )
 
-  const items    = Object.fromEntries(content.items.map((it) => [it.id, it]))
+  const items = Object.fromEntries(content.items.map((it) => [it.id, it]))
   const textures = Object.fromEntries(content.textures.map((t) => [t.id, t.url]))
 
   const currentVpId = activeVpId || room.entryViewpointId || room.viewpoints[0]?.id || '__none'
@@ -114,55 +170,104 @@ export function RoomEditor() {
     setVpDialog({ state })
   }
 
+  const handleEditViewpoint = (vp: Viewpoint) => {
+    setVpName(vp.name)
+    setVpIsEntry(vp.id === room.entryViewpointId)
+    setVpDialog({
+      vpId: vp.id,
+      state: {
+        position: vp.position,
+        lookAt: vp.lookAt,
+      },
+    })
+  }
+
+  const handleUseCurrentCameraForViewpoint = () => {
+    const state = cameraStateRef.current
+    if (!vpDialog || !state) return
+    setVpDialog({ ...vpDialog, state })
+  }
+
   const handleSaveViewpoint = () => {
     if (!vpDialog || !vpName.trim()) return
-    const vpId = nanoid()
-    const vp: Viewpoint = {
-      id: vpId,
+    const nextVp: Viewpoint = {
+      id: vpDialog.vpId ?? nanoid(),
       name: vpName.trim(),
       position: vpDialog.state.position,
-      lookAt:   vpDialog.state.lookAt,
+      lookAt: vpDialog.state.lookAt,
     }
-    addViewpoint(room.id, vp)
-    if (vpIsEntry) setEntryViewpoint(room.id, vpId)
-    setActiveVpId(vpId)
+
+    if (vpDialog.vpId) {
+      updateViewpoint(room.id, vpDialog.vpId, nextVp)
+    } else {
+      addViewpoint(room.id, nextVp)
+    }
+
+    if (vpIsEntry) {
+      setEntryViewpoint(room.id, nextVp.id)
+    } else if (room.entryViewpointId === nextVp.id) {
+      const fallbackId = room.viewpoints.find((vp) => vp.id !== nextVp.id)?.id ?? ''
+      setEntryViewpoint(room.id, fallbackId)
+    }
+
+    setActiveVpId(nextVp.id)
     setVpDialog(null)
   }
 
   // ── Portal placement ──────────────────────────────────────────────────────────
-  const handlePortalPlace = useCallback((pos: { x: number; z: number }) => {
-    setEditMode('none')
-    setPortalLabel('')
-    setPortalTargetId(otherRooms[0]?.id ?? '')
-    setPortalDialog(pos)
-  }, [otherRooms])
+  const handlePortalPlace = useCallback(
+    (pos: { x: number; z: number }) => {
+      setEditMode('none')
+      setPortalLabel('')
+      setPortalTargetId(otherRooms[0]?.id ?? '')
+      setPortalDialog(pos)
+    },
+    [otherRooms],
+  )
+
+  const handleEditPortal = (portal: RoomPortal) => {
+    setPortalLabel(portal.label)
+    setPortalTargetId(portal.targetRoomId)
+    setPortalDialog({ x: portal.position.x, z: portal.position.z, portalId: portal.id })
+  }
 
   const handleSavePortal = () => {
     if (!portalDialog || !portalLabel.trim() || !portalTargetId) return
     const portal: RoomPortal = {
-      id:           nanoid(),
+      id: portalDialog.portalId ?? nanoid(),
       targetRoomId: portalTargetId,
-      label:        portalLabel.trim(),
-      position:     { x: portalDialog.x, y: 0, z: portalDialog.z },
-      rotation:     { x: 0, y: 0, z: 0 },
+      label: portalLabel.trim(),
+      position: { x: portalDialog.x, y: 0, z: portalDialog.z },
+      rotation: { x: 0, y: 0, z: 0 },
     }
-    addPortal(room.id, portal)
+
+    if (portalDialog.portalId) {
+      updatePortal(room.id, portalDialog.portalId, portal)
+    } else {
+      addPortal(room.id, portal)
+    }
+
     setPortalDialog(null)
+  }
+
+  const handleUploadModel = async (file: File) => {
+    const nextUrl = await uploadModel(file)
+    updateRoom(room.id, { modelUrl: nextUrl })
   }
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div style={styles.root}>
-
       {/* ── Left panel ── */}
       <div style={styles.panel}>
         <div style={styles.panelHeader}>
-          <button style={styles.backBtn} onClick={() => navigate('/rooms')}>← Phòng</button>
+          <button style={styles.backBtn} onClick={() => navigate('/rooms')}>
+            ← Phòng
+          </button>
           <h2 style={styles.roomTitle}>{room.title}</h2>
         </div>
 
         <div style={styles.panelScroll}>
-
           <Section title="Model 3D">
             <label style={styles.label}>URL file GLB / GLTF</label>
             <input
@@ -171,7 +276,42 @@ export function RoomEditor() {
               onChange={(e) => updateRoom(room.id, { modelUrl: e.target.value.trim() || null })}
               placeholder="/content/hall.glb"
             />
-            <div style={styles.hint}>Paste URL hoặc đường dẫn tương đối. Lưu draft → F5 để reload model.</div>
+            <div style={styles.hint}>
+              Paste path như `/content/models/hall.glb` hoặc upload trực tiếp file model.
+            </div>
+            <div style={styles.inlineActions}>
+              <button
+                style={styles.btnSecondary}
+                onClick={() => modelFileInputRef.current?.click()}
+              >
+                Upload model
+              </button>
+              {room.modelUrl && (
+                <button
+                  style={styles.btnCancel}
+                  onClick={() => updateRoom(room.id, { modelUrl: null })}
+                >
+                  Bỏ model
+                </button>
+              )}
+            </div>
+            <input
+              ref={modelFileInputRef}
+              type="file"
+              accept=".glb,.gltf,model/gltf-binary,model/gltf+json"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                try {
+                  await handleUploadModel(file)
+                } catch (err) {
+                  window.alert(String(err))
+                } finally {
+                  e.currentTarget.value = ''
+                }
+              }}
+            />
           </Section>
 
           <Section title="Điểm đứng (Viewpoints)">
@@ -180,33 +320,47 @@ export function RoomEditor() {
             </button>
             <div style={styles.hint}>Đi vào phòng, nhìn hướng muốn lưu, rồi nhấn nút trên.</div>
 
-            {room.viewpoints.length === 0 && (
-              <div style={styles.empty}>Chưa có điểm đứng nào.</div>
-            )}
+            {room.viewpoints.length === 0 && <div style={styles.empty}>Chưa có điểm đứng nào.</div>}
 
             {room.viewpoints.map((vp) => {
               const isEntry = vp.id === room.entryViewpointId
               return (
                 <div key={vp.id} style={styles.listRow}>
                   <button
-                    style={{ ...styles.listLabel, fontWeight: isEntry ? 700 : 400, color: isEntry ? '#c8a85a' : '#c0b8a8' }}
+                    style={{
+                      ...styles.listLabel,
+                      fontWeight: isEntry ? 700 : 400,
+                      color: isEntry ? '#c8a85a' : '#c0b8a8',
+                    }}
                     onClick={() => setActiveVpId(vp.id)}
                     title="Click để nhảy tới điểm này"
                   >
-                    {isEntry ? '★ ' : '◎ '}{vp.name}
+                    {isEntry ? '★ ' : '◎ '}
+                    {vp.name}
                   </button>
                   <div style={styles.listActions}>
+                    <button
+                      style={styles.iconBtn}
+                      title="Sửa tên/vị trí điểm đứng"
+                      onClick={() => handleEditViewpoint(vp)}
+                    >
+                      ✎
+                    </button>
                     {!isEntry && (
                       <button
                         style={styles.iconBtn}
                         title="Đặt làm điểm vào mặc định"
                         onClick={() => setEntryViewpoint(room.id, vp.id)}
-                      >★</button>
+                      >
+                        ★
+                      </button>
                     )}
                     <button
                       style={styles.iconBtnDanger}
                       onClick={() => removeViewpoint(room.id, vp.id)}
-                    >×</button>
+                    >
+                      ×
+                    </button>
                   </div>
                 </div>
               )
@@ -217,7 +371,9 @@ export function RoomEditor() {
             {editMode === 'place-portal' ? (
               <div style={styles.placingHint}>
                 <span>Click vào sàn để đặt cổng...</span>
-                <button style={styles.btnCancel} onClick={() => setEditMode('none')}>Hủy</button>
+                <button style={styles.btnCancel} onClick={() => setEditMode('none')}>
+                  Hủy
+                </button>
               </div>
             ) : (
               <button style={styles.btnPrimary} onClick={() => setEditMode('place-portal')}>
@@ -235,14 +391,27 @@ export function RoomEditor() {
                 <div key={portal.id} style={styles.listRow}>
                   <div style={styles.portalInfo}>
                     <span style={styles.listLabel}>{portal.label}</span>
-                    <span style={styles.portalTarget}>→ {target?.title ?? portal.targetRoomId}</span>
+                    <span style={styles.portalTarget}>
+                      → {target?.title ?? portal.targetRoomId}
+                    </span>
                   </div>
-                  <button style={styles.iconBtnDanger} onClick={() => removePortal(room.id, portal.id)}>×</button>
+                  <button
+                    style={styles.iconBtn}
+                    title="Sửa cổng chuyển phòng"
+                    onClick={() => handleEditPortal(portal)}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    style={styles.iconBtnDanger}
+                    onClick={() => removePortal(room.id, portal.id)}
+                  >
+                    ×
+                  </button>
                 </div>
               )
             })}
           </Section>
-
         </div>
       </div>
 
@@ -259,6 +428,7 @@ export function RoomEditor() {
             cameraStateRef={cameraStateRef}
             portalPlaceMode={editMode === 'place-portal'}
             onPortalPlace={handlePortalPlace}
+            assetBaseUrl={ASSET_BASE_URL}
             {...(room.modelUrl ? { boundsOverride: EDIT_BOUNDS } : {})}
           />
         </SceneCanvas>
@@ -272,7 +442,10 @@ export function RoomEditor() {
 
       {/* ── Viewpoint dialog ── */}
       {vpDialog && (
-        <Dialog title="Lưu điểm đứng" onClose={() => setVpDialog(null)}>
+        <Dialog
+          title={vpDialog.vpId ? 'Sửa điểm đứng' : 'Lưu điểm đứng'}
+          onClose={() => setVpDialog(null)}
+        >
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Tên điểm đứng</label>
             <input
@@ -284,6 +457,9 @@ export function RoomEditor() {
               placeholder="Ví dụ: Cửa vào, Trung tâm, Góc phải..."
             />
           </div>
+          <button style={styles.btnSecondary} onClick={handleUseCurrentCameraForViewpoint}>
+            Lấy vị trí/hướng từ camera hiện tại
+          </button>
           <label style={styles.checkRow}>
             <input
               type="checkbox"
@@ -296,15 +472,26 @@ export function RoomEditor() {
             Vị trí: ({vpDialog.state.position.x.toFixed(2)}, {vpDialog.state.position.z.toFixed(2)})
           </div>
           <div style={styles.dialogActions}>
-            <button style={styles.btnSecondary} onClick={() => setVpDialog(null)}>Hủy</button>
-            <button style={styles.btnPrimary} onClick={handleSaveViewpoint} disabled={!vpName.trim()}>Lưu</button>
+            <button style={styles.btnSecondary} onClick={() => setVpDialog(null)}>
+              Hủy
+            </button>
+            <button
+              style={styles.btnPrimary}
+              onClick={handleSaveViewpoint}
+              disabled={!vpName.trim()}
+            >
+              Lưu
+            </button>
           </div>
         </Dialog>
       )}
 
       {/* ── Portal dialog ── */}
       {portalDialog && (
-        <Dialog title="Thêm cổng chuyển phòng" onClose={() => setPortalDialog(null)}>
+        <Dialog
+          title={portalDialog.portalId ? 'Sửa cổng chuyển phòng' : 'Thêm cổng chuyển phòng'}
+          onClose={() => setPortalDialog(null)}
+        >
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Nhãn hiển thị</label>
             <input
@@ -323,15 +510,45 @@ export function RoomEditor() {
               onChange={(e) => setPortalTargetId(e.target.value)}
             >
               {otherRooms.map((r) => (
-                <option key={r.id} value={r.id}>{r.title}</option>
+                <option key={r.id} value={r.id}>
+                  {r.title}
+                </option>
               ))}
             </select>
+          </div>
+          <div style={styles.fieldRow2}>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>Tọa độ X</label>
+              <input
+                style={styles.input}
+                type="number"
+                step="0.1"
+                value={portalDialog.x}
+                onChange={(e) =>
+                  setPortalDialog((prev) => (prev ? { ...prev, x: Number(e.target.value) } : prev))
+                }
+              />
+            </div>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>Tọa độ Z</label>
+              <input
+                style={styles.input}
+                type="number"
+                step="0.1"
+                value={portalDialog.z}
+                onChange={(e) =>
+                  setPortalDialog((prev) => (prev ? { ...prev, z: Number(e.target.value) } : prev))
+                }
+              />
+            </div>
           </div>
           <div style={{ fontSize: '12px', color: '#6a5a40' }}>
             Vị trí trên sàn: ({portalDialog.x.toFixed(2)}, {portalDialog.z.toFixed(2)})
           </div>
           <div style={styles.dialogActions}>
-            <button style={styles.btnSecondary} onClick={() => setPortalDialog(null)}>Hủy</button>
+            <button style={styles.btnSecondary} onClick={() => setPortalDialog(null)}>
+              Hủy
+            </button>
             <button
               style={styles.btnPrimary}
               onClick={handleSavePortal}
@@ -434,6 +651,8 @@ const styles: Record<string, React.CSSProperties> = {
   hint: { fontSize: '11px', color: '#5a4a2a', lineHeight: 1.5 },
   empty: { fontSize: '12px', color: '#5a4a2a', fontStyle: 'italic' },
   fieldGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
+  fieldRow2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' },
+  inlineActions: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' },
 
   // List rows
   listRow: {

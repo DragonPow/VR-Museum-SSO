@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Text, Billboard } from '@react-three/drei'
 import * as THREE from 'three'
 import type { RoomPortal } from '@vm/shared'
 
@@ -36,9 +36,19 @@ export function FloorPortal({ portal, onNavigate }: Props) {
       {/* Inner clickable fill */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
-        onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
-        onClick={(e) => { e.stopPropagation(); onNavigate(portal.targetRoomId) }}
+        onPointerOver={(e) => {
+          e.stopPropagation()
+          setHovered(true)
+          document.body.style.cursor = 'pointer'
+        }}
+        onPointerOut={() => {
+          setHovered(false)
+          document.body.style.cursor = 'auto'
+        }}
+        onClick={(e) => {
+          e.stopPropagation()
+          onNavigate(portal.targetRoomId)
+        }}
       >
         <circleGeometry args={[0.52, 40]} />
         <meshBasicMaterial
@@ -55,27 +65,27 @@ export function FloorPortal({ portal, onNavigate }: Props) {
         <meshBasicMaterial color="#ffe060" transparent opacity={0.9} depthWrite={false} />
       </mesh>
 
-      {/* Up-arrow */}
-      <Text
-        position={[0, 0.38, 0]}
-        fontSize={0.22}
-        color={hovered ? '#ffffff' : '#f0d060'}
-        anchorX="center"
-        anchorY="middle"
-      >
-        ▲
-      </Text>
+      <Billboard follow lockX={false} lockY={false} lockZ={false}>
+        <Text
+          position={[0, 0.38, 0]}
+          fontSize={0.22}
+          color={hovered ? '#ffffff' : '#f0d060'}
+          anchorX="center"
+          anchorY="middle"
+        >
+          ▲
+        </Text>
 
-      {/* Label */}
-      <Text
-        position={[0, 0.65, 0]}
-        fontSize={0.16}
-        color={hovered ? '#ffe8a0' : '#c8a85a'}
-        anchorX="center"
-        anchorY="middle"
-      >
-        {portal.label}
-      </Text>
+        <Text
+          position={[0, 0.65, 0]}
+          fontSize={0.16}
+          color={hovered ? '#ffe8a0' : '#c8a85a'}
+          anchorX="center"
+          anchorY="middle"
+        >
+          {portal.label}
+        </Text>
+      </Billboard>
     </group>
   )
 }

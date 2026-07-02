@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ContentIndex } from '@vm/shared'
-import { SceneCanvas, RoomScene, buildRoomDataProps, useGyroToggle, shouldUseFallback } from '@vm/viewer'
+import {
+  SceneCanvas,
+  RoomScene,
+  buildRoomDataProps,
+  useGyroToggle,
+  shouldUseFallback,
+} from '@vm/viewer'
 import type { Item } from '@vm/shared'
 import { useMuseumStore, useCurrentRoomStub } from '../store.js'
 import { useRoom } from '../content/useRoom.js'
@@ -11,6 +17,8 @@ import { Minimap } from '../ui/Minimap.js'
 import { MobileControls } from '../ui/MobileControls.js'
 import { Gallery2D } from './Gallery2D.js'
 
+const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
+
 interface Props {
   content: ContentIndex
   onBack: () => void
@@ -18,10 +26,16 @@ interface Props {
 
 export function Tour({ content, onBack }: Props) {
   const {
-    index, currentRoomId, activeViewpointId,
+    index,
+    currentRoomId,
+    activeViewpointId,
     selectedItem,
-    navigateToRoom, selectSlot, closeModal, setViewpoint,
-    setIndex, setActiveViewpoint,
+    navigateToRoom,
+    selectSlot,
+    closeModal,
+    setViewpoint,
+    setIndex,
+    setActiveViewpoint,
   } = useMuseumStore()
 
   const { gyroEnabled, toggleGyro } = useGyroToggle()
@@ -74,9 +88,13 @@ export function Tour({ content, onBack }: Props) {
   }
   if (roomState.status === 'error') {
     return (
-      <div style={{ ...centerStyle, color: '#c04040', fontSize: 14, flexDirection: 'column', gap: 8 }}>
+      <div
+        style={{ ...centerStyle, color: '#c04040', fontSize: 14, flexDirection: 'column', gap: 8 }}
+      >
         <p>Không thể tải phòng: {roomState.message}</p>
-        <button style={retryBtn} onClick={() => navigateToRoom(currentRoomId)}>Thử lại</button>
+        <button style={retryBtn} onClick={() => navigateToRoom(currentRoomId)}>
+          Thử lại
+        </button>
       </div>
     )
   }
@@ -99,6 +117,7 @@ export function Tour({ content, onBack }: Props) {
           hideLabels={!!selectedItem}
           onSlotSelect={handleSlotSelect}
           onNavigate={navigateToRoom}
+          assetBaseUrl={ASSET_BASE_URL}
         />
       </SceneCanvas>
 
@@ -150,9 +169,7 @@ export function Tour({ content, onBack }: Props) {
       <DragHint isMobile={isMobile} />
 
       {/* Info modal */}
-      {selectedItem && (
-        <InfoModal item={selectedItem} onClose={closeModal} />
-      )}
+      {selectedItem && <InfoModal item={selectedItem} onClose={closeModal} />}
     </div>
   )
 }
@@ -174,17 +191,26 @@ function DragHint({ isMobile }: { isMobile: boolean }) {
   }, [])
   if (!visible) return null
   return (
-    <div style={{
-      position: 'absolute', top: '50%', left: '50%',
-      transform: 'translate(-50%,-50%)',
-      background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(200,168,90,0.3)',
-      color: '#c8a85a', borderRadius: '12px',
-      padding: '10px 20px', fontSize: '13px',
-      pointerEvents: 'none', zIndex: 5,
-      textAlign: 'center', backdropFilter: 'blur(6px)',
-      animation: 'fadeout 1s 4s forwards',
-      maxWidth: '320px',
-    }}>
+    <div
+      style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%,-50%)',
+        background: 'rgba(0,0,0,0.6)',
+        border: '1px solid rgba(200,168,90,0.3)',
+        color: '#c8a85a',
+        borderRadius: '12px',
+        padding: '10px 20px',
+        fontSize: '13px',
+        pointerEvents: 'none',
+        zIndex: 5,
+        textAlign: 'center',
+        backdropFilter: 'blur(6px)',
+        animation: 'fadeout 1s 4s forwards',
+        maxWidth: '320px',
+      }}
+    >
       {isMobile
         ? '👆 Kéo để nhìn quanh · D-pad (trái) để di chuyển · Nhấn 📱 để bật cảm biến gyro'
         : '🖱 Kéo để nhìn quanh · Click sàn để di chuyển · WASD / ↑↓←→ để đi bộ · Click khung ảnh để xem chi tiết'}
@@ -193,13 +219,17 @@ function DragHint({ isMobile }: { isMobile: boolean }) {
 }
 
 const centerStyle: React.CSSProperties = {
-  width: '100%', height: '100%',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   background: '#1a1410',
 }
 
 const spinnerStyle: React.CSSProperties = {
-  width: '36px', height: '36px',
+  width: '36px',
+  height: '36px',
   border: '3px solid rgba(200,168,90,0.2)',
   borderTop: '3px solid #c8a85a',
   borderRadius: '50%',
@@ -207,18 +237,28 @@ const spinnerStyle: React.CSSProperties = {
 }
 
 const retryBtn: React.CSSProperties = {
-  padding: '8px 20px', background: '#3a2e1e',
-  border: '1px solid #5a4a30', color: '#c8a85a',
-  borderRadius: 6, cursor: 'pointer',
+  padding: '8px 20px',
+  background: '#3a2e1e',
+  border: '1px solid #5a4a30',
+  color: '#c8a85a',
+  borderRadius: 6,
+  cursor: 'pointer',
 }
 
 const styles: Record<string, React.CSSProperties> = {
   roomBadge: {
-    position: 'absolute', top: '64px', right: '16px',
-    background: 'rgba(15,10,5,0.75)', border: '1px solid #5a4a30',
-    borderRadius: '8px', padding: '8px 14px',
-    backdropFilter: 'blur(6px)', zIndex: 10,
-    display: 'flex', flexDirection: 'column', gap: '2px',
+    position: 'absolute',
+    top: '64px',
+    right: '16px',
+    background: 'rgba(15,10,5,0.75)',
+    border: '1px solid #5a4a30',
+    borderRadius: '8px',
+    padding: '8px 14px',
+    backdropFilter: 'blur(6px)',
+    zIndex: 10,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
     maxWidth: '200px',
   },
   periodLabel: { fontSize: '11px', color: '#c8a85a', fontWeight: 600 },

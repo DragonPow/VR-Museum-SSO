@@ -1,36 +1,23 @@
 import { useState, useEffect } from 'react'
 import {
-  DEFAULT_CONTENT,
   contentIndexFromContent,
   parseContent,
   parseContentIndex,
+  rebaseAssetUrls,
   roomDataFromContent,
 } from '@vm/shared'
 import type { Content, ContentIndex, Room } from '@vm/shared'
 
- type State =
+type State =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'ok'; data: ContentIndex }
 
 const BASE = import.meta.env.BASE_URL
-const INDEX_URL =
-  import.meta.env['VITE_CONTENT_INDEX_URL'] ??
-  import.meta.env['VITE_CONTENT_URL'] ??
-  ''
-
-function rebaseUrls(value: unknown): unknown {
-  if (typeof value === 'string') {
-    return value.startsWith('/content/')
-      ? BASE.replace(/\/$/, '') + value
-      : value
-  }
-  if (Array.isArray(value)) return value.map(rebaseUrls)
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, rebaseUrls(v)]))
-  }
-  return value
-}
+const ASSET_BASE_URL = (import.meta.env['VITE_ASSET_BASE_URL'] ?? '').replace(/\/+$/, '')
+const INDEX_URL = ASSET_BASE_URL
+  ? `${ASSET_BASE_URL}/content.json`
+  : `${BASE}content/content.sample.json`
 
 function roomDataUrl(content: Content, room: Room): string {
   const data = roomDataFromContent(content, room)
@@ -42,10 +29,11 @@ function indexFromContent(content: Content): ContentIndex {
 }
 
 function parseIndexPayload(raw: unknown): ContentIndex {
+  const rebased = rebaseAssetUrls(raw, { assetBaseUrl: ASSET_BASE_URL, appBaseUrl: BASE })
   try {
-    return parseContentIndex(rebaseUrls(raw))
+    return parseContentIndex(rebased)
   } catch {
-    return indexFromContent(parseContent(rebaseUrls(raw)))
+    return indexFromContent(parseContent(rebased))
   }
 }
 
@@ -59,13 +47,6 @@ export function useContentIndex(): State {
   useEffect(() => {
     if (_cache) return
 
-    if (!INDEX_URL) {
-      const data = indexFromContent(DEFAULT_CONTENT)
-      _cache = data
-      setState({ status: 'ok', data })
-      return
-    }
-
     fetch(INDEX_URL)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
@@ -76,10 +57,8 @@ export function useContentIndex(): State {
         _cache = data
         setState({ status: 'ok', data })
       })
-      .catch(() => {
-        const data = indexFromContent(DEFAULT_CONTENT)
-        _cache = data
-        setState({ status: 'ok', data })
+      .catch((err: unknown) => {
+        setState({ status: 'error', message: String(err) })
       })
   }, [])
 

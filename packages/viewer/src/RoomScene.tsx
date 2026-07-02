@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { resolveAssetUrl } from '@vm/shared'
 import type { Room, Item, Slot, Vec3 } from '@vm/shared'
 import { getRoomSurfaces, getRoomDimensions } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
@@ -28,6 +29,8 @@ interface Props {
   onPortalPlace?: (pos: { x: number; z: number }) => void
   /** Admin editor: override walkable bounds (e.g. large plane for GLB rooms) */
   boundsOverride?: RoomBounds
+  /** Optional asset host prefix, e.g. R2 public domain */
+  assetBaseUrl?: string
 }
 
 export function RoomScene({
@@ -44,26 +47,52 @@ export function RoomScene({
   portalPlaceMode = false,
   onPortalPlace,
   boundsOverride,
+  assetBaseUrl,
 }: Props) {
   const surfaces = getRoomSurfaces(room.template)
-  const wallUrl    = room.wallTextureId    ? (textures[room.wallTextureId]    ?? null) : null
-  const floorUrl   = room.floorTextureId   ? (textures[room.floorTextureId]   ?? null) : null
-  const ceilingUrl = room.ceilingTextureId ? (textures[room.ceilingTextureId] ?? null) : null
+  const wallUrl = resolveAssetUrl(
+    room.wallTextureId ? (textures[room.wallTextureId] ?? null) : null,
+    { assetBaseUrl },
+  )
+  const floorUrl = resolveAssetUrl(
+    room.floorTextureId ? (textures[room.floorTextureId] ?? null) : null,
+    { assetBaseUrl },
+  )
+  const ceilingUrl = resolveAssetUrl(
+    room.ceilingTextureId ? (textures[room.ceilingTextureId] ?? null) : null,
+    { assetBaseUrl },
+  )
+  const modelUrl = resolveAssetUrl(room.modelUrl, { assetBaseUrl })
+
+  const resolvedItems = useMemo(() => {
+    return Object.fromEntries(
+      Object.entries(items).map(([id, item]) => [
+        id,
+        {
+          ...item,
+          thumbUrl: resolveAssetUrl(item.thumbUrl, { assetBaseUrl }) ?? item.thumbUrl,
+          wallTextureUrl:
+            resolveAssetUrl(item.wallTextureUrl, { assetBaseUrl }) ?? item.wallTextureUrl,
+          fullUrl: resolveAssetUrl(item.fullUrl, { assetBaseUrl }) ?? item.fullUrl,
+        },
+      ]),
+    )
+  }, [assetBaseUrl, items])
 
   // ── Walkable bounds ──────────────────────────────────────────────────────────
   const dim = getRoomDimensions(room.template)
   const WALL_MARGIN = 0.5
   const templateBounds: RoomBounds = {
-    minX: -(dim.width  / 2 - WALL_MARGIN),
-    maxX:  (dim.width  / 2 - WALL_MARGIN),
-    minZ: -(dim.depth  / 2 - WALL_MARGIN),
-    maxZ:  (dim.depth  / 2 - WALL_MARGIN),
+    minX: -(dim.width / 2 - WALL_MARGIN),
+    maxX: dim.width / 2 - WALL_MARGIN,
+    minZ: -(dim.depth / 2 - WALL_MARGIN),
+    maxZ: dim.depth / 2 - WALL_MARGIN,
   }
   const bounds: RoomBounds = boundsOverride ?? templateBounds
 
   // ── Collision obstacles ──────────────────────────────────────────────────────
   const panelObstacles = useMemo(() => {
-    const groups = new Map<string, typeof room.slots[0][]>()
+    const groups = new Map<string, (typeof room.slots)[0][]>()
     for (const slot of room.slots) {
       const m = slot.id.match(/^(.+PNL\d+)-[AB]$/i)
       if (m?.[1]) {
@@ -74,9 +103,9 @@ export function RoomScene({
     const result: RoomBounds[] = []
     for (const slots of groups.values()) {
       if (slots.length < 2) continue
-      const xs  = slots.map((s) => s.transform?.position.x ?? 0)
-      const zs  = slots.map((s) => s.transform?.position.z ?? 0)
-      const hw  = Math.max(...slots.map((s) => (s.transform?.size.w ?? 1) / 2))
+      const xs = slots.map((s) => s.transform?.position.x ?? 0)
+      const zs = slots.map((s) => s.transform?.position.z ?? 0)
+      const hw = Math.max(...slots.map((s) => (s.transform?.size.w ?? 1) / 2))
       result.push({
         minX: Math.min(...xs) - hw - 0.4,
         maxX: Math.max(...xs) + hw + 0.4,
@@ -109,15 +138,15 @@ export function RoomScene({
         .map((gs): Slot & { hasBlenderFrame: boolean } => {
           const json = jsonById.get(gs.id)
           return {
-            id:              gs.id,
-            roomId:          room.id,
-            name:            json?.name       ?? gs.id,
-            type:            json?.type       ?? 'image',
+            id: gs.id,
+            roomId: room.id,
+            name: json?.name ?? gs.id,
+            type: json?.type ?? 'image',
             // When Blender already provides a 3D Frame primitive, suppress R3F frame boxes
-            frameStyle:      gs.hasBlenderFrame ? 'none' : (json?.frameStyle ?? 'classic'),
-            itemId:          json?.itemId     ?? null,
-            visible:         json?.visible    ?? true,
-            transform:       gs.transform,
+            frameStyle: gs.hasBlenderFrame ? 'none' : (json?.frameStyle ?? 'classic'),
+            itemId: json?.itemId ?? null,
+            visible: json?.visible ?? true,
+            transform: gs.transform,
             hasBlenderFrame: gs.hasBlenderFrame,
           }
         })
@@ -134,9 +163,9 @@ export function RoomScene({
     <>
       <RoomLighting preset={room.lightingPreset} />
 
-      {room.modelUrl ? (
+      {modelUrl ? (
         <RoomModel
-          url={room.modelUrl}
+          url={modelUrl}
           {...(room.modelOffset != null ? { offset: room.modelOffset } : {})}
           onSlotsExtracted={handleSlotsExtracted}
         />
@@ -145,7 +174,7 @@ export function RoomScene({
           {surfaces.walls.map((wall) => (
             <RoomSurface key={wall.name} config={wall} textureUrl={wallUrl} color="#d4c9b8" />
           ))}
-          <RoomSurface config={surfaces.floor}   textureUrl={floorUrl}   color="#8b7355" />
+          <RoomSurface config={surfaces.floor} textureUrl={floorUrl} color="#8b7355" />
           <RoomSurface config={surfaces.ceiling} textureUrl={ceilingUrl} color="#f5f0e8" />
         </>
       )}
@@ -154,18 +183,14 @@ export function RoomScene({
         <SlotFrame
           key={slot.id}
           slot={slot}
-          item={slot.itemId ? (items[slot.itemId] ?? null) : null}
+          item={slot.itemId ? (resolvedItems[slot.itemId] ?? null) : null}
           onSelect={onSlotSelect}
           hideLabel={hideLabels}
         />
       ))}
 
       {room.portals?.map((portal) => (
-        <FloorPortal
-          key={portal.id}
-          portal={portal}
-          onNavigate={onNavigate ?? (() => {})}
-        />
+        <FloorPortal key={portal.id} portal={portal} onNavigate={onNavigate ?? (() => {})} />
       ))}
 
       <NavController

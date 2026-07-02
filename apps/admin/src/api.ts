@@ -30,8 +30,24 @@ export async function uploadFile(blob: Blob, key: string): Promise<string> {
   form.append('file', blob)
   form.append('key', key)
   const res = await apiFetch('/api/upload', { method: 'POST', body: form })
-  const { publicUrl } = await res.json() as { publicUrl: string }
+  const { publicUrl } = (await res.json()) as { publicUrl: string }
   return publicUrl
+}
+
+export async function uploadModel(file: File, filename?: string): Promise<string> {
+  const safeName = (filename ?? file.name)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9._-]/g, '')
+
+  if (!safeName.endsWith('.glb') && !safeName.endsWith('.gltf')) {
+    throw new Error('Model phải có đuôi .glb hoặc .gltf')
+  }
+
+  const key = `content/models/${safeName}`
+  await uploadFile(file, key)
+  return `/${key}`
 }
 
 export async function publish(content: Content): Promise<void> {

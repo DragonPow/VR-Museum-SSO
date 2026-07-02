@@ -1,29 +1,15 @@
 import { useState, useEffect } from 'react'
-import { parseContent } from '@vm/shared'
+import { parseContent, rebaseAssetUrls } from '@vm/shared'
 import type { Content } from '@vm/shared'
 
 type State =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ok'; data: Content }
+  { status: 'loading' } | { status: 'error'; message: string } | { status: 'ok'; data: Content }
 
-const BASE = import.meta.env.BASE_URL                          // e.g. '/VR-Museum-SSO/'
-const CONTENT_URL = import.meta.env['VITE_CONTENT_URL'] ?? `${BASE}content/content.sample.json`
-
-// Walk every string in the parsed content and prefix root-relative /content/ paths
-// with the app's base URL so assets resolve correctly on sub-path deployments.
-function rebaseUrls(value: unknown): unknown {
-  if (typeof value === 'string') {
-    return value.startsWith('/content/')
-      ? BASE.replace(/\/$/, '') + value
-      : value
-  }
-  if (Array.isArray(value)) return value.map(rebaseUrls)
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, rebaseUrls(v)]))
-  }
-  return value
-}
+const BASE = import.meta.env.BASE_URL // e.g. '/VR-Museum-SSO/'
+const ASSET_BASE_URL = (import.meta.env['VITE_ASSET_BASE_URL'] ?? '').replace(/\/+$/, '')
+const CONTENT_URL = ASSET_BASE_URL
+  ? `${ASSET_BASE_URL}/content.json`
+  : `${BASE}content/content.sample.json`
 
 let _cache: Content | null = null
 
@@ -40,7 +26,9 @@ export function useContent(): State {
         return r.json()
       })
       .then((raw) => {
-        const data = parseContent(rebaseUrls(raw))
+        const data = parseContent(
+          rebaseAssetUrls(raw, { assetBaseUrl: ASSET_BASE_URL, appBaseUrl: BASE }),
+        )
         _cache = data
         setState({ status: 'ok', data })
       })
