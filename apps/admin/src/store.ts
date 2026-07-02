@@ -21,6 +21,8 @@ interface DraftStore {
   reset: () => void
 
   // Room management
+  addRoom: (room: Room) => void
+  removeRoom: (id: string) => void
   updateRoom: (id: string, patch: Partial<Room>) => void
   addViewpoint: (roomId: string, vp: Viewpoint) => void
   removeViewpoint: (roomId: string, vpId: string) => void
@@ -100,6 +102,31 @@ export const useDraftStore = create<DraftStore>()(
       markClean: () => set({ dirty: false }),
 
       reset: () => set({ content: null, dirty: false, error: null }),
+
+      addRoom: (room) => set((s) => {
+        if (!s.content) return s
+        return {
+          content: { ...s.content, rooms: [...s.content.rooms, room] },
+          dirty: true,
+        }
+      }),
+
+      removeRoom: (id) => set((s) => {
+        if (!s.content) return s
+        return {
+          content: {
+            ...s.content,
+            rooms: s.content.rooms
+              .filter((r) => r.id !== id)
+              // also clear portals pointing to this room
+              .map((r) => ({
+                ...r,
+                portals: (r.portals ?? []).filter((p) => p.targetRoomId !== id),
+              })),
+          },
+          dirty: true,
+        }
+      }),
 
       updateRoom: (id, patch) => set((s) => {
         if (!s.content) return s
