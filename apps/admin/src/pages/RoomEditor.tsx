@@ -125,6 +125,18 @@ const dlgStyles: Record<string, React.CSSProperties> = {
   body: { padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' },
 }
 
+function snapshotViewpointState(state: CameraState): CameraState {
+  return {
+    position: {
+      x: state.groundPosition.x,
+      y: state.position.y,
+      z: state.groundPosition.z,
+    },
+    groundPosition: state.groundPosition,
+    lookAt: state.lookAt,
+  }
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function RoomEditor() {
@@ -162,6 +174,8 @@ export function RoomEditor() {
   const [portalTargetId, setPortalTargetId] = useState('')
   const [modelUrlInput, setModelUrlInput] = useState('')
   const [modelUrlError, setModelUrlError] = useState<string | null>(null)
+  const [roomTitleInput, setRoomTitleInput] = useState('')
+  const [modelOffsetInput, setModelOffsetInput] = useState<[number, number, number]>([0, 0, 0])
 
   const cameraStateRef = useRef<CameraState | null>(null)
   const modelFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -190,6 +204,14 @@ export function RoomEditor() {
     setModelUrlError(null)
   }, [room.id, room.modelUrl])
 
+  useEffect(() => {
+    setRoomTitleInput(room.title)
+  }, [room.id, room.title])
+
+  useEffect(() => {
+    setModelOffsetInput(room.modelOffset ?? [0, 0, 0])
+  }, [room.id, room.modelOffset])
+
   const currentVpId = activeVpId || room.entryViewpointId || room.viewpoints[0]?.id || '__none'
 
   // ── Viewpoint capture ─────────────────────────────────────────────────────────
@@ -198,7 +220,7 @@ export function RoomEditor() {
     if (!state) return
     setVpName(`Điểm ${room.viewpoints.length + 1}`)
     setVpIsEntry(room.viewpoints.length === 0)
-    setVpDialog({ state })
+    setVpDialog({ state: snapshotViewpointState(state) })
   }
 
   const handleEditViewpoint = (vp: Viewpoint) => {
@@ -208,6 +230,7 @@ export function RoomEditor() {
       vpId: vp.id,
       state: {
         position: vp.position,
+        groundPosition: { x: vp.position.x, y: 0, z: vp.position.z },
         lookAt: vp.lookAt,
       },
     })
@@ -216,7 +239,22 @@ export function RoomEditor() {
   const handleUseCurrentCameraForViewpoint = () => {
     const state = cameraStateRef.current
     if (!vpDialog || !state) return
-    setVpDialog({ ...vpDialog, state })
+    setVpDialog({ ...vpDialog, state: snapshotViewpointState(state) })
+  }
+
+  const handleApplyRoomTitle = () => {
+    const nextTitle = roomTitleInput.trim()
+    if (!nextTitle || nextTitle === room.title) return
+    updateRoom(room.id, { title: nextTitle })
+  }
+
+  const handleApplyModelOffset = () => {
+    updateRoom(room.id, { modelOffset: [...modelOffsetInput] })
+  }
+
+  const handleClearModelOffset = () => {
+    setModelOffsetInput([0, 0, 0])
+    updateRoom(room.id, { modelOffset: [0, 0, 0] })
   }
 
   const handleSaveViewpoint = () => {
@@ -320,6 +358,24 @@ export function RoomEditor() {
 
         <div style={styles.panelScroll}>
           <Section title="Model 3D">
+            <label style={styles.label}>Tên phòng</label>
+            <div style={styles.inlineActions}>
+              <input
+                style={{ ...styles.input, flex: 1 }}
+                value={roomTitleInput}
+                onChange={(e) => setRoomTitleInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyRoomTitle()}
+                placeholder="Nhập tên phòng"
+              />
+              <button
+                style={styles.btnSecondary}
+                onClick={handleApplyRoomTitle}
+                disabled={!roomTitleInput.trim() || roomTitleInput.trim() === room.title}
+              >
+                Lưu tên
+              </button>
+            </div>
+
             <label style={styles.label}>URL file GLB / GLTF</label>
             <input
               style={styles.input}
@@ -375,6 +431,36 @@ export function RoomEditor() {
                 }
               }}
             />
+
+            <label style={styles.label}>Model offset (X / Y / Z)</label>
+            <div style={styles.fieldRow3}>
+              {modelOffsetInput.map((value, index) => (
+                <input
+                  key={index}
+                  style={styles.input}
+                  type="number"
+                  step="0.1"
+                  value={value}
+                  onChange={(e) => {
+                    const next = [...modelOffsetInput] as [number, number, number]
+                    next[index] = Number(e.target.value)
+                    setModelOffsetInput(next)
+                  }}
+                />
+              ))}
+            </div>
+            <div style={styles.hint}>
+              Neu model xuat tu Blender khong nam o gan goc toa do, can nhap offset de keo phong ve
+              dung vi tri. Vi du `side.glb` sample dung `-40, 0, 0`.
+            </div>
+            <div style={styles.inlineActions}>
+              <button style={styles.btnSecondary} onClick={handleApplyModelOffset}>
+                Áp dụng offset
+              </button>
+              <button style={styles.btnCancel} onClick={handleClearModelOffset}>
+                Xóa offset
+              </button>
+            </div>
           </Section>
 
           <Section title="Điểm đứng (Viewpoints)">
@@ -534,7 +620,7 @@ export function RoomEditor() {
             />
           </div>
           <button style={styles.btnSecondary} onClick={handleUseCurrentCameraForViewpoint}>
-            Lấy vị trí/hướng từ camera hiện tại
+            Lấy vị trí đứng/hướng nhìn hiện tại
           </button>
           <label style={styles.checkRow}>
             <input
@@ -545,7 +631,8 @@ export function RoomEditor() {
             Đặt làm điểm vào mặc định
           </label>
           <div style={{ fontSize: '12px', color: '#6a5a40' }}>
-            Vị trí: ({vpDialog.state.position.x.toFixed(2)}, {vpDialog.state.position.z.toFixed(2)})
+            Vị trí đứng: ({vpDialog.state.groundPosition.x.toFixed(2)},{' '}
+            {vpDialog.state.groundPosition.z.toFixed(2)})
           </div>
           <div style={styles.dialogActions}>
             <button style={styles.btnSecondary} onClick={() => setVpDialog(null)}>
@@ -755,6 +842,7 @@ const styles: Record<string, React.CSSProperties> = {
   empty: { fontSize: '12px', color: '#5a4a2a', fontStyle: 'italic' },
   fieldGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   fieldRow2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' },
+  fieldRow3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' },
   inlineActions: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' },
 
   // List rows
