@@ -43,11 +43,13 @@ export function validateContentIntegrity(content: Content): string[] {
       errors.push(`Room "${room.id}" references unknown period "${room.periodId}"`)
     }
 
-    const viewpointIds = new Set(room.viewpoints.map((v) => v.id))
-    if (!viewpointIds.has(room.entryViewpointId)) {
-      errors.push(
-        `Room "${room.id}" entryViewpointId "${room.entryViewpointId}" not found in viewpoints`,
-      )
+    if (room.viewpoints.length > 0) {
+      const viewpointIds = new Set(room.viewpoints.map((v) => v.id))
+      if (room.entryViewpointId && !viewpointIds.has(room.entryViewpointId)) {
+        errors.push(
+          `Room "${room.id}" entryViewpointId "${room.entryViewpointId}" not found in viewpoints`,
+        )
+      }
     }
 
     for (const slot of room.slots) {

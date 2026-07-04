@@ -2,11 +2,29 @@ import type { Content } from '@vm/shared'
 
 const BASE = import.meta.env.VITE_API_URL ?? ''
 
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly body: string,
+  ) {
+    super(`${status}: ${body}`)
+    this.name = 'ApiError'
+  }
+
+  tryParseJson(): unknown {
+    try {
+      return JSON.parse(this.body)
+    } catch {
+      return null
+    }
+  }
+}
+
 async function apiFetch(path: string, init?: RequestInit) {
   const res = await fetch(`${BASE}${path}`, init)
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
-    throw new Error(`${res.status}: ${text}`)
+    throw new ApiError(res.status, text)
   }
   return res
 }

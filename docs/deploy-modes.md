@@ -6,7 +6,7 @@ Muc dich: deploy demo len GitHub Pages hoac bat ky static host nao ma khong co u
 
 - Khong can `VITE_ASSET_BASE_URL`.
 - Web tu doc `content/content.sample.json` trong repo.
-- Model mau duoc lay tu `content/models/hall.glb`, `content/models/side.glb`.
+- Model mau duoc lay tu `content/models/truyenthong.glb`.
 - Neu deploy duoi sub-path, set `VITE_BASE_URL`.
 
 Vi du GitHub Pages:
@@ -37,7 +37,7 @@ Khi do app se doc:
 
 ```text
 https://assets.example.com/content.json
-https://assets.example.com/content/models/hall.glb
+https://assets.example.com/content/models/truyenthong.glb
 https://assets.example.com/media/...
 ```
 

@@ -93,8 +93,8 @@ export const RoomSchema = z.object({
   floorTextureId: NonEmptyString.nullable(),
   ceilingTextureId: NonEmptyString.nullable(),
   lightingPreset: z.enum(LIGHTING_PRESETS as [string, ...string[]]),
-  entryViewpointId: NonEmptyString,
-  viewpoints: z.array(ViewpointSchema).min(1),
+  entryViewpointId: z.string(),
+  viewpoints: z.array(ViewpointSchema),
   slots: z.array(SlotSchema),
   portals: z.array(RoomPortalSchema).default([]),
 })

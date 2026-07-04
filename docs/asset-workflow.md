@@ -45,12 +45,12 @@ Các ảnh trên tường vẫn được quản lý bằng `items` và `slots` t
 
 Ưu tiên asset có license rõ ràng, dung lượng nhẹ, ít polygon, texture không quá lớn. Với MVP web, nên giữ model phòng dưới khoảng vài MB trước khi tối ưu thêm.
 
-## MVP hiện tại
+## Model chính thức
 
-Repo đang có sẵn model mẫu tại:
+Repo đang dùng model thật của dự án tại:
 
 ```txt
-content/models/gallery-mvp.gltf
+content/models/truyenthong.glb
 ```
 
-Đây là model nhẹ để chứng minh luồng external model hoạt động. Khi chọn được asset đẹp hơn, chỉ cần thay file model và cập nhật `modelUrl`, không cần viết lại viewer.
+Slot ảnh được nhúng sẵn trong model qua các mesh `VM_Slot_*` (đi kèm material `SlotCanvas`/`CR_SlotCanvas` cho mặt phẳng treo ảnh) — viewer tự quét mesh này để lấy vị trí/kích thước, không cần khai báo `transform` tay trong content JSON. Khi cần đổi model, chỉ cần thay file và cập nhật `modelUrl`, không cần viết lại viewer.

@@ -385,7 +385,7 @@ export function RoomEditor() {
                 if (modelUrlError) setModelUrlError(null)
               }}
               onKeyDown={(e) => e.key === 'Enter' && handleApplyModelUrl()}
-              placeholder="/content/models/hall.glb"
+              placeholder="/content/models/truyenthong.glb"
             />
             <div style={styles.hint}>
               URL chỉ được áp dụng khi bấm nút bên dưới, tránh làm hỏng preview khi đang gõ.
@@ -451,7 +451,7 @@ export function RoomEditor() {
             </div>
             <div style={styles.hint}>
               Neu model xuat tu Blender khong nam o gan goc toa do, can nhap offset de keo phong ve
-              dung vi tri. Vi du `side.glb` sample dung `-40, 0, 0`.
+              dung vi tri.
             </div>
             <div style={styles.inlineActions}>
               <button style={styles.btnSecondary} onClick={handleApplyModelOffset}>

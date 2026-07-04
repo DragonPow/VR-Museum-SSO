@@ -154,19 +154,24 @@ export function NavController({
     if (!vp) return
     const pos = toVec3(vp.position)
     const lookAt = toVec3(vp.lookAt)
-    targetPos.current.copy(pos)
-
     const { yaw: y, pitch: p } = computeYawPitch(pos, lookAt)
+
+    targetPos.current.copy(pos)
     targetYaw.current = y
     targetPitch.current = p
-    transitioning.current = true
 
-    if (!isDragging.current) {
-      camera.position.copy(pos)
-      yaw.current = y
-      pitch.current = p
+    // Skip the immediate snap when the camera is already at or very near this viewpoint
+    // (e.g. the user just captured this position as a new viewpoint — don't jump back to it)
+    const alreadyThere = camera.position.distanceTo(pos) < 0.15
+    if (!alreadyThere) {
+      transitioning.current = true
+      if (!isDragging.current) {
+        camera.position.copy(pos)
+        yaw.current = y
+        pitch.current = p
+      }
     }
-    invalidate() // kick off transition animation
+    invalidate()
   }, [activeViewpointId, camera, viewpoints, invalidate])
 
   // ── Pointer drag → look around ──────────────────────────────────────────────

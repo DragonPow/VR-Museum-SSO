@@ -15,14 +15,36 @@ interface Props {
   url: string
   offset?: [number, number, number]
   onSlotsExtracted?: (slots: ExtractedSlot[]) => void
+  /** Slot ids declared in the room JSON, used to map GLB mesh names back to a
+   *  canonical slot id (three.js appends _1/_2 suffixes to duplicate node names). */
+  knownSlotIds?: string[]
 }
 
-export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
+/**
+ * A single Blender slot node holds two primitives (frame + canvas). glTF gives
+ * them the same node name, but three.js `createUniqueName` renames duplicates to
+ * `<name>_1`, `<name>_2`… so a runtime mesh is called e.g. `VM_Slot_TT_3000_2`.
+ * Resolve it back to the JSON slot id (`VM_Slot_TT_3000`) by longest-prefix match.
+ */
+function resolveSlotId(meshName: string, knownIds: string[]): string | null {
+  let best: string | null = null
+  for (const id of knownIds) {
+    if (meshName === id || meshName.startsWith(id + '_')) {
+      if (best === null || id.length > best.length) best = id
+    }
+  }
+  return best
+}
+
+export function RoomModel({ url, offset, onSlotsExtracted, knownSlotIds }: Props) {
   const gltf = useGLTF(url) as { scene: THREE.Group }
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene])
 
   const cbRef = useRef(onSlotsExtracted)
   cbRef.current = onSlotsExtracted
+
+  const knownKey = (knownSlotIds ?? []).join('|')
+  const knownIds = useMemo(() => knownSlotIds ?? [], [knownKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     scene.updateMatrixWorld(true)
@@ -41,7 +63,7 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
       obj.frustumCulled = true
 
       const mats     = Array.isArray(obj.material) ? obj.material : [obj.material]
-      const isCanvas = mats.some((m) => m?.name === 'SlotCanvas')
+      const isCanvas = mats.some((m) => m?.name === 'SlotCanvas' || m?.name?.endsWith('_SlotCanvas'))
       const isSlot   = obj.name.startsWith(VM_SLOT_PREFIX)
 
       if (!isSlot) {
@@ -56,7 +78,9 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
         return
       }
 
-      const slotId = obj.name.replace(/_\d+$/, '')
+      // Map the (possibly suffixed) mesh name back to the JSON slot id so that the
+      // frame + canvas primitives of the same node land in one entry.
+      const slotId = resolveSlotId(obj.name, knownIds) ?? obj.name
       if (!slotMap.has(slotId)) {
         slotMap.set(slotId, { pos: new THREE.Vector3(), w: 1, h: 0.8, yaw: null, hasFrame: false })
       }
@@ -116,7 +140,7 @@ export function RoomModel({ url, offset, onSlotsExtracted }: Props) {
     }
 
     if (extracted.length > 0) cbRef.current?.(extracted)
-  }, [scene])
+  }, [scene, knownIds])
 
   return <primitive object={scene} position={offset ?? [0, 0, 0]} />
 }

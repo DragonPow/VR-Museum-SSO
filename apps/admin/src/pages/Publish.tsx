@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useDraftStore } from '../store.js'
-import { publish, saveDraft, checkApi } from '../api.js'
+import { publish, saveDraft, checkApi, ApiError } from '../api.js'
 import type { Content } from '@vm/shared'
 
-type PublishStep = 'idle' | 'checking' | 'saving' | 'done' | 'error'
+const API_BASE = (import.meta.env['VITE_API_URL'] ?? '').replace(/\/+$/, '')
+
+type PublishStep = 'idle' | 'checking' | 'saving' | 'verifying' | 'done' | 'error'
 
 export function Publish() {
   const content = useDraftStore((s) => s.content)
@@ -12,6 +14,7 @@ export function Publish() {
   const [step, setStep] = useState<PublishStep>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [apiAvailable, setApiAvailable] = useState<boolean | null>(null)
+  const [verifyInfo, setVerifyInfo] = useState<string | null>(null)
 
   if (!content) return <div style={styles.center}>Đang tải...</div>
 
@@ -31,10 +34,21 @@ export function Publish() {
       const snapshot: Content = { ...content, updatedAt: new Date().toISOString() }
       await publish(snapshot)
       markClean()
+      // Verify by reading back from /api/content
+      setStep('verifying')
+      try {
+        const res = await fetch(`${API_BASE}/api/content`, { signal: AbortSignal.timeout(5000) })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const published = await res.json() as { rooms?: unknown[]; updatedAt?: string }
+        const roomCount = Array.isArray(published.rooms) ? published.rooms.length : '?'
+        setVerifyInfo(`${roomCount} phòng — cập nhật lúc ${published.updatedAt ? new Date(published.updatedAt as string).toLocaleTimeString('vi') : 'vừa xong'}`)
+      } catch {
+        setVerifyInfo(null) // publish ok but can't verify — still show success
+      }
       setStep('done')
     } catch (err) {
       setStep('error')
-      setErrorMsg(String(err))
+      setErrorMsg(formatPublishError(err, content))
     }
   }
 
@@ -62,7 +76,7 @@ export function Publish() {
     }
   }
 
-  const busy = step === 'checking' || step === 'saving'
+  const busy = step === 'checking' || step === 'saving' || step === 'verifying'
 
   return (
     <div style={styles.root}>
@@ -87,15 +101,23 @@ export function Publish() {
       {/* API status */}
       <div style={styles.section}>
         <div style={styles.sectionTitle}>Kết nối Worker API</div>
-        <div style={styles.apiRow}>
-          <div style={{ fontSize: '13px', color: '#9a9080' }}>
-            {apiAvailable === null && 'Chưa kiểm tra kết nối'}
-            {apiAvailable === true && <span style={{ color: '#5ac85a' }}>✓ Kết nối thành công — sẵn sàng xuất bản lên R2</span>}
-            {apiAvailable === false && <span style={{ color: '#c85a5a' }}>✗ Không kết nối được Worker API — chỉ có thể xuất file JSON</span>}
+        <div style={{ ...styles.apiRow, flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ fontSize: '13px', color: '#9a9080' }}>
+              {apiAvailable === null && 'Chưa kiểm tra kết nối'}
+              {apiAvailable === true && <span style={{ color: '#5ac85a' }}>✓ Kết nối thành công — sẵn sàng xuất bản lên R2</span>}
+              {apiAvailable === false && <span style={{ color: '#c85a5a' }}>✗ Không kết nối được Worker API — chỉ có thể xuất file JSON</span>}
+            </div>
+            <button style={styles.checkBtn} onClick={handleCheckApi} disabled={busy}>
+              {step === 'checking' ? 'Đang kiểm tra...' : 'Kiểm tra kết nối'}
+            </button>
           </div>
-          <button style={styles.checkBtn} onClick={handleCheckApi} disabled={busy}>
-            {step === 'checking' ? 'Đang kiểm tra...' : 'Kiểm tra kết nối'}
-          </button>
+          <div style={{ fontSize: '11px', color: '#4a3a28', fontFamily: 'monospace', padding: '6px 10px', background: 'rgba(0,0,0,0.2)', borderRadius: '5px', width: '100%', boxSizing: 'border-box' }}>
+            {API_BASE
+              ? <>VITE_API_URL = <span style={{ color: '#c8a85a' }}>{API_BASE}</span></>
+              : <span style={{ color: '#c85a5a' }}>⚠ VITE_API_URL chưa được set — cần set env var này trong Cloudflare Pages</span>
+            }
+          </div>
         </div>
       </div>
 
@@ -133,12 +155,24 @@ export function Publish() {
 
       {/* Status messages */}
       {step === 'done' && (
-        <div style={styles.successBox}>✓ Xuất bản thành công! Site khách đã được cập nhật.</div>
+        <div style={styles.successBox}>
+          ✓ Xuất bản thành công!
+          {verifyInfo
+            ? <> Đã xác nhận R2 nhận được: <strong>{verifyInfo}</strong>. Site khách sẽ cập nhật ngay.</>
+            : <> Đã ghi lên R2. Nếu site vẫn chưa đổi, kiểm tra lại <code>VITE_ASSET_BASE_URL</code> của web app.</>
+          }
+        </div>
       )}
       {step === 'error' && (
-        <div style={styles.errorBox}>⚠ Lỗi: {errorMsg}</div>
+        <div style={{ ...styles.errorBox, whiteSpace: 'pre-line' }}>
+          ⚠ {errorMsg}
+          {!API_BASE && <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>Hint: VITE_API_URL chưa được set — publish không thể gọi tới Worker.</div>}
+        </div>
       )}
-      {busy && (
+      {step === 'verifying' && (
+        <div style={styles.infoBox}>⏳ Đang xác nhận dữ liệu trên R2...</div>
+      )}
+      {(step === 'checking' || step === 'saving') && (
         <div style={styles.infoBox}>⏳ Đang xử lý...</div>
       )}
     </div>
@@ -174,6 +208,46 @@ function ActionCard({ icon, title, desc, btnLabel, primary, disabled, onClick }:
       </button>
     </div>
   )
+}
+
+function formatPublishError(err: unknown, content: Content): string {
+  if (!(err instanceof ApiError)) return String(err)
+
+  if (err.status === 422) {
+    const body = err.tryParseJson() as { error?: string } | null
+    const raw = body?.error ?? err.body
+    // Extract zod-style "[path] message" lines
+    const lines = raw.split('\n')
+    const issues: string[] = []
+    for (const line of lines) {
+      const m = line.match(/\[rooms\.(\d+)\.([^\]]+)\]\s+(.+)/)
+      if (m && m[1] && m[2] && m[3]) {
+        const idx = parseInt(m[1])
+        const field = m[2]
+        const msg = m[3]
+        const roomTitle = content.rooms[idx]?.title ?? `Phòng #${idx + 1}`
+        const fieldLabel: Record<string, string> = {
+          entryViewpointId: 'điểm đứng mặc định',
+          viewpoints: 'danh sách điểm đứng',
+          title: 'tên phòng',
+          slug: 'slug',
+        }
+        issues.push(`• Phòng "${roomTitle}": ${(field != null ? fieldLabel[field] : null) ?? field} — ${msg}`)
+      } else if (/\[.+\]/.test(line)) {
+        issues.push(`• ${line.trim()}`)
+      }
+    }
+    if (issues.length > 0) {
+      return `Dữ liệu chưa hợp lệ (422):\n${issues.join('\n')}`
+    }
+    return `Lỗi validation (422): ${raw}`
+  }
+
+  if (err.status === 0 || err.status === undefined) {
+    return 'Không thể kết nối tới Worker API. Kiểm tra VITE_API_URL và Worker đã deploy chưa.'
+  }
+
+  return `Lỗi ${err.status}: ${err.body}`
 }
 
 function getSummary(content: Content) {

@@ -79,16 +79,42 @@ export function RoomScene({
     )
   }, [assetBaseUrl, items])
 
+  // ── GLB slot extraction ──────────────────────────────────────────────────────
+  // When the room has a GLB model, VM_Slot_* meshes are the source of truth for
+  // slot positions. The JSON only provides metadata (itemId, frameStyle, etc.).
+  const [glbSlots, setGlbSlots] = useState<ExtractedSlot[]>([])
+  const handleSlotsExtracted = useCallback((slots: ExtractedSlot[]) => {
+    setGlbSlots(slots)
+  }, [])
+  const knownSlotIds = useMemo(() => room.slots.map((s) => s.id), [room.slots])
+
   // ── Walkable bounds ──────────────────────────────────────────────────────────
-  const dim = getRoomDimensions(room.template)
+  // Procedural rooms (no modelUrl) use the fixed template box. GLB rooms derive
+  // walkable bounds from the real slot positions extracted from the model, since
+  // custom room geometry rarely matches one of the small fixed template presets.
   const WALL_MARGIN = 0.5
-  const templateBounds: RoomBounds = {
-    minX: -(dim.width / 2 - WALL_MARGIN),
-    maxX: dim.width / 2 - WALL_MARGIN,
-    minZ: -(dim.depth / 2 - WALL_MARGIN),
-    maxZ: dim.depth / 2 - WALL_MARGIN,
-  }
-  const bounds: RoomBounds = boundsOverride ?? templateBounds
+  const bounds: RoomBounds = useMemo(() => {
+    if (boundsOverride) return boundsOverride
+
+    if (modelUrl && glbSlots.length > 0) {
+      const xs = glbSlots.map((s) => s.transform.position.x)
+      const zs = glbSlots.map((s) => s.transform.position.z)
+      return {
+        minX: Math.min(...xs) - 1.5,
+        maxX: Math.max(...xs) + 1.5,
+        minZ: Math.min(...zs) - 1.5,
+        maxZ: Math.max(...zs) + 1.5,
+      }
+    }
+
+    const dim = getRoomDimensions(room.template)
+    return {
+      minX: -(dim.width / 2 - WALL_MARGIN),
+      maxX: dim.width / 2 - WALL_MARGIN,
+      minZ: -(dim.depth / 2 - WALL_MARGIN),
+      maxZ: dim.depth / 2 - WALL_MARGIN,
+    }
+  }, [boundsOverride, modelUrl, glbSlots, room.template])
 
   // ── Collision obstacles ──────────────────────────────────────────────────────
   const panelObstacles = useMemo(() => {
@@ -120,14 +146,6 @@ export function RoomScene({
     () => [...panelObstacles, ...(room.obstacles ?? [])],
     [panelObstacles, room.obstacles],
   )
-
-  // ── GLB slot extraction ──────────────────────────────────────────────────────
-  // When the room has a GLB model, VM_Slot_* meshes are the source of truth for
-  // slot positions. The JSON only provides metadata (itemId, frameStyle, etc.).
-  const [glbSlots, setGlbSlots] = useState<ExtractedSlot[]>([])
-  const handleSlotsExtracted = useCallback((slots: ExtractedSlot[]) => {
-    setGlbSlots(slots)
-  }, [])
 
   // ── Resolve final slot list ──────────────────────────────────────────────────
   const resolvedSlots = useMemo((): (Slot & { hasBlenderFrame: boolean })[] => {
@@ -167,6 +185,7 @@ export function RoomScene({
         <RoomModel
           url={modelUrl}
           {...(room.modelOffset != null ? { offset: room.modelOffset } : {})}
+          knownSlotIds={knownSlotIds}
           onSlotsExtracted={handleSlotsExtracted}
         />
       ) : (
