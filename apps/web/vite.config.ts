@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import { createReadStream, existsSync, statSync } from 'fs'
+import { createReadStream, existsSync, statSync, cpSync } from 'fs'
 import { join } from 'path'
 
 const CONTENT_DIR = resolve(__dirname, '../../content')
@@ -10,6 +10,18 @@ export default defineConfig({
   base: process.env['VITE_BASE_URL'] ?? '/',
   plugins: [
     react(),
+    // Copy the monorepo /content directory into dist/content at build time, so the
+    // static build is self-contained (works on GitHub Pages, Nginx, any static host).
+    {
+      name: 'copy-content',
+      apply: 'build',
+      closeBundle() {
+        const dest = resolve(__dirname, 'dist/content')
+        if (existsSync(CONTENT_DIR)) {
+          cpSync(CONTENT_DIR, dest, { recursive: true })
+        }
+      },
+    },
     // Serve the monorepo /content directory at /content in dev
     {
       name: 'serve-content',

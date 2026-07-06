@@ -4,10 +4,10 @@
   "periods": [
     {
       "id": "period-1975-1985",
-      "slug": "1975-1985",
-      "title": "1975–1985 — Những ngày đầu",
-      "yearStart": 1975,
-      "yearEnd": 1985,
+      "slug": "1976-2026",
+      "title": "1976–2026 — Những ngày đầu",
+      "yearStart": 1976,
+      "yearEnd": 2026,
       "order": 1,
       "description": "Giai đoạn đặt nền móng và những bước trưởng thành đầu tiên của công ty.",
       "themeColor": "#c8a85a"
@@ -22,6 +22,7 @@
       "order": 1,
       "template": "honor",
       "modelUrl": "/content/models/truyenthong.glb",
+      "lightmapUrl": "/content/models/truyenthong_lightmap.webp",
       "wallTextureId": null,
       "floorTextureId": null,
       "ceilingTextureId": null,

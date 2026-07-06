@@ -1,4 +1,4 @@
-# CLAUDE.md — Phòng Truyền Thống Ảo 50 Năm
+# CLAUDE.md — Phòng Truyền Thống Số 50 Năm
 
 > Bộ nhớ dự án cho agent. Đọc file này đầu mỗi phiên trước khi code.
 > Kế hoạch chi tiết: [docs/architecture-plan.md](docs/architecture-plan.md).
@@ -7,7 +7,7 @@
 
 ## 1. Mục tiêu sản phẩm
 
-Website "Phòng truyền thống ảo" cho lễ kỷ niệm **50 năm thành lập công ty**. Khách mở web là tham quan được một bảo tàng ảo tổ chức **theo thời kỳ (timeline)**; mỗi thời kỳ có một/vài **phòng 3D**; trên tường mỗi phòng có các **slot (khung cố định)** để treo ảnh/nội dung lịch sử. Tham khảo UX: phòng truyền thống ảo BIDV (giàu hình ảnh, có hotspot, chuyển phòng, modal thông tin).
+Website "Phòng truyền thống số" cho lễ kỷ niệm **50 năm thành lập công ty**. Khách mở web là tham quan được một bảo tàng số tổ chức **theo thời kỳ (timeline)**; mỗi thời kỳ có một/vài **phòng 3D**; trên tường mỗi phòng có các **slot (khung cố định)** để treo ảnh/nội dung lịch sử. Tham khảo UX: phòng truyền thống số BIDV (giàu hình ảnh, có hotspot, chuyển phòng, modal thông tin).
 
 Yêu cầu cốt lõi (đừng làm sai 4 điều này):
 1. **Chạy mượt trên web desktop + mobile**, mở được trên trình duyệt thường.

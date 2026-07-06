@@ -92,6 +92,13 @@ export interface Room {
    */
   modelOffset?: [number, number, number]
   /**
+   * Baked lighting texture (Blender lightmap) sampled through the model's 2nd UV set
+   * (TEXCOORD_1). Applied as `material.lightMap` to the architecture surfaces so the
+   * room shows baked light pools + shadows while keeping the tiled base textures sharp.
+   * When null/absent the room is lit only by the dynamic lighting preset.
+   */
+  lightmapUrl?: string | null
+  /**
    * Static collision zones for interior walls, pillars, and props in the GLB model
    * that the outer-wall bounds alone cannot cover.
    */

@@ -63,6 +63,7 @@ export function RoomScene({
     { assetBaseUrl },
   )
   const modelUrl = resolveAssetUrl(room.modelUrl, { assetBaseUrl })
+  const lightmapUrl = resolveAssetUrl(room.lightmapUrl, { assetBaseUrl })
 
   const resolvedItems = useMemo(() => {
     return Object.fromEntries(
@@ -179,13 +180,14 @@ export function RoomScene({
 
   return (
     <>
-      <RoomLighting preset={room.lightingPreset} />
+      <RoomLighting preset={room.lightingPreset} baked={!!lightmapUrl} />
 
       {modelUrl ? (
         <RoomModel
           url={modelUrl}
           {...(room.modelOffset != null ? { offset: room.modelOffset } : {})}
           knownSlotIds={knownSlotIds}
+          {...(lightmapUrl ? { lightmapUrl } : {})}
           onSlotsExtracted={handleSlotsExtracted}
         />
       ) : (

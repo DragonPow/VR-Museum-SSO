@@ -1,4 +1,4 @@
-# Kế hoạch kiến trúc chi tiết — Phòng Truyền Thống Ảo 50 Năm
+# Kế hoạch kiến trúc chi tiết — Phòng Truyền Thống Số 50 Năm
 
 Tài liệu này mở rộng từ [CLAUDE.md](../CLAUDE.md). Đề bài: [requirement.md](requirement.md). Phân tích nền: [solution.md](solution.md).
 

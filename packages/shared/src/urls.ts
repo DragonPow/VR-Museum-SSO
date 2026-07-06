@@ -21,7 +21,12 @@ export function resolveAssetUrl(
   }
 
   if (url.startsWith('/')) {
-    return appBase ? `${appBase}${url}` : url
+    if (!appBase) return url
+    // Idempotent: a URL already carrying the app base (e.g. rebased once in the
+    // content index, then again in useRoom) must not get the prefix twice —
+    // otherwise it breaks when deployed under a sub-path like /VR-Museum-SSO/.
+    if (url === appBase || url.startsWith(`${appBase}/`)) return url
+    return `${appBase}${url}`
   }
 
   return appBase ? `${appBase}/${url}` : url

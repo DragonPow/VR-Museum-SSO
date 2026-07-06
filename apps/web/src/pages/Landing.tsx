@@ -21,7 +21,7 @@ export function Landing({ content, onEnter }: Props) {
         <div style={styles.badge}>Kỷ niệm 50 năm thành lập</div>
 
         <h1 style={styles.title}>
-          PHÒNG TRUYỀN THỐNG ẢO
+          PHÒNG TRUYỀN THỐNG SỐ
         </h1>
 
         <div style={styles.years}>{yearStart} — {yearEnd}</div>

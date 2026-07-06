@@ -16,7 +16,7 @@ export const DEFAULT_CONTENT: Content = {
       yearStart: 1975,
       yearEnd: 2025,
       order: 0,
-      description: 'Nội dung khởi tạo ban đầu cho bảo tàng ảo. Hãy chỉnh sửa trong trang quản trị rồi Publish.',
+      description: 'Nội dung khởi tạo ban đầu cho bảo tàng số. Hãy chỉnh sửa trong trang quản trị rồi Publish.',
       themeColor: '#2563EB',
     },
   ],

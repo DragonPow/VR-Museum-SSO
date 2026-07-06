@@ -1,10 +1,10 @@
-https://phongtruyenthong.bidv.com.vn/ đây là 1 mô hình phòng truyền thống ảo của BIDV, sếp tôi thấy nó khá hay và kêu tôi chuẩn bị 1 phòng truyền thống ảo tương tự chuẩn bị lễ kỷ niệm 50 năm thành lập công ty, source vào sẽ là các file hình cũ từ 50 năm trước tới nay, tôi nghĩ sẽ gom lại theo từng thời kỳ, nên sẽ đi theo thời kỳ
+https://phongtruyenthong.bidv.com.vn/ đây là 1 mô hình phòng truyền thống số của BIDV, sếp tôi thấy nó khá hay và kêu tôi chuẩn bị 1 phòng truyền thống số tương tự chuẩn bị lễ kỷ niệm 50 năm thành lập công ty, source vào sẽ là các file hình cũ từ 50 năm trước tới nay, tôi nghĩ sẽ gom lại theo từng thời kỳ, nên sẽ đi theo thời kỳ
 
 Tôi cần research để xây dựng được 1 project như thế nào, chọn loại thư viện nào, do tôi có bị các anh senior cảnh báo về vấn đề khung 3D render rất nặng khiến cho server nội bộ của tôi yếu đối (tầm 4-8GB RAM) không gánh được nên rất chậm, hoặc là tôi sẽ tiếp tục sử dụng server đó hoặc là nên sử dụng các thứ miễn phí có thể sử dụng bên ngoài, nên chọn cái nào bây giờ.
 
 1 anh leader khác của tôi có cho tôi xem thử bản demo của ảnh tại trang https://phatvo.github.io/reactvr/ như hình thứ 6, điểm hay của sản phẩm ảnh là xài nguồn free và hosting từ github pages nên không tốn tiền, và có thể mở trên mobile sau đó sử dụng con lăn của điện thoại để bật tính năng Cảm biến, xoay điện thoại là thấy cảnh vật xung quanh (1 điểm cộng nhưng không phải là yêu cầu bắt buộc), nhưng điểm xấu với đó là các ảnh sử dụng như nhìn phía trước mặt chứ không có chiều sâu 3D, với lại cũng chỉ là 1 view ảnh 360 thôi chứ không phải như cái truyền thống phía trên của BIDV,
 
-1 ý kiến khác từ 1 anh leader khác là sử dụng artstep https://www.artsteps.com/view/654fb2a1c1189beaf73587f7 để tạo phòng ảo, nhưng tôi cũng sợ về kinh phí và khả năng loading ảnh của nó lên, có thể lên tới 100-200 tấm hình trong nhiều căn phòng ảo
+1 ý kiến khác từ 1 anh leader khác là sử dụng artstep https://www.artsteps.com/view/654fb2a1c1189beaf73587f7 để tạo phòng số, nhưng tôi cũng sợ về kinh phí và khả năng loading ảnh của nó lên, có thể lên tới 100-200 tấm hình trong nhiều căn phòng số
 
 chốt lại 1 số ý tưởng của tôi như sau:
 

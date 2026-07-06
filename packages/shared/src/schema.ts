@@ -88,6 +88,7 @@ export const RoomSchema = z.object({
   template: z.enum(ROOM_TEMPLATES as [string, ...string[]]),
   modelUrl: UrlString.nullable().default(null),
   modelOffset: z.tuple([z.number(), z.number(), z.number()]).optional(),
+  lightmapUrl: UrlString.nullable().optional(),
   obstacles: z.array(ObstacleZoneSchema).optional(),
   wallTextureId: NonEmptyString.nullable(),
   floorTextureId: NonEmptyString.nullable(),
