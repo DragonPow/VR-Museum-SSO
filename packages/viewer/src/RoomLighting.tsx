@@ -11,11 +11,10 @@ interface Props {
 
 export function RoomLighting({ preset, baked = false }: Props) {
   if (baked) {
-    // The baked lightmap supplies all the room lighting. Keep only a dim white
-    // ambient so props that AREN'T baked yet (frames, glass cases, photo canvases)
-    // stay visible — no dynamic directional light, which would double-light the
-    // lightmapped shell and blow out the bake.
-    return <ambientLight color="#ffffff" intensity={0.4} />
+    // The shell uses an unlit MeshBasicMaterial baked from Blender, so scene lights
+    // do NOT affect it. This ambient only lights the props that aren't baked yet
+    // (frames, cases, photo canvases) so they remain visible.
+    return <ambientLight color="#ffffff" intensity={0.9} />
   }
 
   const cfg = getLightConfig(preset)

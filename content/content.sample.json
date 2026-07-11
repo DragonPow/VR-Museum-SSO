@@ -22,7 +22,7 @@
       "order": 1,
       "template": "honor",
       "modelUrl": "/content/models/truyenthong.glb",
-      "lightmapUrl": "/content/models/truyenthong_lightmap.webp",
+      "lightmapUrl": "/content/models/truyenthong_combined.webp",
       "wallTextureId": null,
       "floorTextureId": null,
       "ceilingTextureId": null,

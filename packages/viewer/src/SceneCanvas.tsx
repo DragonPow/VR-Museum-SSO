@@ -22,12 +22,12 @@ export function SceneCanvas({ children, style, className }: Props) {
       // viewport (instead of the over-saturated look of NoToneMapping / flat).
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.AgXToneMapping
-        gl.toneMappingExposure = 1
+        gl.toneMappingExposure = 1.0
       }}
       gl={{
         antialias: perf.tier !== 'low',
         powerPreference: 'high-performance',
-        preserveDrawingBuffer: false,
+        preserveDrawingBuffer: true,
         toneMapping: THREE.AgXToneMapping,
       }}
       camera={{ fov: 75, near: 0.1, far: 100 }}
