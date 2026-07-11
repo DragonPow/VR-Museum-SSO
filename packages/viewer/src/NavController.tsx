@@ -78,19 +78,23 @@ function applyMove(
   dz: number,
   bounds: RoomBounds,
   obstacles: RoomBounds[],
-) {
+): { mx: boolean; mz: boolean } {
   const nx = clamp(pos.x + dx, bounds.minX, bounds.maxX)
   const nz = clamp(pos.z + dz, bounds.minZ, bounds.maxZ)
 
   if (!isBlocked(nx, nz, obstacles)) {
     pos.x = nx
     pos.z = nz
+    return { mx: true, mz: true }
   } else if (!isBlocked(nx, pos.z, obstacles)) {
     pos.x = nx // slide along X only
+    return { mx: true, mz: false }
   } else if (!isBlocked(pos.x, nz, obstacles)) {
     pos.z = nz // slide along Z only
+    return { mx: false, mz: true }
   }
-  // else: corner blocked, don't move
+  // corner blocked, don't move
+  return { mx: false, mz: false }
 }
 
 export function NavController({
@@ -332,7 +336,11 @@ export function NavController({
       const dz = velocity.current.z * delta
 
       if (Math.abs(dx) > 0.0001 || Math.abs(dz) > 0.0001) {
-        applyMove(targetPos.current, dx, dz, bounds, obstacles)
+        const r = applyMove(targetPos.current, dx, dz, bounds, obstacles)
+        // Stop ramming a wall: zero the blocked component so we don't keep pushing
+        // into the obstacle every frame (that continuous shove reads as jitter).
+        if (!r.mx) velocity.current.x = 0
+        if (!r.mz) velocity.current.z = 0
         walkTarget.current = null // keyboard input cancels floor-click walk
         transitioning.current = false
       }
@@ -348,13 +356,15 @@ export function NavController({
       const accel = Math.min(1, ACCEL_FACTOR * delta)
       velocity.current.x += (wdx * MOVE_SPEED - velocity.current.x) * accel
       velocity.current.z += (wdz * MOVE_SPEED - velocity.current.z) * accel
-      applyMove(
+      const rm = applyMove(
         targetPos.current,
         velocity.current.x * delta,
         velocity.current.z * delta,
         bounds,
         obstacles,
       )
+      if (!rm.mx) velocity.current.x = 0
+      if (!rm.mz) velocity.current.z = 0
       walkTarget.current = null
       transitioning.current = false
     }
@@ -369,7 +379,10 @@ export function NavController({
         walkTarget.current = null
       } else {
         const step = Math.min(dist, WALK_SPEED * delta)
-        applyMove(targetPos.current, (dx / dist) * step, (dz / dist) * step, bounds, obstacles)
+        const rw = applyMove(targetPos.current, (dx / dist) * step, (dz / dist) * step, bounds, obstacles)
+        // Fully wedged against an obstacle → abandon the target so we don't keep
+        // shoving into it (avoids jitter when the clicked point is unreachable).
+        if (!rw.mx && !rw.mz) walkTarget.current = null
         transitioning.current = false
       }
     }

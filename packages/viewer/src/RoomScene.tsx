@@ -87,6 +87,14 @@ export function RoomScene({
   const handleSlotsExtracted = useCallback((slots: ExtractedSlot[]) => {
     setGlbSlots(slots)
   }, [])
+  const [glbObstacles, setGlbObstacles] = useState<RoomBounds[]>([])
+  const handleObstaclesExtracted = useCallback((obs: RoomBounds[]) => {
+    setGlbObstacles(obs)
+  }, [])
+  const [glbBounds, setGlbBounds] = useState<RoomBounds | null>(null)
+  const handleBoundsExtracted = useCallback((b: RoomBounds) => {
+    setGlbBounds(b)
+  }, [])
   const knownSlotIds = useMemo(() => room.slots.map((s) => s.id), [room.slots])
 
   // ── Walkable bounds ──────────────────────────────────────────────────────────
@@ -97,6 +105,17 @@ export function RoomScene({
   const bounds: RoomBounds = useMemo(() => {
     if (boundsOverride) return boundsOverride
 
+    // Prefer the real room-shell footprint so the visitor can't walk out through
+    // the perimeter walls. Inset by WALL_MARGIN to keep the camera off the surface.
+    if (modelUrl && glbBounds) {
+      return {
+        minX: glbBounds.minX + WALL_MARGIN,
+        maxX: glbBounds.maxX - WALL_MARGIN,
+        minZ: glbBounds.minZ + WALL_MARGIN,
+        maxZ: glbBounds.maxZ - WALL_MARGIN,
+      }
+    }
+    // Fallback until the shell bounds arrive: derive from slot positions.
     if (modelUrl && glbSlots.length > 0) {
       const xs = glbSlots.map((s) => s.transform.position.x)
       const zs = glbSlots.map((s) => s.transform.position.z)
@@ -115,7 +134,7 @@ export function RoomScene({
       minZ: -(dim.depth / 2 - WALL_MARGIN),
       maxZ: dim.depth / 2 - WALL_MARGIN,
     }
-  }, [boundsOverride, modelUrl, glbSlots, room.template])
+  }, [boundsOverride, modelUrl, glbBounds, glbSlots, room.template])
 
   // ── Collision obstacles ──────────────────────────────────────────────────────
   const panelObstacles = useMemo(() => {
@@ -144,8 +163,8 @@ export function RoomScene({
   }, [room.slots])
 
   const allObstacles = useMemo(
-    () => [...panelObstacles, ...(room.obstacles ?? [])],
-    [panelObstacles, room.obstacles],
+    () => [...panelObstacles, ...glbObstacles, ...(room.obstacles ?? [])],
+    [panelObstacles, glbObstacles, room.obstacles],
   )
 
   // ── Resolve final slot list ──────────────────────────────────────────────────
@@ -189,6 +208,8 @@ export function RoomScene({
           knownSlotIds={knownSlotIds}
           {...(lightmapUrl ? { lightmapUrl } : {})}
           onSlotsExtracted={handleSlotsExtracted}
+          onObstaclesExtracted={handleObstaclesExtracted}
+          onBoundsExtracted={handleBoundsExtracted}
         />
       ) : (
         <>
