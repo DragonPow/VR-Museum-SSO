@@ -209,12 +209,13 @@ export function RoomModel({
             const sep = (sepAlongZ ? zs : xs).slice().sort((a, b) => a - b)
             const GAP = 0.6 // fin thickness < GAP < spacing between fins
             const groups: Array<[number, number]> = []
-            let lo = sep[0], prev = sep[0]
+            let lo = sep[0] ?? 0
+            let prev = lo
             for (const val of sep) {
               if (val - prev > GAP) { groups.push([lo, prev]); lo = val }
               prev = val
             }
-            groups.push([lo, prev])
+            if (sep.length > 0) groups.push([lo, prev])
             for (const [g0, g1] of groups) {
               obstacles.push(
                 sepAlongZ

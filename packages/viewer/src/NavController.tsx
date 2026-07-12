@@ -38,6 +38,10 @@ const MOVE_SPEED = 4.5 // m/s keyboard
 const WALK_SPEED = 3.2 // m/s click-to-walk
 const ACCEL_FACTOR = 10 // velocity ramp speed (higher = snappier)
 const EYE_HEIGHT = 1.6
+// Gyro look smoothing: eased toward the latest sensor reading via
+// 1 - exp(-GYRO_LERP * delta) so it feels identical at any frame rate.
+// Higher = snappier, lower = smoother/floatier.
+const GYRO_LERP = 12
 
 function toVec3(v: { x: number; y: number; z: number }) {
   return new THREE.Vector3(v.x, v.y, v.z)
@@ -128,7 +132,9 @@ export function NavController({
   const dragPx = useRef(0)
   // Gyro base: anchors device orientation to current camera orientation on first event
   const gyroBase = useRef<{ alpha: number; beta: number; yaw: number; pitch: number } | null>(null)
-  const gyroSmooth = useRef({ yaw: 0, pitch: 0 })
+  // Latest RAW look target from the sensor. Smoothing happens in the frame loop
+  // (not in the sensor event) so it's decoupled from the device's irregular event rate.
+  const gyroTarget = useRef<{ yaw: number; pitch: number } | null>(null)
 
   const keys = useRef(new Set<string>())
 
@@ -248,7 +254,7 @@ export function NavController({
   useEffect(() => {
     if (!gyroEnabled || typeof window === 'undefined') return
     gyroBase.current = null // reset anchor on each enable
-    gyroSmooth.current = { yaw: yaw.current, pitch: pitch.current }
+    gyroTarget.current = null
 
     const onOrientation = (e: DeviceOrientationEvent) => {
       if (e.alpha == null || e.beta == null) return
@@ -256,7 +262,7 @@ export function NavController({
       if (!gyroBase.current) {
         // First event: anchor device orientation to current camera look direction
         gyroBase.current = { alpha: e.alpha, beta: e.beta, yaw: yaw.current, pitch: pitch.current }
-        gyroSmooth.current = { yaw: yaw.current, pitch: pitch.current }
+        gyroTarget.current = { yaw: yaw.current, pitch: pitch.current }
         return
       }
 
@@ -270,13 +276,10 @@ export function NavController({
       // beta increases when tilting forward (looking down) → pitch decreases
       const targetPitch = clampPitch(base.pitch - degToRad(e.beta - base.beta))
 
-      // Exponential moving average to smooth sensor noise
-      const a = 0.25
-      gyroSmooth.current.yaw += (targetYaw - gyroSmooth.current.yaw) * a
-      gyroSmooth.current.pitch += (targetPitch - gyroSmooth.current.pitch) * a
-
-      yaw.current = gyroSmooth.current.yaw
-      pitch.current = gyroSmooth.current.pitch
+      // Record the RAW target only; the frame loop eases toward it at a fixed rate.
+      // Smoothing here (per sensor event) stuttered because deviceorientation fires
+      // at an irregular, device-dependent rate.
+      gyroTarget.current = { yaw: targetYaw, pitch: targetPitch }
       transitioning.current = false
       invalidate()
     }
@@ -402,6 +405,17 @@ export function NavController({
       }
     }
 
+    // Gyro look: ease toward the latest sensor target at a frame-rate-independent
+    // rate. This is what makes phone-tilt looking smooth instead of steppy/laggy.
+    if (gyroEnabled && gyroTarget.current) {
+      const k = 1 - Math.exp(-GYRO_LERP * delta)
+      let gdyaw = gyroTarget.current.yaw - yaw.current
+      while (gdyaw > Math.PI) gdyaw -= 2 * Math.PI
+      while (gdyaw < -Math.PI) gdyaw += 2 * Math.PI
+      yaw.current += gdyaw * k
+      pitch.current += (gyroTarget.current.pitch - pitch.current) * k
+    }
+
     camera.quaternion.setFromEuler(new THREE.Euler(pitch.current, yaw.current, 0, 'YXZ'))
 
     // Update camera state for admin editor viewpoint capture
@@ -420,6 +434,7 @@ export function NavController({
 
     // Request next frame only while something is still animating
     const stillActive =
+      gyroEnabled ||
       keys.current.size > 0 ||
       walkTarget.current !== null ||
       transitioning.current ||
