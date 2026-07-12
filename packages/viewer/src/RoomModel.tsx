@@ -164,6 +164,18 @@ export function RoomModel({
 
       if (!isSlot) {
         if (isCanvas) { obj.visible = false; return }
+        // Blue dado (skirting): render as a flat UNLIT colour so it matches the baked
+        // walls and stays light like the Blender view, instead of a dark, lighting-
+        // dependent PBR band. Colour comes from the mesh's own material.
+        if (obj.name.startsWith('TT_Dado')) {
+          const m0 = Array.isArray(obj.material) ? obj.material[0] : obj.material
+          const col = (m0 as THREE.MeshStandardMaterial | undefined)?.color?.clone()
+            ?? new THREE.Color('#aac4e0')
+          obj.material = new THREE.MeshBasicMaterial({
+            color: col, side: THREE.DoubleSide, toneMapped: false,
+          })
+          return
+        }
         // Solid architecture (e.g. the freestanding center block) becomes a walkable
         // obstacle so the camera can't pass through it.
         if (COLLIDER_NAME_HINTS.some((h) => obj.name.includes(h))) {
