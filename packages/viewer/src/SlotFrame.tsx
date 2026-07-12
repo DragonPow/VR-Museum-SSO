@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Slot, Item } from '@vm/shared'
 import { loadTexture, greyTexture } from './TextureManager.js'
@@ -17,7 +16,7 @@ const FRAME_DEPTH     = 0.05   // how far the frame protrudes from the wall
 const FRAME_BASE      = 0.01   // gap between wall surface and back of frame (prevents z-fighting)
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 
-export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
+export function SlotFrame({ slot, item, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
   const matRef  = useRef<THREE.MeshLambertMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
@@ -123,44 +122,6 @@ export function SlotFrame({ slot, item, onSelect, hideLabel = false }: Props) {
         </>
       )}
 
-      {/* Nameplate below frame */}
-      {item && !hideLabel && (
-        <group position={[0, -(size.h / 2 + FRAME_THICKNESS + 0.13), frameColor === null ? 0.03 : FRAME_BASE + FRAME_DEPTH]}>
-          {/* Gold border */}
-          <mesh position={[0, 0, -0.003]}>
-            <planeGeometry args={[Math.min(size.w + 0.04, 0.74), 0.28]} />
-            <meshBasicMaterial color="#c8a85a" transparent opacity={0.4} />
-          </mesh>
-          {/* Dark fill */}
-          <mesh>
-            <planeGeometry args={[Math.min(size.w + 0.02, 0.72), 0.26]} />
-            <meshBasicMaterial color="#080502" transparent opacity={0.85} />
-          </mesh>
-          {/* Year */}
-          <Text
-            position={[0, 0.06, 0.004]}
-            fontSize={0.065}
-            color="#c8a85a"
-            anchorX="center"
-            anchorY="middle"
-            letterSpacing={0.05}
-          >
-            {String(item.year)}
-          </Text>
-          {/* Title */}
-          <Text
-            position={[0, -0.055, 0.004]}
-            fontSize={0.072}
-            color="#f0e8d8"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={Math.min(size.w, 0.68)}
-            textAlign="center"
-          >
-            {item.title}
-          </Text>
-        </group>
-      )}
     </group>
   )
 }
