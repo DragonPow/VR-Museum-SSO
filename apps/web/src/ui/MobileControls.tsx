@@ -22,6 +22,8 @@ export function MobileControls({ moveRef, gyroEnabled, onGyroToggle }: Props) {
         e.currentTarget.setPointerCapture(e.pointerId)
         pressed.current[dir] = true
         sync()
+        // Boot the render loop (frameloop='demand'); NavController listens for this.
+        window.dispatchEvent(new Event('vm:wake'))
       },
       onPointerUp: () => { pressed.current[dir] = false; sync() },
       onPointerCancel: () => { pressed.current[dir] = false; sync() },

@@ -61,7 +61,7 @@ export function SceneCanvas({ children, style, className }: Props) {
         toneMapping: THREE.AgXToneMapping,
       }}
       camera={{ fov: 75, near: 0.1, far: 100 }}
-      style={{ background: '#1a1410', ...style }}
+      style={{ background: '#1a1410', touchAction: 'none', ...style }}
       className={className}
     >
       <AdaptiveFov />

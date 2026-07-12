@@ -203,7 +203,7 @@ export function NavController({
       dragPx.current += Math.abs(dx) + Math.abs(dy)
       // Panorama convention: drag right → scene pans right (camera turns left → yaw increases).
       // Touch gets higher sensitivity because touch events tend to fire with smaller deltas.
-      const sens = e.pointerType === 'touch' ? 0.005 : 0.003
+      const sens = e.pointerType === 'touch' ? 0.011 : 0.003
       yaw.current += dx * sens
       pitch.current = clampPitch(pitch.current + dy * sens)
       lastMouse.current = { x: e.clientX, y: e.clientY }
@@ -225,6 +225,16 @@ export function NavController({
       canvas.removeEventListener('pointercancel', onUp)
     }
   }, [gl, gyroEnabled])
+
+  // ── External wake (mobile D-pad) ────────────────────────────────────────────
+  // frameloop is 'demand'; the D-pad lives outside the Canvas and only writes a ref,
+  // so it dispatches `vm:wake` to boot the render loop (which then stays alive via
+  // the velocity / mobileMove checks in stillActive).
+  useEffect(() => {
+    const wake = () => invalidate()
+    window.addEventListener('vm:wake', wake)
+    return () => window.removeEventListener('vm:wake', wake)
+  }, [invalidate])
 
   // ── Keyboard ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -271,8 +281,9 @@ export function NavController({
       if (dAlpha > 180) dAlpha -= 360 // wrap to [-180, 180]
       if (dAlpha < -180) dAlpha += 360
 
-      // alpha increases clockwise (turning right) → camera turns right → yaw decreases
-      const targetYaw = base.yaw - degToRad(dAlpha)
+      // DeviceOrientation alpha increases COUNTER-clockwise, so turning the phone
+      // right decreases alpha → yaw must move the same way as the phone (add dAlpha).
+      const targetYaw = base.yaw + degToRad(dAlpha)
       // beta increases when tilting forward (looking down) → pitch decreases
       const targetPitch = clampPitch(base.pitch - degToRad(e.beta - base.beta))
 
@@ -433,8 +444,11 @@ export function NavController({
     }
 
     // Request next frame only while something is still animating
+    const mobActive = !!mobileMoveRef?.current &&
+      (mobileMoveRef.current.dx !== 0 || mobileMoveRef.current.dz !== 0)
     const stillActive =
       gyroEnabled ||
+      mobActive ||
       keys.current.size > 0 ||
       walkTarget.current !== null ||
       transitioning.current ||
