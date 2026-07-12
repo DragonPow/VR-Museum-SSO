@@ -15,7 +15,7 @@ const COLLIDER_NAME_HINTS = ['CenterBlock']
 const COLLIDER_MARGIN = 0.5
 /** Small brightness lift on the baked atlas so the web reads as bright as the Blender
  *  (AgX) viewport instead of the slightly duller Reinhard bake. */
-const ATLAS_BRIGHTEN = 1.12
+const ATLAS_BRIGHTEN = 1.08
 
 export interface ExtractedSlot {
   id: string
@@ -177,7 +177,7 @@ export function RoomModel({
           // Soften the vivid PBR blue toward the pale Blender look: desaturate toward
           // its own luminance, then lift slightly so it's a soft powder blue.
           const lum = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b
-          const SAT = 0.7, LIFT = 0.9
+          const SAT = 0.6, LIFT = 0.82
           col.setRGB(
             Math.min(1, (lum + (col.r - lum) * SAT) * LIFT),
             Math.min(1, (lum + (col.g - lum) * SAT) * LIFT),
