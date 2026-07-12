@@ -177,7 +177,7 @@ export function RoomModel({
           // Soften the vivid PBR blue toward the pale Blender look: desaturate toward
           // its own luminance, then lift slightly so it's a soft powder blue.
           const lum = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b
-          const SAT = 0.75, LIFT = 1.0
+          const SAT = 0.7, LIFT = 0.9
           col.setRGB(
             Math.min(1, (lum + (col.r - lum) * SAT) * LIFT),
             Math.min(1, (lum + (col.g - lum) * SAT) * LIFT),
@@ -268,9 +268,15 @@ export function RoomModel({
           // Unlit MeshBasicMaterial showing the baked atlas 1:1 (matches the Blender
           // render exactly). No scene light touches it — the atlas already contains
           // all lighting, shadows and GI.
+          // Floor tiles read almost identical to the warm walls — give the tile plane a
+          // slightly cooler + darker tint so it's distinguishable (kept subtle).
+          const isFloor = mats.some((m) => m?.name != null && /tile/i.test(m.name))
+          const tint = isFloor
+            ? new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
+            : new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN)
           const basic = new THREE.MeshBasicMaterial({
             map: atlas,
-            color: new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN),
+            color: tint,
             side: THREE.DoubleSide,
             toneMapped: false, // The atlas was already tone-mapped in Blender (Reinhard on
             // the raw Cycles bake). Running the renderer's AgX on top would tone-map it a
