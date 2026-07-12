@@ -13,6 +13,9 @@ const COLLIDER_NAME_HINTS = ['CenterBlock']
 /** Push walkable boundary this far (m) outside the mesh footprint — keeps the camera
  *  a comfortable distance from the wall instead of clipping right into it. */
 const COLLIDER_MARGIN = 0.5
+/** Small brightness lift on the baked atlas so the web reads as bright as the Blender
+ *  (AgX) viewport instead of the slightly duller Reinhard bake. */
+const ATLAS_BRIGHTEN = 1.12
 
 export interface ExtractedSlot {
   id: string
@@ -170,7 +173,16 @@ export function RoomModel({
         if (obj.name.startsWith('TT_Dado')) {
           const m0 = Array.isArray(obj.material) ? obj.material[0] : obj.material
           const col = (m0 as THREE.MeshStandardMaterial | undefined)?.color?.clone()
-            ?? new THREE.Color('#aac4e0')
+            ?? new THREE.Color('#7f97b5')
+          // Soften the vivid PBR blue toward the pale Blender look: desaturate toward
+          // its own luminance, then lift slightly so it's a soft powder blue.
+          const lum = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b
+          const SAT = 0.5, LIFT = 1.1
+          col.setRGB(
+            Math.min(1, (lum + (col.r - lum) * SAT) * LIFT),
+            Math.min(1, (lum + (col.g - lum) * SAT) * LIFT),
+            Math.min(1, (lum + (col.b - lum) * SAT) * LIFT),
+          )
           obj.material = new THREE.MeshBasicMaterial({
             color: col, side: THREE.DoubleSide, toneMapped: false,
           })
@@ -258,6 +270,7 @@ export function RoomModel({
           // all lighting, shadows and GI.
           const basic = new THREE.MeshBasicMaterial({
             map: atlas,
+            color: new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN),
             side: THREE.DoubleSide,
             toneMapped: false, // The atlas was already tone-mapped in Blender (Reinhard on
             // the raw Cycles bake). Running the renderer's AgX on top would tone-map it a
