@@ -177,7 +177,7 @@ export function RoomModel({
           // Soften the vivid PBR blue toward the pale Blender look: desaturate toward
           // its own luminance, then lift slightly so it's a soft powder blue.
           const lum = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b
-          const SAT = 0.5, LIFT = 1.1
+          const SAT = 0.75, LIFT = 1.0
           col.setRGB(
             Math.min(1, (lum + (col.r - lum) * SAT) * LIFT),
             Math.min(1, (lum + (col.g - lum) * SAT) * LIFT),
