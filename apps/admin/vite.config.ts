@@ -9,6 +9,8 @@ export default defineConfig({
     proxy: {
       // Worker API (wrangler dev runs on 8787 by default)
       '/api': { target: 'http://localhost:8787', changeOrigin: true },
+      // Uploaded media served back from the Worker's R2 (local upload test loop)
+      '/media': { target: 'http://localhost:8787', changeOrigin: true },
       // Seed content files from the public web app
       '/content': { target: 'http://localhost:5173', changeOrigin: true },
     },

@@ -114,6 +114,19 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return json({ ok: true, publishedAt: new Date().toISOString() })
   }
 
+  // GET /media/* and /content/models/* — serve assets from R2. Needed for local dev
+  // (no public R2 URL) so uploads are viewable; in production PUBLIC_R2_URL points at
+  // the bucket directly and this is just a harmless fallback.
+  if (method === 'GET' && (pathname.startsWith('/media/') || pathname.startsWith('/content/models/'))) {
+    const key = pathname.replace(/^\/+/, '')
+    const obj = await env.MEDIA_BUCKET.get(key)
+    if (!obj) return json({ error: 'Not found' }, 404)
+    const headers = new Headers()
+    headers.set('Content-Type', obj.httpMetadata?.contentType ?? 'application/octet-stream')
+    headers.set('Cache-Control', 'public, max-age=60')
+    return new Response(obj.body, { headers })
+  }
+
   return json({ error: 'Not found' }, 404)
 }
 
