@@ -171,17 +171,19 @@ export function NavController({
     targetPos.current.copy(pos)
     targetYaw.current = y
     targetPitch.current = p
+    // Always ease the FACING to the viewpoint's saved angle — even when already standing at
+    // its position. (Previously the angle was applied only when travelling to a new spot, so
+    // clicking a viewpoint at/near your position moved the body but kept the old facing →
+    // "the view angle can't be selected".)
+    transitioning.current = true
 
-    // Skip the immediate snap when the camera is already at or very near this viewpoint
-    // (e.g. the user just captured this position as a new viewpoint — don't jump back to it)
+    // Hard-snap the body only when actually travelling to a new spot and not mid-drag;
+    // when already there, just turn in place to the saved angle.
     const alreadyThere = camera.position.distanceTo(pos) < 0.15
-    if (!alreadyThere) {
-      transitioning.current = true
-      if (!isDragging.current) {
-        camera.position.copy(pos)
-        yaw.current = y
-        pitch.current = p
-      }
+    if (!alreadyThere && !isDragging.current) {
+      camera.position.copy(pos)
+      yaw.current = y
+      pitch.current = p
     }
     invalidate()
   }, [activeViewpointId, camera, viewpoints, invalidate])
