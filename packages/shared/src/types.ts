@@ -56,6 +56,8 @@ export interface Slot {
   frameStyle: FrameStyle
   itemId: string | null
   visible: boolean
+  /** Optional grouping label (physical zone) so the admin can bucket 100+ slots. */
+  zone?: string
 }
 
 export interface RoomPortal {

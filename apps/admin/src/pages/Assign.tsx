@@ -94,22 +94,33 @@ export function Assign() {
                 </p>
               </div>
             </div>
-            <div style={styles.slotGrid}>
-              {selectedRoom.slots.length === 0 && (
-                <div style={styles.center}>Phòng này chưa có slot nào.</div>
-              )}
-              {selectedRoom.slots.map((slot) => {
-                const item = slot.itemId ? itemMap[slot.itemId] : null
-                return (
-                  <SlotCard
-                    key={slot.id}
-                    slot={slot}
-                    item={item ?? null}
-                    onClick={() => setPickerSlot(slot)}
-                  />
-                )
-              })}
-            </div>
+            {selectedRoom.slots.length === 0 ? (
+              <div style={styles.center}>Phòng này chưa có slot nào.</div>
+            ) : (
+              groupSlotsByZone(selectedRoom.slots).map(({ zone, slots }) => (
+                <div key={zone} style={styles.zoneBlock}>
+                  <div style={styles.zoneHeader}>
+                    <span>{zone}</span>
+                    <span style={styles.zoneCount}>
+                      {slots.filter((s) => s.itemId).length}/{slots.length}
+                    </span>
+                  </div>
+                  <div style={styles.slotGrid}>
+                    {slots.map((slot) => {
+                      const item = slot.itemId ? itemMap[slot.itemId] : null
+                      return (
+                        <SlotCard
+                          key={slot.id}
+                          slot={slot}
+                          item={item ?? null}
+                          onClick={() => setPickerSlot(slot)}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              ))
+            )}
           </>
         )}
       </div>
@@ -194,6 +205,35 @@ export function Assign() {
   )
 }
 
+const ZONE_ORDER = [
+  'Khu 1 — gần cửa',
+  'Khu 2',
+  'Khu 3',
+  'Khu 4',
+  'Khu 5 — cuối tường trái',
+  'Hốc đỏ — Cờ',
+  'Hốc đỏ — Bằng khen',
+  'Tường cuối phòng',
+  'Khu bên phải',
+]
+
+function groupSlotsByZone(slots: Slot[]): { zone: string; slots: Slot[] }[] {
+  const map = new Map<string, Slot[]>()
+  for (const s of slots) {
+    const z = s.zone ?? 'Khác'
+    const arr = map.get(z)
+    if (arr) arr.push(s)
+    else map.set(z, [s])
+  }
+  const rank = (z: string) => {
+    const i = ZONE_ORDER.indexOf(z)
+    return i === -1 ? 999 : i
+  }
+  return [...map.entries()]
+    .map(([zone, slots]) => ({ zone, slots }))
+    .sort((a, b) => rank(a.zone) - rank(b.zone) || a.zone.localeCompare(b.zone))
+}
+
 function SlotCard({ slot, item, onClick }: { slot: Slot; item: Item | null; onClick: () => void }) {
   return (
     <div style={styles.slotCard} onClick={onClick}>
@@ -241,6 +281,13 @@ const styles: Record<string, React.CSSProperties> = {
   mainHeader: { padding: '20px 24px', borderBottom: '1px solid #2a1e10', flexShrink: 0 },
   roomTitle: { fontSize: '18px', fontWeight: 700, color: '#f0e8d8' },
   roomSub: { fontSize: '12px', color: '#6a5a40', marginTop: '3px' },
+  zoneBlock: { marginBottom: '22px' },
+  zoneHeader: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+    padding: '2px 2px 8px', marginBottom: '10px', borderBottom: '1px solid #2a1e10',
+    color: '#c8a85a', fontWeight: 600, fontSize: '14px',
+  },
+  zoneCount: { color: '#9a9080', fontWeight: 400, fontSize: '12px' },
   slotGrid: {
     flex: 1, overflowY: 'auto', padding: '20px 24px',
     display: 'grid',

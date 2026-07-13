@@ -66,7 +66,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": "item-01",
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_002",
@@ -75,7 +76,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": "item-02",
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_003",
@@ -84,7 +86,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": "item-03",
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_004",
@@ -93,7 +96,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": "item-04",
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_005",
@@ -102,7 +106,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": "item-05",
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_006",
@@ -111,7 +116,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_007",
@@ -120,7 +126,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_008",
@@ -129,7 +136,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_009",
@@ -138,7 +146,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_010",
@@ -147,7 +156,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_011",
@@ -156,7 +166,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_012",
@@ -165,7 +176,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_013",
@@ -174,7 +186,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_014",
@@ -183,7 +196,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_015",
@@ -192,7 +206,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_016",
@@ -201,7 +216,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 1 — gần cửa"
         },
         {
           "id": "VM_Slot_TT_017",
@@ -210,7 +226,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_018",
@@ -219,7 +236,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_019",
@@ -228,7 +246,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_020",
@@ -237,7 +256,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_021",
@@ -246,7 +266,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_022",
@@ -255,7 +276,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_023",
@@ -264,7 +286,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_024",
@@ -273,7 +296,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_025",
@@ -282,7 +306,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_026",
@@ -291,7 +316,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_027",
@@ -300,7 +326,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_028",
@@ -309,7 +336,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_029",
@@ -318,7 +346,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_030",
@@ -327,7 +356,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_031",
@@ -336,7 +366,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_032",
@@ -345,7 +376,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_033",
@@ -354,7 +386,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_034",
@@ -363,7 +396,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_035",
@@ -372,7 +406,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_036",
@@ -381,7 +416,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_037",
@@ -390,7 +426,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_038",
@@ -399,7 +436,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 2"
         },
         {
           "id": "VM_Slot_TT_039",
@@ -408,7 +446,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_040",
@@ -417,7 +456,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_041",
@@ -426,7 +466,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_042",
@@ -435,7 +476,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_043",
@@ -444,7 +486,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_044",
@@ -453,7 +496,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_045",
@@ -462,7 +506,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_046",
@@ -471,7 +516,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_047",
@@ -480,7 +526,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_048",
@@ -489,7 +536,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_049",
@@ -498,7 +546,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_050",
@@ -507,7 +556,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_051",
@@ -516,7 +566,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_052",
@@ -525,7 +576,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_053",
@@ -534,7 +586,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_054",
@@ -543,7 +596,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_055",
@@ -552,7 +606,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_056",
@@ -561,7 +616,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_057",
@@ -570,7 +626,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_058",
@@ -579,7 +636,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_059",
@@ -588,7 +646,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_060",
@@ -597,7 +656,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 3"
         },
         {
           "id": "VM_Slot_TT_061",
@@ -606,7 +666,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_062",
@@ -615,7 +676,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_063",
@@ -624,7 +686,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_064",
@@ -633,7 +696,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_065",
@@ -642,7 +706,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_066",
@@ -651,7 +716,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_067",
@@ -660,7 +726,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_068",
@@ -669,7 +736,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_069",
@@ -678,7 +746,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_070",
@@ -687,7 +756,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_071",
@@ -696,7 +766,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_072",
@@ -705,7 +776,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_073",
@@ -714,7 +786,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_074",
@@ -723,7 +796,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_075",
@@ -732,7 +806,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_076",
@@ -741,7 +816,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_077",
@@ -750,7 +826,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_078",
@@ -759,7 +836,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_079",
@@ -768,7 +846,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_080",
@@ -777,7 +856,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_081",
@@ -786,7 +866,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_082",
@@ -795,7 +876,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 4"
         },
         {
           "id": "VM_Slot_TT_083",
@@ -804,7 +886,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_084",
@@ -813,7 +896,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_085",
@@ -822,7 +906,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_086",
@@ -831,7 +916,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_087",
@@ -840,7 +926,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_088",
@@ -849,7 +936,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu 5 — cuối tường trái"
         },
         {
           "id": "VM_Slot_TT_1000",
@@ -858,7 +946,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1001",
@@ -867,7 +956,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1002",
@@ -876,7 +966,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1003",
@@ -885,7 +976,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1004",
@@ -894,7 +986,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1005",
@@ -903,7 +996,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1006",
@@ -912,7 +1006,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1007",
@@ -921,7 +1016,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_1008",
@@ -930,7 +1026,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Tường cuối phòng"
         },
         {
           "id": "VM_Slot_TT_2000_Cert_1",
@@ -939,7 +1036,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Bằng khen"
         },
         {
           "id": "VM_Slot_TT_2000_Cert_2",
@@ -948,7 +1046,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Bằng khen"
         },
         {
           "id": "VM_Slot_TT_2000_Cert_3",
@@ -957,7 +1056,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Bằng khen"
         },
         {
           "id": "VM_Slot_TT_2000_Cert_4",
@@ -966,7 +1066,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Bằng khen"
         },
         {
           "id": "VM_Slot_TT_2000_Flag_1",
@@ -975,7 +1076,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Cờ"
         },
         {
           "id": "VM_Slot_TT_2000_Flag_2",
@@ -984,7 +1086,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Cờ"
         },
         {
           "id": "VM_Slot_TT_2000_Flag_3",
@@ -993,7 +1096,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Cờ"
         },
         {
           "id": "VM_Slot_TT_2000_Flag_4",
@@ -1002,7 +1106,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Cờ"
         },
         {
           "id": "VM_Slot_TT_2000_Flag_5",
@@ -1011,7 +1116,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Hốc đỏ — Cờ"
         },
         {
           "id": "VM_Slot_TT_3000",
@@ -1020,7 +1126,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3001",
@@ -1029,7 +1136,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3002",
@@ -1038,7 +1146,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3003",
@@ -1047,7 +1156,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3004",
@@ -1056,7 +1166,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3005",
@@ -1065,7 +1176,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3006",
@@ -1074,7 +1186,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3007",
@@ -1083,7 +1196,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3008",
@@ -1092,7 +1206,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3009",
@@ -1101,7 +1216,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3010",
@@ -1110,7 +1226,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_3011",
@@ -1119,7 +1236,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         },
         {
           "id": "VM_Slot_TT_9000",
@@ -1128,7 +1246,8 @@
           "type": "image",
           "frameStyle": "classic",
           "itemId": null,
-          "visible": true
+          "visible": true,
+          "zone": "Khu bên phải"
         }
       ],
       "portals": []

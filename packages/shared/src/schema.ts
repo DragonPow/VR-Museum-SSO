@@ -62,6 +62,9 @@ export const SlotSchema = z.object({
   frameStyle: z.enum(FRAME_STYLES),
   itemId: NonEmptyString.nullable(),
   visible: z.boolean(),
+  // Optional grouping label (e.g. "Khu 1", "Hoc do - Co") so the admin can bucket
+  // 100+ slots by physical zone instead of one flat list.
+  zone: z.string().optional(),
 })
 
 export const RoomPortalSchema = z.object({
