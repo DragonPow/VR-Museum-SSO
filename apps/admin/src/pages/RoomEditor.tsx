@@ -174,6 +174,7 @@ export function RoomEditor() {
   const [portalTargetId, setPortalTargetId] = useState('')
   const [modelUrlInput, setModelUrlInput] = useState('')
   const [modelUrlError, setModelUrlError] = useState<string | null>(null)
+  const [lightmapUrlInput, setLightmapUrlInput] = useState('')
   const [roomTitleInput, setRoomTitleInput] = useState('')
   const [modelOffsetInput, setModelOffsetInput] = useState<[number, number, number]>([0, 0, 0])
 
@@ -203,6 +204,10 @@ export function RoomEditor() {
     setModelUrlInput(room.modelUrl ?? '')
     setModelUrlError(null)
   }, [room.id, room.modelUrl])
+
+  useEffect(() => {
+    setLightmapUrlInput(room.lightmapUrl ?? '')
+  }, [room.id, room.lightmapUrl])
 
   useEffect(() => {
     setRoomTitleInput(room.title)
@@ -344,6 +349,11 @@ export function RoomEditor() {
     setModelUrlError(null)
   }
 
+  const handleApplyLightmapUrl = () => {
+    const nextUrl = lightmapUrlInput.trim()
+    updateRoom(room.id, { lightmapUrl: nextUrl || null })
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div style={styles.root}>
@@ -431,6 +441,33 @@ export function RoomEditor() {
                 }
               }}
             />
+
+            <label style={styles.label}>URL lightmap (atlas .webp)</label>
+            <input
+              style={styles.input}
+              value={lightmapUrlInput}
+              placeholder="/content/models/truyenthong_combined.webp"
+              onChange={(e) => setLightmapUrlInput(e.target.value)}
+            />
+            <div style={styles.inlineActions}>
+              <button style={styles.btnPrimary} onClick={handleApplyLightmapUrl}>
+                Áp dụng lightmap
+              </button>
+              {room.lightmapUrl && (
+                <button
+                  style={styles.btnCancel}
+                  onClick={() => {
+                    setLightmapUrlInput('')
+                    updateRoom(room.id, { lightmapUrl: null })
+                  }}
+                >
+                  Bỏ lightmap
+                </button>
+              )}
+            </div>
+            <div style={styles.hint}>
+              Atlas ánh sáng bake từ Blender (đọc qua UV2). Để trống nếu phòng không dùng lightmap.
+            </div>
 
             <label style={styles.label}>Model offset (X / Y / Z)</label>
             <div style={styles.fieldRow3}>
