@@ -1,15 +1,17 @@
 export interface ResizedVariants {
-  thumb: Blob   // 200px wide — library thumbnails
-  wall: Blob    // 800px wide — 3D wall texture
-  full: Blob    // 1200px wide — info modal
+  thumb: Blob   // 200px wide  — library thumbnails
+  wall: Blob    // 800px wide  — 3D wall texture (small framed photos)
+  full: Blob    // up to 4096px wide — info modal + hi-res backdrop panels
 }
 
 export async function resizeImage(file: File): Promise<ResizedVariants> {
   const img = await loadImage(file)
   const [thumb, wall, full] = await Promise.all([
-    resizeTo(img, 200),
-    resizeTo(img, 800),
-    resizeTo(img, 1200),
+    resizeTo(img, 200, 0.82),
+    resizeTo(img, 800, 0.85),
+    // "full" keeps near-original resolution (capped at 4096) so large backdrop
+    // panels stay sharp up close and the info modal looks crisp.
+    resizeTo(img, 4096, 0.9),
   ])
   return { thumb, wall, full }
 }
@@ -24,7 +26,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   })
 }
 
-async function resizeTo(img: HTMLImageElement, maxWidth: number): Promise<Blob> {
+async function resizeTo(img: HTMLImageElement, maxWidth: number, quality = 0.85): Promise<Blob> {
   const scale = Math.min(1, maxWidth / img.naturalWidth)
   const w = Math.max(1, Math.round(img.naturalWidth * scale))
   const h = Math.max(1, Math.round(img.naturalHeight * scale))
@@ -41,7 +43,7 @@ async function resizeTo(img: HTMLImageElement, maxWidth: number): Promise<Blob> 
     canvas.toBlob(
       (b) => (b ? resolve(b) : reject(new Error('toBlob failed'))),
       'image/webp',
-      0.85,
+      quality,
     )
   })
 }
