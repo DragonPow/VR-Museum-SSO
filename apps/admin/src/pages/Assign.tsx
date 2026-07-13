@@ -215,16 +215,30 @@ const ZONE_ORDER = [
   'Khu 3',
   'Khu 4',
   'Khu 5 — cuối tường trái',
+  'Tường trái',
   'Hốc đỏ — Cờ',
   'Hốc đỏ — Bằng khen',
   'Tường cuối phòng',
   'Khu bên phải',
 ]
 
+// When a slot has no baked `zone` (older content), derive a rough one from its name
+// so the list still buckets instead of showing 100+ flat slots.
+function fallbackZone(s: Slot): string {
+  const m = /(\d+)(?:_(Flag|Cert))?/.exec(s.name || s.id)
+  if (!m) return 'Khác'
+  const num = Number(m[1])
+  if (m[2] === 'Flag') return 'Hốc đỏ — Cờ'
+  if (m[2] === 'Cert') return 'Hốc đỏ — Bằng khen'
+  if (num >= 1000 && num < 2000) return 'Tường cuối phòng'
+  if (num >= 2000) return 'Khu bên phải'
+  return 'Tường trái'
+}
+
 function groupSlotsByZone(slots: Slot[]): { zone: string; slots: Slot[] }[] {
   const map = new Map<string, Slot[]>()
   for (const s of slots) {
-    const z = s.zone ?? 'Khác'
+    const z = s.zone ?? fallbackZone(s)
     const arr = map.get(z)
     if (arr) arr.push(s)
     else map.set(z, [s])
