@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updatedAt": "2026-06-27T00:00:00.000Z",
+  "updatedAt": "2026-07-13T16:32:54Z",
   "periods": [
     {
       "id": "period-1975-1985",
@@ -65,7 +65,7 @@
           "name": "TT_001",
           "type": "image",
           "frameStyle": "classic",
-          "itemId": "item-01",
+          "itemId": null,
           "visible": true
         },
         {
@@ -74,7 +74,7 @@
           "name": "TT_002",
           "type": "image",
           "frameStyle": "classic",
-          "itemId": "item-02",
+          "itemId": null,
           "visible": true
         },
         {
@@ -83,7 +83,7 @@
           "name": "TT_003",
           "type": "image",
           "frameStyle": "classic",
-          "itemId": "item-03",
+          "itemId": null,
           "visible": true
         },
         {
@@ -92,7 +92,7 @@
           "name": "TT_004",
           "type": "image",
           "frameStyle": "classic",
-          "itemId": "item-04",
+          "itemId": null,
           "visible": true
         },
         {
@@ -101,7 +101,7 @@
           "name": "TT_005",
           "type": "image",
           "frameStyle": "classic",
-          "itemId": "item-05",
+          "itemId": null,
           "visible": true
         },
         {
@@ -1134,107 +1134,6 @@
       "portals": []
     }
   ],
-  "items": [
-    {
-      "id": "item-01",
-      "title": "Ngày thành lập công ty",
-      "year": 1975,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Lễ thành lập công ty ngày 30/4/1975.",
-      "longDesc": "Ngày 30 tháng 4 năm 1975, công ty chính thức được thành lập với 12 nhân viên đầu tiên, đặt nền móng cho chặng đường 50 năm phát triển.",
-      "tags": [
-        "thành lập",
-        "lịch sử"
-      ],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/photo-1975.svg",
-      "wallTextureUrl": "/content/images/photo-1975.png",
-      "fullUrl": "/content/images/photo-1975.svg",
-      "source": "Lưu trữ công ty",
-      "approvedBy": "Ban Giám đốc",
-      "priority": 1,
-      "status": "approved"
-    },
-    {
-      "id": "item-02",
-      "title": "Xưởng sản xuất đầu tiên",
-      "year": 1978,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Xưởng sản xuất đầu tiên đi vào hoạt động năm 1978.",
-      "longDesc": "Với diện tích 500m², xưởng sản xuất đầu tiên của công ty tại Hà Nội đã đi vào hoạt động, đánh dấu bước chuyển từ thủ công sang sản xuất có quy trình.",
-      "tags": [
-        "sản xuất",
-        "xưởng"
-      ],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/photo-1980.svg",
-      "wallTextureUrl": "/content/images/photo-1980.png",
-      "fullUrl": "/content/images/photo-1980.svg",
-      "source": "Phòng kỹ thuật",
-      "approvedBy": "Ban Giám đốc",
-      "priority": 2,
-      "status": "approved"
-    },
-    {
-      "id": "item-03",
-      "title": "Hội nghị toàn quốc 1985",
-      "year": 1985,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Hội nghị mở rộng sản xuất lần đầu tiên quy mô toàn quốc.",
-      "longDesc": "Năm 1985, công ty tổ chức hội nghị toàn quốc lần đầu tiên với sự tham gia của hơn 200 đại biểu từ các chi nhánh trên khắp cả nước.",
-      "tags": [
-        "hội nghị",
-        "mở rộng"
-      ],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/photo-1985.svg",
-      "wallTextureUrl": "/content/images/photo-1985.png",
-      "fullUrl": "/content/images/photo-1985.svg",
-      "source": "Phòng Truyền thông",
-      "approvedBy": "Ban Giám đốc",
-      "priority": 3,
-      "status": "approved"
-    },
-    {
-      "id": "item-04",
-      "title": "Kỷ niệm 20 năm thành lập",
-      "year": 1995,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Lễ kỷ niệm 20 năm thành lập với hơn 500 CBNV.",
-      "longDesc": "Lễ kỷ niệm 20 năm thành lập được tổ chức long trọng tại Cung Văn hóa Lao động với sự tham dự của lãnh đạo Bộ, đại diện các đối tác và toàn thể cán bộ nhân viên.",
-      "tags": [
-        "kỷ niệm",
-        "20 năm"
-      ],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/photo-1995.svg",
-      "wallTextureUrl": "/content/images/photo-1995.png",
-      "fullUrl": "/content/images/photo-1995.svg",
-      "source": "Phòng Hành chính",
-      "approvedBy": "Ban Giám đốc",
-      "priority": 4,
-      "status": "approved"
-    },
-    {
-      "id": "item-05",
-      "title": "Chào mừng 50 năm",
-      "year": 2025,
-      "periodId": "period-1975-1985",
-      "shortDesc": "Lễ kỷ niệm 50 năm thành lập công ty.",
-      "longDesc": "Năm 2025 đánh dấu nửa thế kỷ xây dựng và phát triển. Công ty hiện có hơn 5.000 CBNV, hoạt động tại 20 tỉnh thành với doanh thu hàng ngàn tỷ đồng mỗi năm.",
-      "tags": [
-        "kỷ niệm",
-        "50 năm"
-      ],
-      "mediaType": "image",
-      "thumbUrl": "/content/images/photo-2025.svg",
-      "wallTextureUrl": "/content/images/photo-2025.png",
-      "fullUrl": "/content/images/photo-2025.svg",
-      "source": "Ban Tổ chức",
-      "approvedBy": "Ban Giám đốc",
-      "priority": 5,
-      "status": "approved"
-    }
-  ],
+  "items": [],
   "textures": []
 }
