@@ -98,6 +98,7 @@ export function Assign() {
                 </p>
               </div>
             </div>
+            <div style={styles.scrollArea}>
             {selectedRoom.slots.length === 0 ? (
               <div style={styles.center}>Phòng này chưa có slot nào.</div>
             ) : (
@@ -125,6 +126,7 @@ export function Assign() {
                 </div>
               ))
             )}
+            </div>
           </>
         )}
       </div>
@@ -307,12 +309,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   zoneCount: { color: '#9a9080', fontWeight: 400, fontSize: '12px' },
   slotGrid: {
-    flex: 1, overflowY: 'auto', padding: '20px 24px',
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
     gap: '14px',
     alignContent: 'start',
   },
+  scrollArea: { flex: 1, overflowY: 'auto', padding: '20px 24px' },
   slotCard: { background: 'rgba(255,255,255,0.04)', border: '1px solid #2a1e10', borderRadius: '10px', overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' },
   slotThumbWrap: { aspectRatio: '4/3', overflow: 'hidden', background: '#1a1208' },
   slotThumb: { width: '100%', height: '100%', objectFit: 'cover' },
