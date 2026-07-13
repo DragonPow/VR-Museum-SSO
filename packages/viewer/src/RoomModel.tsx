@@ -433,6 +433,23 @@ export function RoomModel({
       } else {
         // Frame primitive: keep visible; fix PBR
         entry.hasFrame = true
+        // The wide hero banner shares CR_Frame with all 119 frames — give ITS frame a
+        // dedicated dark, sleek material so the premium banner isn't boxed in a brown
+        // picture frame, WITHOUT touching the other 118 frames.
+        if (slotId === 'VM_Slot_TT_9000') {
+          const base = (Array.isArray(obj.material) ? obj.material[0] : obj.material) as
+            | THREE.MeshStandardMaterial
+            | undefined
+          if (base) {
+            const m = base.clone()
+            m.color = new THREE.Color(0.05, 0.05, 0.06)
+            m.metalness = 0
+            m.roughness = 0.5
+            m.needsUpdate = true
+            obj.material = m
+          }
+          return
+        }
         mats.forEach((mat) => {
           if (!mat) return
           if (mat instanceof THREE.MeshStandardMaterial && mat.metalness > 0.1)
