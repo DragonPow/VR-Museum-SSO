@@ -45,16 +45,12 @@ export const useDraftStore = create<DraftStore>()(
       error: null,
 
       init: async () => {
-        const localContent = get().content
-        const localDirty = get().dirty
-
-        if (localContent && localDirty) {
-          set({ loading: false, error: null })
-          return
-        }
-
         set({ loading: true, error: null })
 
+        // Server (Worker + R2 draft.json) is the source of truth. Always load it when
+        // reachable so the admin can't get stuck on a stale localStorage draft — that
+        // bug made it show DEFAULT_CONTENT and, on publish, overwrite the real
+        // content.json (losing lightmapUrl / slots). Save edits via "Lưu draft".
         try {
           const res = await fetch(`${API_BASE}/api/draft`)
           if (res.ok) {
@@ -64,12 +60,10 @@ export const useDraftStore = create<DraftStore>()(
           }
         } catch {}
 
-        if (localContent) {
-          set({ content: localContent, loading: false, error: null })
-          return
-        }
-
-        set({ content: DEFAULT_CONTENT, loading: false, dirty: true })
+        // Server unreachable: keep any local copy, else seed. NOT dirty, so a later
+        // successful load always replaces it.
+        const local = get().content
+        set({ content: local ?? DEFAULT_CONTENT, loading: false, dirty: false })
       },
 
       loadContent: (content) => set({ content, dirty: false }),
@@ -337,7 +331,7 @@ export const useDraftStore = create<DraftStore>()(
         }),
     }),
     {
-      name: 'vm-admin-draft-v1',
+      name: 'vm-admin-draft-v2',
       partialize: (s) => ({ content: s.content, dirty: s.dirty }),
     },
   ),
