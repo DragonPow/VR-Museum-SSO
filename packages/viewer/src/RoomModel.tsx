@@ -34,8 +34,9 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
     shader.uniforms.uGroutPx = { value: 0.7 }     // grout half-width in pixels (thinner line)
     shader.uniforms.uGroutDark = { value: 0.11 }  // grout darkening (soft grey, gentle)
     shader.uniforms.uSheen = { value: 0.18 }      // polished-floor grazing sheen (gloss)
-    shader.uniforms.uClean = { value: 0.75 }      // desaturate the baked stone veins
-    shader.uniforms.uMipBias = { value: 2.8 }     // sample atlas coarse -> blur out the diagonal veins
+    shader.uniforms.uClean = { value: 0.7 }       // desaturate the baked stone veins
+    shader.uniforms.uMipBias = { value: 3.5 }     // sample atlas coarse -> blur fine veins
+    shader.uniforms.uFlatten = { value: 0.55 }    // pull toward a uniform tone -> kills broad diagonal veins
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
       .replace(
@@ -45,7 +46,7 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nvarying vec3 vVMWorld;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uClean;\nuniform float uMipBias;',
+        '#include <common>\nvarying vec3 vVMWorld;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uClean;\nuniform float uMipBias;\nuniform float uFlatten;',
       )
       .replace(
         '#include <map_fragment>',
@@ -56,6 +57,7 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
           '{',
           '  float L = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));',
           '  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(L), uClean) * 1.07;',
+          '  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.62), uFlatten);',
           '  vec2 g = vVMWorld.xz / uTile;',
           '  vec2 fw = fwidth(g);',
           '  vec2 dist = (0.5 - abs(fract(g) - 0.5)) / max(fw, vec2(1e-5));',
@@ -72,7 +74,7 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
         ].join('\n'),
       )
   }
-  mat.customProgramCacheKey = () => 'vm-tiled-floor-v3'
+  mat.customProgramCacheKey = () => 'vm-tiled-floor-v4'
   return mat
 }
 
