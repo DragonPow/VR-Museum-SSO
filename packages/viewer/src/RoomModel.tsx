@@ -30,9 +30,9 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
     map, color: tint, side: THREE.DoubleSide, toneMapped: false,
   })
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uTile = { value: 0.5 }        // tile size in metres
-    shader.uniforms.uGroutPx = { value: 1.0 }     // grout half-width in pixels
-    shader.uniforms.uGroutDark = { value: 0.17 }  // grout darkening (soft grey, not black)
+    shader.uniforms.uTile = { value: 0.9 }        // tile size in metres (~1.8x, conference-tile feel)
+    shader.uniforms.uGroutPx = { value: 0.7 }     // grout half-width in pixels (thinner line)
+    shader.uniforms.uGroutDark = { value: 0.11 }  // grout darkening (soft grey, gentle)
     shader.uniforms.uSheen = { value: 0.18 }      // polished-floor grazing sheen (gloss)
     shader.uniforms.uClean = { value: 0.5 }       // flatten the smeary baked veins
     shader.vertexShader = shader.vertexShader
