@@ -17,66 +17,6 @@ const COLLIDER_MARGIN = 0.5
  *  (AgX) viewport instead of the slightly duller Reinhard bake. */
 const ATLAS_BRIGHTEN = 1.08
 
-/**
- * Floor material: the baked atlas carries the lighting, but its tile detail is
- * low-res and smeared. Overlay a crisp, world-axis-aligned grout grid (kept sharp
- * at any distance via fwidth anti-aliasing, so it never moires) plus a subtle
- * per-tile brightness variation, so the floor reads as clean square tiles that
- * line up with the (axis-aligned) walls. No re-bake needed -- pure shader work on
- * top of the already-baked colour.
- */
-function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasicMaterial {
-  const mat = new THREE.MeshBasicMaterial({
-    map, color: tint, side: THREE.DoubleSide, toneMapped: false,
-  })
-  mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uTile = { value: 0.9 }        // tile size in metres (~1.8x, conference-tile feel)
-    shader.uniforms.uGroutPx = { value: 0.7 }     // grout half-width in pixels (thinner line)
-    shader.uniforms.uGroutDark = { value: 0.11 }  // grout darkening (soft grey, gentle)
-    shader.uniforms.uSheen = { value: 0.18 }      // polished-floor grazing sheen (gloss)
-    shader.uniforms.uClean = { value: 0.7 }       // desaturate the baked stone veins
-    shader.uniforms.uMipBias = { value: 3.5 }     // sample atlas coarse -> blur fine veins
-    shader.uniforms.uFlatten = { value: 0.55 }    // pull toward a uniform tone -> kills broad diagonal veins
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
-      .replace(
-        '#include <project_vertex>',
-        '#include <project_vertex>\n  vVMWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;',
-      )
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        '#include <common>',
-        '#include <common>\nvarying vec3 vVMWorld;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uClean;\nuniform float uMipBias;\nuniform float uFlatten;',
-      )
-      .replace(
-        '#include <map_fragment>',
-        [
-          '#ifdef USE_MAP',
-          '  diffuseColor *= texture2D( map, vMapUv, uMipBias );',
-          '#endif',
-          '{',
-          '  float L = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));',
-          '  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(L), uClean) * 1.07;',
-          '  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.62), uFlatten);',
-          '  vec2 g = vVMWorld.xz / uTile;',
-          '  vec2 fw = fwidth(g);',
-          '  vec2 dist = (0.5 - abs(fract(g) - 0.5)) / max(fw, vec2(1e-5));',
-          '  float line = min(dist.x, dist.y);',
-          '  float grout = 1.0 - smoothstep(uGroutPx, uGroutPx + 1.0, line);',
-          '  vec2 cell = floor(g);',
-          '  float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);',
-          '  diffuseColor.rgb *= (0.985 + 0.03 * h);',
-          '  diffuseColor.rgb *= (1.0 - grout * uGroutDark);',
-          '  vec3 V = normalize(cameraPosition - vVMWorld);',
-          '  float fres = pow(1.0 - clamp(V.y, 0.0, 1.0), 3.0);',
-          '  diffuseColor.rgb += fres * uSheen;',
-          '}',
-        ].join('\n'),
-      )
-  }
-  mat.customProgramCacheKey = () => 'vm-tiled-floor-v4'
-  return mat
-}
 
 export interface ExtractedSlot {
   id: string
@@ -203,6 +143,69 @@ export function RoomModel({
     }
   }, [propsUrl, invalidate])
 
+  // ── Dedicated floor: a high-res texture baked in Blender (clean tiles + grout +
+  //    real room lighting, Reinhard-tonemapped like the atlas). The floor is a flat
+  //    plane, so we rebuild it here with a top-down UV and show the baked texture,
+  //    and hide the GLB's original floor faces. Keeps the floor "from Blender". ────
+  const floorUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_floor') : null
+  const [floorTex, setFloorTex] = useState<THREE.Texture | null>(null)
+  useEffect(() => {
+    if (!floorUrl) {
+      setFloorTex(null)
+      return
+    }
+    let cancelled = false
+    new THREE.TextureLoader().load(
+      floorUrl,
+      (tex) => {
+        if (cancelled) {
+          tex.dispose()
+          return
+        }
+        tex.flipY = false
+        tex.colorSpace = THREE.SRGBColorSpace
+        tex.anisotropy = 8
+        tex.needsUpdate = true
+        setFloorTex(tex)
+        invalidate()
+      },
+      undefined,
+      () => {
+        /* floor texture is optional */
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [floorUrl, invalidate])
+
+  useEffect(() => {
+    if (!floorTex) return
+    const g = new THREE.BufferGeometry()
+    const pos = new Float32Array([
+      -13, 0, 0, 13, 0, 0, 13, 0, -20, -13, 0, -20,
+      -9.6, 0, -20, 9.6, 0, -20, 9.6, 0, -23, -9.6, 0, -23,
+    ])
+    const uv = new Float32Array([
+      0, 0, 1, 0, 1, 0.8696, 0, 0.8696,
+      0.1308, 0.8696, 0.8692, 0.8696, 0.8692, 1, 0.1308, 1,
+    ])
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2))
+    g.setIndex([0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7])
+    g.computeVertexNormals()
+    const mat = new THREE.MeshBasicMaterial({ map: floorTex, side: THREE.DoubleSide, toneMapped: false })
+    const mesh = new THREE.Mesh(g, mat)
+    mesh.name = 'VM_BakedFloor'
+    scene.add(mesh)
+    invalidate()
+    return () => {
+      scene.remove(mesh)
+      g.dispose()
+      mat.dispose()
+    }
+  }, [floorTex, scene, invalidate])
+
   useEffect(() => {
     scene.updateMatrixWorld(true)
 
@@ -218,6 +221,7 @@ export function RoomModel({
 
     scene.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return
+      if (obj.name === 'VM_BakedFloor') return
       obj.castShadow    = false
       obj.receiveShadow = false
       obj.frustumCulled = true
@@ -345,12 +349,13 @@ export function RoomModel({
           // Per material slot: the floor tile slot gets a crisp procedural grout grid;
           // walls / ceiling stay on the plain baked atlas.
           const wallTint = new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN)
-          const floorTint = new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
           const isTileMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /tile/i.test(m.name)
           const makeShell = (isTile: boolean) =>
             isTile
-              ? makeTiledFloorMaterial(atlas, floorTint)
+              // Hide the GLB's original floor faces; a dedicated Blender-baked floor
+              // plane (VM_BakedFloor, added below) is drawn in their place.
+              ? new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
               : new THREE.MeshBasicMaterial({
                   map: atlas, color: wallTint, side: THREE.DoubleSide, toneMapped: false,
                 })
