@@ -1,0 +1,1240 @@
+{
+  "version": "1",
+  "updatedAt": "2026-06-27T00:00:00.000Z",
+  "periods": [
+    {
+      "id": "period-1975-1985",
+      "slug": "1976-2026",
+      "title": "1976–2026 — Những ngày đầu",
+      "yearStart": 1976,
+      "yearEnd": 2026,
+      "order": 1,
+      "description": "Giai đoạn đặt nền móng và những bước trưởng thành đầu tiên của công ty.",
+      "themeColor": "#c8a85a"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "room-truyenthong",
+      "periodId": "period-1975-1985",
+      "slug": "phong-truyen-thong",
+      "title": "Phòng truyền thống",
+      "order": 1,
+      "template": "honor",
+      "modelUrl": "/content/models/truyenthong.glb",
+      "lightmapUrl": "/content/models/truyenthong_combined.webp",
+      "wallTextureId": null,
+      "floorTextureId": null,
+      "ceilingTextureId": null,
+      "lightingPreset": "neutral",
+      "entryViewpointId": "vp-entry",
+      "viewpoints": [
+        {
+          "id": "vp-entry",
+          "name": "Cửa vào",
+          "position": {
+            "x": 0,
+            "y": 1.6,
+            "z": -1.5
+          },
+          "lookAt": {
+            "x": 0,
+            "y": 1.6,
+            "z": -8
+          }
+        },
+        {
+          "id": "vp-center",
+          "name": "Trung tâm",
+          "position": {
+            "x": 0,
+            "y": 1.6,
+            "z": -11.7
+          },
+          "lookAt": {
+            "x": 0,
+            "y": 1.6,
+            "z": -22
+          }
+        }
+      ],
+      "slots": [
+        {
+          "id": "VM_Slot_TT_001",
+          "roomId": "room-truyenthong",
+          "name": "TT_001",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": "item-01",
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_002",
+          "roomId": "room-truyenthong",
+          "name": "TT_002",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": "item-02",
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_003",
+          "roomId": "room-truyenthong",
+          "name": "TT_003",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": "item-03",
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_004",
+          "roomId": "room-truyenthong",
+          "name": "TT_004",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": "item-04",
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_005",
+          "roomId": "room-truyenthong",
+          "name": "TT_005",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": "item-05",
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_006",
+          "roomId": "room-truyenthong",
+          "name": "TT_006",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_007",
+          "roomId": "room-truyenthong",
+          "name": "TT_007",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_008",
+          "roomId": "room-truyenthong",
+          "name": "TT_008",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_009",
+          "roomId": "room-truyenthong",
+          "name": "TT_009",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_010",
+          "roomId": "room-truyenthong",
+          "name": "TT_010",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_011",
+          "roomId": "room-truyenthong",
+          "name": "TT_011",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_012",
+          "roomId": "room-truyenthong",
+          "name": "TT_012",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_013",
+          "roomId": "room-truyenthong",
+          "name": "TT_013",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_014",
+          "roomId": "room-truyenthong",
+          "name": "TT_014",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_015",
+          "roomId": "room-truyenthong",
+          "name": "TT_015",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_016",
+          "roomId": "room-truyenthong",
+          "name": "TT_016",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_017",
+          "roomId": "room-truyenthong",
+          "name": "TT_017",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_018",
+          "roomId": "room-truyenthong",
+          "name": "TT_018",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_019",
+          "roomId": "room-truyenthong",
+          "name": "TT_019",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_020",
+          "roomId": "room-truyenthong",
+          "name": "TT_020",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_021",
+          "roomId": "room-truyenthong",
+          "name": "TT_021",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_022",
+          "roomId": "room-truyenthong",
+          "name": "TT_022",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_023",
+          "roomId": "room-truyenthong",
+          "name": "TT_023",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_024",
+          "roomId": "room-truyenthong",
+          "name": "TT_024",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_025",
+          "roomId": "room-truyenthong",
+          "name": "TT_025",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_026",
+          "roomId": "room-truyenthong",
+          "name": "TT_026",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_027",
+          "roomId": "room-truyenthong",
+          "name": "TT_027",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_028",
+          "roomId": "room-truyenthong",
+          "name": "TT_028",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_029",
+          "roomId": "room-truyenthong",
+          "name": "TT_029",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_030",
+          "roomId": "room-truyenthong",
+          "name": "TT_030",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_031",
+          "roomId": "room-truyenthong",
+          "name": "TT_031",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_032",
+          "roomId": "room-truyenthong",
+          "name": "TT_032",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_033",
+          "roomId": "room-truyenthong",
+          "name": "TT_033",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_034",
+          "roomId": "room-truyenthong",
+          "name": "TT_034",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_035",
+          "roomId": "room-truyenthong",
+          "name": "TT_035",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_036",
+          "roomId": "room-truyenthong",
+          "name": "TT_036",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_037",
+          "roomId": "room-truyenthong",
+          "name": "TT_037",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_038",
+          "roomId": "room-truyenthong",
+          "name": "TT_038",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_039",
+          "roomId": "room-truyenthong",
+          "name": "TT_039",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_040",
+          "roomId": "room-truyenthong",
+          "name": "TT_040",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_041",
+          "roomId": "room-truyenthong",
+          "name": "TT_041",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_042",
+          "roomId": "room-truyenthong",
+          "name": "TT_042",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_043",
+          "roomId": "room-truyenthong",
+          "name": "TT_043",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_044",
+          "roomId": "room-truyenthong",
+          "name": "TT_044",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_045",
+          "roomId": "room-truyenthong",
+          "name": "TT_045",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_046",
+          "roomId": "room-truyenthong",
+          "name": "TT_046",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_047",
+          "roomId": "room-truyenthong",
+          "name": "TT_047",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_048",
+          "roomId": "room-truyenthong",
+          "name": "TT_048",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_049",
+          "roomId": "room-truyenthong",
+          "name": "TT_049",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_050",
+          "roomId": "room-truyenthong",
+          "name": "TT_050",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_051",
+          "roomId": "room-truyenthong",
+          "name": "TT_051",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_052",
+          "roomId": "room-truyenthong",
+          "name": "TT_052",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_053",
+          "roomId": "room-truyenthong",
+          "name": "TT_053",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_054",
+          "roomId": "room-truyenthong",
+          "name": "TT_054",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_055",
+          "roomId": "room-truyenthong",
+          "name": "TT_055",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_056",
+          "roomId": "room-truyenthong",
+          "name": "TT_056",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_057",
+          "roomId": "room-truyenthong",
+          "name": "TT_057",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_058",
+          "roomId": "room-truyenthong",
+          "name": "TT_058",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_059",
+          "roomId": "room-truyenthong",
+          "name": "TT_059",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_060",
+          "roomId": "room-truyenthong",
+          "name": "TT_060",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_061",
+          "roomId": "room-truyenthong",
+          "name": "TT_061",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_062",
+          "roomId": "room-truyenthong",
+          "name": "TT_062",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_063",
+          "roomId": "room-truyenthong",
+          "name": "TT_063",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_064",
+          "roomId": "room-truyenthong",
+          "name": "TT_064",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_065",
+          "roomId": "room-truyenthong",
+          "name": "TT_065",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_066",
+          "roomId": "room-truyenthong",
+          "name": "TT_066",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_067",
+          "roomId": "room-truyenthong",
+          "name": "TT_067",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_068",
+          "roomId": "room-truyenthong",
+          "name": "TT_068",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_069",
+          "roomId": "room-truyenthong",
+          "name": "TT_069",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_070",
+          "roomId": "room-truyenthong",
+          "name": "TT_070",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_071",
+          "roomId": "room-truyenthong",
+          "name": "TT_071",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_072",
+          "roomId": "room-truyenthong",
+          "name": "TT_072",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_073",
+          "roomId": "room-truyenthong",
+          "name": "TT_073",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_074",
+          "roomId": "room-truyenthong",
+          "name": "TT_074",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_075",
+          "roomId": "room-truyenthong",
+          "name": "TT_075",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_076",
+          "roomId": "room-truyenthong",
+          "name": "TT_076",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_077",
+          "roomId": "room-truyenthong",
+          "name": "TT_077",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_078",
+          "roomId": "room-truyenthong",
+          "name": "TT_078",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_079",
+          "roomId": "room-truyenthong",
+          "name": "TT_079",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_080",
+          "roomId": "room-truyenthong",
+          "name": "TT_080",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_081",
+          "roomId": "room-truyenthong",
+          "name": "TT_081",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_082",
+          "roomId": "room-truyenthong",
+          "name": "TT_082",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_083",
+          "roomId": "room-truyenthong",
+          "name": "TT_083",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_084",
+          "roomId": "room-truyenthong",
+          "name": "TT_084",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_085",
+          "roomId": "room-truyenthong",
+          "name": "TT_085",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_086",
+          "roomId": "room-truyenthong",
+          "name": "TT_086",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_087",
+          "roomId": "room-truyenthong",
+          "name": "TT_087",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_088",
+          "roomId": "room-truyenthong",
+          "name": "TT_088",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1000",
+          "roomId": "room-truyenthong",
+          "name": "TT_1000",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1001",
+          "roomId": "room-truyenthong",
+          "name": "TT_1001",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1002",
+          "roomId": "room-truyenthong",
+          "name": "TT_1002",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1003",
+          "roomId": "room-truyenthong",
+          "name": "TT_1003",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1004",
+          "roomId": "room-truyenthong",
+          "name": "TT_1004",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1005",
+          "roomId": "room-truyenthong",
+          "name": "TT_1005",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1006",
+          "roomId": "room-truyenthong",
+          "name": "TT_1006",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1007",
+          "roomId": "room-truyenthong",
+          "name": "TT_1007",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_1008",
+          "roomId": "room-truyenthong",
+          "name": "TT_1008",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Cert_1",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Cert_1",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Cert_2",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Cert_2",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Cert_3",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Cert_3",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Cert_4",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Cert_4",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Flag_1",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Flag_1",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Flag_2",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Flag_2",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Flag_3",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Flag_3",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Flag_4",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Flag_4",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_2000_Flag_5",
+          "roomId": "room-truyenthong",
+          "name": "TT_2000_Flag_5",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3000",
+          "roomId": "room-truyenthong",
+          "name": "TT_3000",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3001",
+          "roomId": "room-truyenthong",
+          "name": "TT_3001",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3002",
+          "roomId": "room-truyenthong",
+          "name": "TT_3002",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3003",
+          "roomId": "room-truyenthong",
+          "name": "TT_3003",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3004",
+          "roomId": "room-truyenthong",
+          "name": "TT_3004",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3005",
+          "roomId": "room-truyenthong",
+          "name": "TT_3005",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3006",
+          "roomId": "room-truyenthong",
+          "name": "TT_3006",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3007",
+          "roomId": "room-truyenthong",
+          "name": "TT_3007",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3008",
+          "roomId": "room-truyenthong",
+          "name": "TT_3008",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3009",
+          "roomId": "room-truyenthong",
+          "name": "TT_3009",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3010",
+          "roomId": "room-truyenthong",
+          "name": "TT_3010",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_3011",
+          "roomId": "room-truyenthong",
+          "name": "TT_3011",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        },
+        {
+          "id": "VM_Slot_TT_9000",
+          "roomId": "room-truyenthong",
+          "name": "TT_9000",
+          "type": "image",
+          "frameStyle": "classic",
+          "itemId": null,
+          "visible": true
+        }
+      ],
+      "portals": []
+    }
+  ],
+  "items": [
+    {
+      "id": "item-01",
+      "title": "Ngày thành lập công ty",
+      "year": 1975,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Lễ thành lập công ty ngày 30/4/1975.",
+      "longDesc": "Ngày 30 tháng 4 năm 1975, công ty chính thức được thành lập với 12 nhân viên đầu tiên, đặt nền móng cho chặng đường 50 năm phát triển.",
+      "tags": [
+        "thành lập",
+        "lịch sử"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-1975.svg",
+      "wallTextureUrl": "/content/images/photo-1975.png",
+      "fullUrl": "/content/images/photo-1975.svg",
+      "source": "Lưu trữ công ty",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 1,
+      "status": "approved"
+    },
+    {
+      "id": "item-02",
+      "title": "Xưởng sản xuất đầu tiên",
+      "year": 1978,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Xưởng sản xuất đầu tiên đi vào hoạt động năm 1978.",
+      "longDesc": "Với diện tích 500m², xưởng sản xuất đầu tiên của công ty tại Hà Nội đã đi vào hoạt động, đánh dấu bước chuyển từ thủ công sang sản xuất có quy trình.",
+      "tags": [
+        "sản xuất",
+        "xưởng"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-1980.svg",
+      "wallTextureUrl": "/content/images/photo-1980.png",
+      "fullUrl": "/content/images/photo-1980.svg",
+      "source": "Phòng kỹ thuật",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 2,
+      "status": "approved"
+    },
+    {
+      "id": "item-03",
+      "title": "Hội nghị toàn quốc 1985",
+      "year": 1985,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Hội nghị mở rộng sản xuất lần đầu tiên quy mô toàn quốc.",
+      "longDesc": "Năm 1985, công ty tổ chức hội nghị toàn quốc lần đầu tiên với sự tham gia của hơn 200 đại biểu từ các chi nhánh trên khắp cả nước.",
+      "tags": [
+        "hội nghị",
+        "mở rộng"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-1985.svg",
+      "wallTextureUrl": "/content/images/photo-1985.png",
+      "fullUrl": "/content/images/photo-1985.svg",
+      "source": "Phòng Truyền thông",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 3,
+      "status": "approved"
+    },
+    {
+      "id": "item-04",
+      "title": "Kỷ niệm 20 năm thành lập",
+      "year": 1995,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Lễ kỷ niệm 20 năm thành lập với hơn 500 CBNV.",
+      "longDesc": "Lễ kỷ niệm 20 năm thành lập được tổ chức long trọng tại Cung Văn hóa Lao động với sự tham dự của lãnh đạo Bộ, đại diện các đối tác và toàn thể cán bộ nhân viên.",
+      "tags": [
+        "kỷ niệm",
+        "20 năm"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-1995.svg",
+      "wallTextureUrl": "/content/images/photo-1995.png",
+      "fullUrl": "/content/images/photo-1995.svg",
+      "source": "Phòng Hành chính",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 4,
+      "status": "approved"
+    },
+    {
+      "id": "item-05",
+      "title": "Chào mừng 50 năm",
+      "year": 2025,
+      "periodId": "period-1975-1985",
+      "shortDesc": "Lễ kỷ niệm 50 năm thành lập công ty.",
+      "longDesc": "Năm 2025 đánh dấu nửa thế kỷ xây dựng và phát triển. Công ty hiện có hơn 5.000 CBNV, hoạt động tại 20 tỉnh thành với doanh thu hàng ngàn tỷ đồng mỗi năm.",
+      "tags": [
+        "kỷ niệm",
+        "50 năm"
+      ],
+      "mediaType": "image",
+      "thumbUrl": "/content/images/photo-2025.svg",
+      "wallTextureUrl": "/content/images/photo-2025.png",
+      "fullUrl": "/content/images/photo-2025.svg",
+      "source": "Ban Tổ chức",
+      "approvedBy": "Ban Giám đốc",
+      "priority": 5,
+      "status": "approved"
+    }
+  ],
+  "textures": []
+}
