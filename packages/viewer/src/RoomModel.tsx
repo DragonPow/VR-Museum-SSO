@@ -34,7 +34,8 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
     shader.uniforms.uGroutPx = { value: 0.7 }     // grout half-width in pixels (thinner line)
     shader.uniforms.uGroutDark = { value: 0.11 }  // grout darkening (soft grey, gentle)
     shader.uniforms.uSheen = { value: 0.18 }      // polished-floor grazing sheen (gloss)
-    shader.uniforms.uClean = { value: 0.5 }       // flatten the smeary baked veins
+    shader.uniforms.uClean = { value: 0.75 }      // desaturate the baked stone veins
+    shader.uniforms.uMipBias = { value: 2.8 }     // sample atlas coarse -> blur out the diagonal veins
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
       .replace(
@@ -44,12 +45,14 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nvarying vec3 vVMWorld;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uClean;',
+        '#include <common>\nvarying vec3 vVMWorld;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uClean;\nuniform float uMipBias;',
       )
       .replace(
         '#include <map_fragment>',
         [
-          '#include <map_fragment>',
+          '#ifdef USE_MAP',
+          '  diffuseColor *= texture2D( map, vMapUv, uMipBias );',
+          '#endif',
           '{',
           '  float L = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));',
           '  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(L), uClean) * 1.07;',
@@ -69,7 +72,7 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
         ].join('\n'),
       )
   }
-  mat.customProgramCacheKey = () => 'vm-tiled-floor-v2'
+  mat.customProgramCacheKey = () => 'vm-tiled-floor-v3'
   return mat
 }
 
