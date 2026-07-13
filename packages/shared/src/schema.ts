@@ -115,6 +115,7 @@ export const ItemSchema = z.object({
   thumbUrl: UrlString,
   wallTextureUrl: UrlString,
   fullUrl: UrlString,
+  rawUrl: UrlString.optional(),
   source: z.string(),
   approvedBy: z.string(),
   priority: z.number().int().min(0),

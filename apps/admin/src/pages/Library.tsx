@@ -196,18 +196,23 @@ function UploadModal({ periods, onClose, onDone }: {
       const itemId = `item-${nanoid(8)}`
       const apiAvailable = await checkApi()
 
-      let thumbUrl: string, wallUrl: string, fullUrl: string
+      // Keep the untouched ORIGINAL so we never need a re-upload to make new sizes.
+      const rawExt = (selectedFile.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '')
+
+      let thumbUrl: string, wallUrl: string, fullUrl: string, rawUrl: string
       if (apiAvailable) {
-        ;[thumbUrl, wallUrl, fullUrl] = await Promise.all([
+        ;[thumbUrl, wallUrl, fullUrl, rawUrl] = await Promise.all([
           uploadFile(variants.thumb, `media/${itemId}/thumb.webp`),
           uploadFile(variants.wall,  `media/${itemId}/wall.webp`),
           uploadFile(variants.full,  `media/${itemId}/full.webp`),
+          uploadFile(selectedFile,   `media/${itemId}/raw.${rawExt}`),
         ])
       } else {
         // Dev fallback: use object URLs (session-only)
         thumbUrl = blobToObjectUrl(variants.thumb)
         wallUrl  = blobToObjectUrl(variants.wall)
         fullUrl  = blobToObjectUrl(variants.full)
+        rawUrl   = blobToObjectUrl(selectedFile)
       }
 
       const item: Item = {
@@ -222,6 +227,7 @@ function UploadModal({ periods, onClose, onDone }: {
         thumbUrl,
         wallTextureUrl: wallUrl,
         fullUrl,
+        rawUrl,
         source: form.source.trim(),
         approvedBy: form.approvedBy.trim(),
         priority: 0,

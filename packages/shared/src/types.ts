@@ -127,6 +127,8 @@ export interface Item {
   thumbUrl: string
   wallTextureUrl: string
   fullUrl: string
+  /** Untouched original upload — kept so resize variants can be regenerated later. */
+  rawUrl?: string
   source: string
   approvedBy: string
   priority: number
