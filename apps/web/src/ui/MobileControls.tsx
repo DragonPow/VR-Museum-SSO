@@ -41,9 +41,9 @@ export function MobileControls({ moveRef, gyroEnabled, onGyroToggle }: Props) {
         }}
         onClick={onGyroToggle}
       >
-        <span style={{ fontSize: '18px' }}>📱</span>
-        <span style={{ fontSize: '11px', marginTop: '2px' }}>
-          {gyroEnabled ? 'Cảm biến\nBẬT' : 'Cảm biến\nTẮT'}
+        <span style={{ fontSize: '15px' }}>📱</span>
+        <span style={{ fontSize: '10px', marginTop: '1px' }}>
+          {gyroEnabled ? 'Cảm biến BẬT' : 'Cảm biến TẮT'}
         </span>
       </button>
 
@@ -69,18 +69,19 @@ export function MobileControls({ moveRef, gyroEnabled, onGyroToggle }: Props) {
   )
 }
 
-const BTN_SIZE = 52
+const BTN_SIZE = 40
 
 const styles: Record<string, React.CSSProperties> = {
   wrap: {
     position: 'absolute',
-    bottom: '80px',
-    left: '12px',
+    bottom: '64px',
+    left: '10px',
     zIndex: 15,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '10px',
+    gap: '6px',
+    opacity: 0.9,
     userSelect: 'none',
     touchAction: 'none',
   },
@@ -90,7 +91,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     width: BTN_SIZE * 3 + 4,  // same width as d-pad
-    minHeight: '54px',
+    minHeight: '38px',
     background: 'rgba(10,8,4,0.75)',
     border: '1px solid #5a4a30',
     borderRadius: '12px',

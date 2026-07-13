@@ -41,7 +41,7 @@ const EYE_HEIGHT = 1.6
 // Gyro look smoothing: eased toward the latest sensor reading via
 // 1 - exp(-GYRO_LERP * delta) so it feels identical at any frame rate.
 // Higher = snappier, lower = smoother/floatier.
-const GYRO_LERP = 12
+const GYRO_LERP = 18
 
 function toVec3(v: { x: number; y: number; z: number }) {
   return new THREE.Vector3(v.x, v.y, v.z)
@@ -137,6 +137,7 @@ export function NavController({
   // Latest RAW look target from the sensor. Smoothing happens in the frame loop
   // (not in the sensor event) so it's decoupled from the device's irregular event rate.
   const gyroTarget = useRef<{ yaw: number; pitch: number } | null>(null)
+  const gyroSmooth = useRef<{ alpha: number; beta: number } | null>(null)
 
   const keys = useRef(new Set<string>())
 
@@ -269,6 +270,7 @@ export function NavController({
     if (!gyroEnabled || typeof window === 'undefined') return
     gyroBase.current = null // reset anchor on each enable
     gyroTarget.current = null
+    gyroSmooth.current = null
 
     const onOrientation = (e: DeviceOrientationEvent) => {
       if (e.alpha == null || e.beta == null) return
@@ -277,11 +279,22 @@ export function NavController({
         // First event: anchor device orientation to current camera look direction
         gyroBase.current = { alpha: e.alpha, beta: e.beta, yaw: yaw.current, pitch: pitch.current }
         gyroTarget.current = { yaw: yaw.current, pitch: pitch.current }
+        gyroSmooth.current = { alpha: e.alpha, beta: e.beta }
         return
       }
 
+      // Low-pass the raw sensor first — the magnetometer-derived `alpha` twitches even
+      // when the phone is held still, which is what made the view jitter on tiny moves.
+      const S = 0.25
+      const sm = gyroSmooth.current!
+      let sda = e.alpha - sm.alpha
+      if (sda > 180) sda -= 360
+      if (sda < -180) sda += 360
+      sm.alpha += sda * S
+      sm.beta += (e.beta - sm.beta) * S
+
       const base = gyroBase.current
-      let dAlpha = e.alpha - base.alpha
+      let dAlpha = sm.alpha - base.alpha
       if (dAlpha > 180) dAlpha -= 360 // wrap to [-180, 180]
       if (dAlpha < -180) dAlpha += 360
 
@@ -289,7 +302,7 @@ export function NavController({
       // right decreases alpha → yaw must move the same way as the phone (add dAlpha).
       const targetYaw = base.yaw + degToRad(dAlpha)
       // beta increases when tilting forward (looking down) → pitch decreases
-      const targetPitch = clampPitch(base.pitch - degToRad(e.beta - base.beta))
+      const targetPitch = clampPitch(base.pitch - degToRad(sm.beta - base.beta))
 
       // Record the RAW target only; the frame loop eases toward it at a fixed rate.
       // Smoothing here (per sensor event) stuttered because deviceorientation fires
@@ -303,6 +316,7 @@ export function NavController({
     return () => {
       window.removeEventListener('deviceorientation', onOrientation, true)
       gyroBase.current = null
+      gyroSmooth.current = null
     }
   }, [gyroEnabled])
 
