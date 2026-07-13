@@ -183,8 +183,8 @@ export function RoomModel({
     if (!floorTex) return
     const g = new THREE.BufferGeometry()
     const pos = new Float32Array([
-      -13, 0, 0, 13, 0, 0, 13, 0, -20, -13, 0, -20,
-      -9.6, 0, -20, 9.6, 0, -20, 9.6, 0, -23, -9.6, 0, -23,
+      -13, 0.012, 0, 13, 0.012, 0, 13, 0.012, -20, -13, 0.012, -20,
+      -9.6, 0.012, -20, 9.6, 0.012, -20, 9.6, 0.012, -23, -9.6, 0.012, -23,
     ])
     const uv = new Float32Array([
       0, 0, 1, 0, 1, 0.8696, 0, 0.8696,
@@ -205,6 +205,7 @@ export function RoomModel({
       mat.dispose()
     }
   }, [floorTex, scene, invalidate])
+
 
   useEffect(() => {
     scene.updateMatrixWorld(true)
@@ -349,27 +350,15 @@ export function RoomModel({
           // Per material slot: the floor tile slot gets a crisp procedural grout grid;
           // walls / ceiling stay on the plain baked atlas.
           const wallTint = new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN)
-          const isTileMat = (m?: THREE.Material | null) =>
-            m != null && m.name != null && /tile/i.test(m.name)
-          const makeShell = (isTile: boolean) =>
-            isTile
-              // Hide the GLB's original floor faces; a dedicated Blender-baked floor
-              // plane (VM_BakedFloor, added below) is drawn in their place.
-              ? new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-              : new THREE.MeshBasicMaterial({
-                  map: atlas, color: wallTint, side: THREE.DoubleSide, toneMapped: false,
-                })
-          // This effect re-runs when each async atlas arrives, so the replacement
-          // materials must KEEP the original slot name -- otherwise the /tile/ check
-          // fails on the 2nd pass and the floor slot gets overwritten with the plain
-          // wall material (which is exactly why the grid disappeared).
-          const named = (mat: THREE.Material, src?: THREE.Material | null) => {
-            mat.name = src?.name ?? ''
-            return mat
-          }
-          obj.material = Array.isArray(obj.material)
-            ? obj.material.map((m) => named(makeShell(isTileMat(m)), m))
-            : named(makeShell(isTileMat(obj.material as THREE.Material)), obj.material as THREE.Material)
+          // Every shell slot (incl. the original floor) renders the baked atlas. The
+          // dedicated crisp floor plane (VM_BakedFloor) is drawn just ABOVE the floor,
+          // so the original floor only shows through if the plane has a gap -- never a
+          // black hole.
+          const shell = () =>
+            new THREE.MeshBasicMaterial({
+              map: atlas, color: wallTint, side: THREE.DoubleSide, toneMapped: false,
+            })
+          obj.material = Array.isArray(obj.material) ? obj.material.map(() => shell()) : shell()
         } else {
           mats.forEach((mat) => {
             if (!mat) return
