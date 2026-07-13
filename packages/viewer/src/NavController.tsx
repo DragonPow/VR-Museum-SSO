@@ -49,7 +49,9 @@ function toVec3(v: { x: number; y: number; z: number }) {
 
 function computeYawPitch(from: THREE.Vector3, to: THREE.Vector3) {
   const dir = to.clone().sub(from).normalize()
-  const yaw = Math.atan2(dir.x, -dir.z)
+  // Camera forward is (-sin yaw, .., -cos yaw) (Euler 'YXZ'), so yaw must invert dir.x —
+  // otherwise restored viewpoints come back mirrored across X (wrong facing).
+  const yaw = Math.atan2(-dir.x, -dir.z)
   const pitch = Math.asin(Math.max(-1, Math.min(1, dir.y)))
   return { yaw, pitch }
 }
