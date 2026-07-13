@@ -18,7 +18,7 @@ const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 
 export function SlotFrame({ slot, item, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
-  const matRef  = useRef<THREE.MeshLambertMaterial>(null)
+  const matRef  = useRef<THREE.MeshLambertMaterial | THREE.MeshBasicMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
   const { invalidate } = useThree()
   const { transform, frameStyle } = slot
@@ -28,6 +28,9 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
   const rotation = transform?.rotation ?? { x: 0, y: 0, z: 0 }
   const size     = transform?.size     ?? { w: 1, h: 0.8 }
   const frameColor = FRAME_COLOR[frameStyle]
+  // Fixed backdrop panel (the wide hero banner): show the full-res image exactly as-is
+  // — unlit, uncropped, not clickable — so it reads like a real printed panel on the wall.
+  const isBackdrop = slot.id === 'VM_Slot_TT_9000' || slot.name === 'TT_9000'
 
   useEffect(() => {
     document.body.style.cursor = hovered ? 'pointer' : 'auto'
@@ -48,15 +51,19 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
   // Using useEffect instead of useFrame so textures load even in frameloop='demand'
   // mode where useFrame only fires on interaction-driven renders.
   useEffect(() => {
-    if (!item?.wallTextureUrl || !matRef.current) return
-    loadTexture(item.wallTextureUrl, (tex) => {
+    // Backdrop uses the FULL-res original (no downscaling); normal slots use the
+    // wall-optimised texture.
+    const url = isBackdrop ? (item?.fullUrl ?? item?.wallTextureUrl) : item?.wallTextureUrl
+    if (!url || !matRef.current) return
+    loadTexture(url, (tex) => {
       if (!matRef.current) return
+      if (isBackdrop) tex.colorSpace = THREE.SRGBColorSpace
       matRef.current.map = tex
       matRef.current.color.set('#ffffff')
       matRef.current.needsUpdate = true
       invalidate()
     })
-  }, [item?.wallTextureUrl, invalidate])
+  }, [item?.wallTextureUrl, item?.fullUrl, isBackdrop, invalidate])
 
   // Guard after all hooks — slot has no transform yet (GLB not extracted)
   if (!transform) return null
@@ -71,21 +78,31 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
           Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
         position={[0, 0, frameColor === null ? 0 : FRAME_BASE + FRAME_DEPTH - 0.01]}
-        {...(item ? {
+        {...(item && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
           onClick:       (e) => { e.stopPropagation(); onSelect(slot.id, item) },
         } : {})}
       >
         <planeGeometry args={[size.w, size.h]} />
-        <meshLambertMaterial
-          ref={matRef}
-          map={item?.wallTextureUrl ? greyTexture() : null}
-          color={item ? '#d8cfbf' : '#d8cfbf'}
-          emissive={hovered ? '#333300' : '#000000'}
-          emissiveIntensity={hovered ? 0.15 : 0}
-          side={THREE.DoubleSide}
-        />
+        {isBackdrop ? (
+          <meshBasicMaterial
+            ref={matRef as never}
+            map={item ? greyTexture() : null}
+            color={item ? '#ffffff' : '#d8cfbf'}
+            toneMapped={false}
+            side={THREE.DoubleSide}
+          />
+        ) : (
+          <meshLambertMaterial
+            ref={matRef as never}
+            map={item?.wallTextureUrl ? greyTexture() : null}
+            color={item ? '#d8cfbf' : '#d8cfbf'}
+            emissive={hovered ? '#333300' : '#000000'}
+            emissiveIntensity={hovered ? 0.15 : 0}
+            side={THREE.DoubleSide}
+          />
+        )}
       </mesh>
 
       {/* Hover glow — behind frame base */}
