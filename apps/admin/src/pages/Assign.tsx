@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react'
 import type { Slot, Item } from '@vm/shared'
 import { useDraftStore } from '../store.js'
+import { resolveAssetUrl } from '@vm/shared'
+
+const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
+const assetUrl = (u?: string | null) => resolveAssetUrl(u, { assetBaseUrl: ASSET_BASE_URL }) ?? undefined
 
 export function Assign() {
   const content = useDraftStore((s) => s.content)
@@ -139,7 +143,7 @@ export function Assign() {
 
             {pickerSlot.itemId && (
               <div style={styles.currentRow}>
-                <img src={itemMap[pickerSlot.itemId]?.thumbUrl} alt="" style={styles.currentThumb} />
+                <img src={assetUrl(itemMap[pickerSlot.itemId]?.thumbUrl)} alt="" style={styles.currentThumb} />
                 <div>
                   <div style={{ fontSize: '13px', color: '#f0e8d8' }}>Đang gán: {itemMap[pickerSlot.itemId]?.title}</div>
                   <button style={styles.unassignBtn} onClick={() => handleAssign(null)}>
@@ -184,7 +188,7 @@ export function Assign() {
                   }}
                   onClick={() => handleAssign(item.id)}
                 >
-                  <img src={item.thumbUrl} alt={item.title} style={styles.pickerThumb} />
+                  <img src={assetUrl(item.thumbUrl)} alt={item.title} style={styles.pickerThumb} />
                   <div style={styles.pickerItemTitle}>{item.title}</div>
                   <div style={styles.pickerItemYear}>{item.year}</div>
                   {item.id === pickerSlot.itemId && (
@@ -240,7 +244,7 @@ function SlotCard({ slot, item, onClick }: { slot: Slot; item: Item | null; onCl
       {item ? (
         <>
           <div style={styles.slotThumbWrap}>
-            <img src={item.thumbUrl} alt={item.title} style={styles.slotThumb} />
+            <img src={assetUrl(item.thumbUrl)} alt={item.title} style={styles.slotThumb} />
           </div>
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>

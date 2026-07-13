@@ -4,6 +4,10 @@ import { useDraftStore } from '../store.js'
 import { uploadFile, checkApi } from '../api.js'
 import { resizeImage, blobToObjectUrl } from '../util/imageResize.js'
 import { nanoid } from '../util/nanoid.js'
+import { resolveAssetUrl } from '@vm/shared'
+
+const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
+const assetUrl = (u?: string | null) => resolveAssetUrl(u, { assetBaseUrl: ASSET_BASE_URL }) ?? undefined
 
 type UploadStep = 'form' | 'resizing' | 'uploading' | 'done' | 'error'
 
@@ -130,7 +134,7 @@ function ItemCard({ item, assignCount, onEdit, onRemove }: {
   return (
     <div style={styles.card}>
       <div style={styles.cardThumbWrap}>
-        <img src={item.thumbUrl} alt={item.title} style={styles.cardThumb} loading="lazy" />
+        <img src={assetUrl(item.thumbUrl)} alt={item.title} style={styles.cardThumb} loading="lazy" />
         {assignCount > 0 && (
           <div style={styles.assignBadge}>{assignCount} slot</div>
         )}
