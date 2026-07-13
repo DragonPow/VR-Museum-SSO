@@ -171,9 +171,18 @@ export function RoomModel({
         // walls and stays light like the Blender view, instead of a dark, lighting-
         // dependent PBR band. Colour comes from the mesh's own material.
         if (obj.name.startsWith('TT_Dado')) {
+          // Capture the ORIGINAL base colour ONCE. This effect re-runs when the async
+          // lightmap atlases arrive (and twice under <StrictMode> in dev), so reading
+          // the LIVE material every time would re-soften an already-softened colour —
+          // compounding the desaturation by a different amount in dev vs prod, which is
+          // why the dado looked paler on localhost than on the deploys. Always derive
+          // from the stored base colour so the result is identical everywhere (1 pass).
           const m0 = Array.isArray(obj.material) ? obj.material[0] : obj.material
-          const col = (m0 as THREE.MeshStandardMaterial | undefined)?.color?.clone()
-            ?? new THREE.Color('#7f97b5')
+          const base = (obj.userData.dadoBase as THREE.Color | undefined)
+            ?? ((m0 as THREE.MeshStandardMaterial | undefined)?.color?.clone()
+              ?? new THREE.Color('#7f97b5'))
+          obj.userData.dadoBase = base
+          const col = base.clone()
           // Soften the vivid PBR blue toward the pale Blender look: desaturate toward
           // its own luminance, then lift slightly so it's a soft powder blue.
           const lum = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b
