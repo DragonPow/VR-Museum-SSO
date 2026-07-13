@@ -17,6 +17,62 @@ const COLLIDER_MARGIN = 0.5
  *  (AgX) viewport instead of the slightly duller Reinhard bake. */
 const ATLAS_BRIGHTEN = 1.08
 
+/**
+ * Floor material: the baked atlas carries the lighting, but its tile detail is
+ * low-res and smeared. Overlay a crisp, world-axis-aligned grout grid (kept sharp
+ * at any distance via fwidth anti-aliasing, so it never moires) plus a subtle
+ * per-tile brightness variation, so the floor reads as clean square tiles that
+ * line up with the (axis-aligned) walls. No re-bake needed -- pure shader work on
+ * top of the already-baked colour.
+ */
+function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasicMaterial {
+  const mat = new THREE.MeshBasicMaterial({
+    map, color: tint, side: THREE.DoubleSide, toneMapped: false,
+  })
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTile = { value: 0.5 }        // tile size in metres
+    shader.uniforms.uGroutPx = { value: 1.0 }     // grout half-width in pixels
+    shader.uniforms.uGroutDark = { value: 0.17 }  // grout darkening (soft grey, not black)
+    shader.uniforms.uSheen = { value: 0.18 }      // polished-floor grazing sheen (gloss)
+    shader.uniforms.uClean = { value: 0.5 }       // flatten the smeary baked veins
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
+      .replace(
+        '#include <project_vertex>',
+        '#include <project_vertex>\n  vVMWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;',
+      )
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        '#include <common>\nvarying vec3 vVMWorld;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uClean;',
+      )
+      .replace(
+        '#include <map_fragment>',
+        [
+          '#include <map_fragment>',
+          '{',
+          '  float L = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));',
+          '  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(L), uClean) * 1.07;',
+          '  vec2 g = vVMWorld.xz / uTile;',
+          '  vec2 fw = fwidth(g);',
+          '  vec2 dist = (0.5 - abs(fract(g) - 0.5)) / max(fw, vec2(1e-5));',
+          '  float line = min(dist.x, dist.y);',
+          '  float grout = 1.0 - smoothstep(uGroutPx, uGroutPx + 1.0, line);',
+          '  vec2 cell = floor(g);',
+          '  float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);',
+          '  diffuseColor.rgb *= (0.985 + 0.03 * h);',
+          '  diffuseColor.rgb *= (1.0 - grout * uGroutDark);',
+          '  vec3 V = normalize(cameraPosition - vVMWorld);',
+          '  float fres = pow(1.0 - clamp(V.y, 0.0, 1.0), 3.0);',
+          '  diffuseColor.rgb += fres * uSheen;',
+          '}',
+        ].join('\n'),
+      )
+  }
+  mat.customProgramCacheKey = () => 'vm-tiled-floor-v2'
+  return mat
+}
+
 export interface ExtractedSlot {
   id: string
   transform: SlotTransform
@@ -279,22 +335,31 @@ export function RoomModel({
           // all lighting, shadows and GI.
           // Floor tiles read almost identical to the warm walls — give the tile plane a
           // slightly cooler + darker tint so it's distinguishable (kept subtle).
-          const isFloor = mats.some((m) => m?.name != null && /tile/i.test(m.name))
-          const tint = isFloor
-            ? new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
-            : new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN)
-          const basic = new THREE.MeshBasicMaterial({
-            map: atlas,
-            color: tint,
-            side: THREE.DoubleSide,
-            toneMapped: false, // The atlas was already tone-mapped in Blender (Reinhard on
-            // the raw Cycles bake). Running the renderer's AgX on top would tone-map it a
-            // second time, crushing the highlights and exaggerating the brightness gap
-            // between free-standing walls and the room's outer walls.
-          })
+          // The baked atlas was already tone-mapped in Blender (Reinhard on the raw
+          // Cycles bake), so keep toneMapped:false to avoid a second (AgX) pass.
+          // Per material slot: the floor tile slot gets a crisp procedural grout grid;
+          // walls / ceiling stay on the plain baked atlas.
+          const wallTint = new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN)
+          const floorTint = new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
+          const isTileMat = (m?: THREE.Material | null) =>
+            m != null && m.name != null && /tile/i.test(m.name)
+          const makeShell = (isTile: boolean) =>
+            isTile
+              ? makeTiledFloorMaterial(atlas, floorTint)
+              : new THREE.MeshBasicMaterial({
+                  map: atlas, color: wallTint, side: THREE.DoubleSide, toneMapped: false,
+                })
+          // This effect re-runs when each async atlas arrives, so the replacement
+          // materials must KEEP the original slot name -- otherwise the /tile/ check
+          // fails on the 2nd pass and the floor slot gets overwritten with the plain
+          // wall material (which is exactly why the grid disappeared).
+          const named = (mat: THREE.Material, src?: THREE.Material | null) => {
+            mat.name = src?.name ?? ''
+            return mat
+          }
           obj.material = Array.isArray(obj.material)
-            ? obj.material.map(() => basic)
-            : basic
+            ? obj.material.map((m) => named(makeShell(isTileMat(m)), m))
+            : named(makeShell(isTileMat(obj.material as THREE.Material)), obj.material as THREE.Material)
         } else {
           mats.forEach((mat) => {
             if (!mat) return
