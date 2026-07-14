@@ -26,72 +26,71 @@ const ATLAS_BRIGHTEN = 1.08
  */
 function makeTiledFloorMaterial(
   map: THREE.Texture,
-  marble: THREE.Texture | null,
+  tileDiff: THREE.Texture | null,
+  tileNor: THREE.Texture | null,
   tint: THREE.Color,
 ): THREE.MeshBasicMaterial {
-  if (!marble) {
+  if (!tileDiff) {
     return new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   }
-  const mat = new THREE.MeshBasicMaterial({
-    map, color: tint, side: THREE.DoubleSide, toneMapped: false,
-  })
+  const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
+  const hasNor = !!tileNor
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uMarble = { value: marble }
-    shader.uniforms.uTile = { value: 0.8 }
-    shader.uniforms.uGroutPx = { value: 0.8 }
-    shader.uniforms.uGroutDark = { value: 0.13 }
-    shader.uniforms.uSheen = { value: 0.24 }
-    shader.uniforms.uMipBias = { value: 3.0 }
+    // Real Blender floor: sample interior_tiles diffuse (+ normal) at the model's own
+    // UV0 (same tiling as Blender), lit by the baked atlas luminance. No procedural
+    // marble/grout -- the tile pattern & grout live in the real texture.
+    shader.uniforms.uTileDiff = { value: tileDiff }
+    shader.uniforms.uMipBias = { value: 2.0 }
     shader.uniforms.uRef = { value: 0.7 }
-    shader.uniforms.uVeinStrength = { value: 0.9 }  // <1 = veins faded toward white
+    shader.uniforms.uSheen = { value: 0.06 }
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
-      .replace(
-        '#include <project_vertex>',
-        '#include <project_vertex>\n  vVMWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;',
+      .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;\nvarying vec2 vFloorUv0;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\n  vVMWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\n  vFloorUv0 = uv;')
+    const commonLines = [
+      '#include <common>',
+      'varying vec3 vVMWorld;',
+      'varying vec2 vFloorUv0;',
+      'uniform sampler2D uTileDiff;',
+      'uniform float uMipBias;',
+      'uniform float uRef;',
+      'uniform float uSheen;',
+    ]
+    const body = [
+      '#ifdef USE_MAP',
+      '  vec4 lit = texture2D( map, vMapUv, uMipBias );',
+      '#else',
+      '  vec4 lit = vec4(0.7);',
+      '#endif',
+      '{',
+      '  vec3 tileCol = texture2D(uTileDiff, vFloorUv0).rgb;',
+      '  float L = dot(lit.rgb, vec3(0.2126, 0.7152, 0.0722));',
+      '  float light = clamp(L / uRef, 0.82, 1.14);',
+      '  vec3 col = tileCol * light * diffuse;',
+    ]
+    if (hasNor) {
+      shader.uniforms.uTileNor = { value: tileNor }
+      shader.uniforms.uBumpStrength = { value: 0.45 }
+      shader.uniforms.uLightDir = { value: new THREE.Vector2(-0.45, 0.7) }
+      commonLines.push('uniform sampler2D uTileNor;', 'uniform float uBumpStrength;', 'uniform vec2 uLightDir;')
+      body.push(
+        '  vec3 tn = texture2D(uTileNor, vFloorUv0).xyz * 2.0 - 1.0;',
+        '  float shade = 1.0 + (tn.x * uLightDir.x + tn.y * uLightDir.y) * uBumpStrength;',
+        '  col *= clamp(shade, 0.78, 1.22);',
       )
+    }
+    body.push(
+      '  vec3 V = normalize(cameraPosition - vVMWorld);',
+      '  float fres = pow(1.0 - clamp(V.y, 0.0, 1.0), 3.0);',
+      '  col += fres * uSheen;',
+      '  diffuseColor.rgb = col;',
+      '}',
+    )
     shader.fragmentShader = shader.fragmentShader
-      .replace(
-        '#include <common>',
-        '#include <common>\nvarying vec3 vVMWorld;\nuniform sampler2D uMarble;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uMipBias;\nuniform float uRef;\nuniform float uVeinStrength;',
-      )
-      .replace(
-        '#include <map_fragment>',
-        [
-          '#ifdef USE_MAP',
-          '  vec4 lit = texture2D( map, vMapUv, uMipBias );',
-          '#else',
-          '  vec4 lit = vec4(0.7);',
-          '#endif',
-          '{',
-          '  vec2 g = vVMWorld.xz / uTile;',
-          '  vec2 cell = floor(g);',
-          '  vec2 lo = fract(g);',
-          '  float hsh = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);',
-          '  float rot = floor(hsh * 4.0);',
-          '  vec2 cc = lo - 0.5;',
-          '  if (rot >= 1.0 && rot < 2.0) cc = vec2(-cc.y, cc.x);',
-          '  else if (rot >= 2.0 && rot < 3.0) cc = -cc;',
-          '  else if (rot >= 3.0) cc = vec2(cc.y, -cc.x);',
-          '  vec3 marbleCol = texture2D(uMarble, cc + 0.5).rgb;',
-          '  marbleCol = 1.0 - (1.0 - marbleCol) * uVeinStrength;',
-          '  float L = dot(lit.rgb, vec3(0.2126, 0.7152, 0.0722));',
-          '  float light = clamp(L / uRef, 0.82, 1.12);',
-          '  vec3 col = marbleCol * light;',
-          '  vec2 fw = fwidth(g);',
-          '  vec2 d = (0.5 - abs(lo - 0.5)) / max(fw, vec2(1e-5));',
-          '  float line = min(d.x, d.y);',
-          '  float grout = 1.0 - smoothstep(uGroutPx, uGroutPx + 1.0, line);',
-          '  col *= (1.0 - grout * uGroutDark);',
-          '  vec3 V = normalize(cameraPosition - vVMWorld);',
-          '  float fres = pow(1.0 - clamp(V.y, 0.0, 1.0), 3.0);',
-          '  col += fres * uSheen;',
-          '  diffuseColor.rgb = col;',
-          '}',
-        ].join('\n'),
-      )
+      .replace('#include <common>', commonLines.join('\n'))
+      .replace('#include <map_fragment>', body.join('\n'))
   }
-  mat.customProgramCacheKey = () => 'vm-marble-floor-v3'
+  mat.customProgramCacheKey = () => (hasNor ? 'vm-tilefloor-real-v1' : 'vm-tilefloor-real-nonor-v1')
   return mat
 }
 
@@ -339,6 +338,39 @@ export function RoomModel({
     }
   }, [wallNorUrl, invalidate])
 
+  const floorNorUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_floor_nor') : null
+  const [floorNorTex, setFloorNorTex] = useState<THREE.Texture | null>(null)
+  useEffect(() => {
+    if (!floorNorUrl) {
+      setFloorNorTex(null)
+      return
+    }
+    let cancelled = false
+    new THREE.TextureLoader().load(
+      floorNorUrl,
+      (tex) => {
+        if (cancelled) {
+          tex.dispose()
+          return
+        }
+        tex.wrapS = THREE.RepeatWrapping
+        tex.wrapT = THREE.RepeatWrapping
+        tex.colorSpace = THREE.NoColorSpace
+        tex.anisotropy = 8
+        tex.needsUpdate = true
+        setFloorNorTex(tex)
+        invalidate()
+      },
+      undefined,
+      () => {
+        /* floor normal texture is optional */
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [floorNorUrl, invalidate])
+
   useEffect(() => {
     scene.updateMatrixWorld(true)
 
@@ -491,7 +523,7 @@ export function RoomModel({
             m != null && m.name != null && /tile/i.test(m.name)
           const makeShell = (isTile: boolean) =>
             isTile
-              ? makeTiledFloorMaterial(atlas, floorTileTex, floorTint)
+              ? makeTiledFloorMaterial(atlas, floorTileTex, floorNorTex, floorTint)
               : makeWallMaterial(atlas, wallTint, wallNorTex)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
@@ -617,7 +649,7 @@ export function RoomModel({
     if (isFinite(archMinX) && isFinite(archMinZ)) {
       boundsCbRef.current?.({ minX: archMinX, maxX: archMaxX, minZ: archMinZ, maxZ: archMaxZ })
     }
-  }, [scene, knownIds, bakedAtlas, propsAtlas, floorTileTex, wallNorTex])
+  }, [scene, knownIds, bakedAtlas, propsAtlas, floorTileTex, wallNorTex, floorNorTex])
 
   return <primitive object={scene} position={offset ?? [0, 0, 0]} />
 }
