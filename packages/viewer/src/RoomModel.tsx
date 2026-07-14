@@ -78,6 +78,26 @@ function makeTiledFloorMaterial(map: THREE.Texture, tint: THREE.Color): THREE.Me
   return mat
 }
 
+/**
+ * Wall/ceiling material: shows the baked atlas but LIFTS the shadows toward white so
+ * the shell reads bright & fresh like the Blender (Eevee) view, instead of the duller
+ * grey of the raw Reinhard-tonemapped Cycles bake. Pure shader, no re-bake.
+ */
+function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasicMaterial {
+  const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uLift = { value: 0.28 } // 0 = raw bake, higher = flatter/whiter
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uLift;')
+      .replace(
+        '#include <map_fragment>',
+        '#include <map_fragment>\n  diffuseColor.rgb = 1.0 - (1.0 - diffuseColor.rgb) * (1.0 - uLift);',
+      )
+  }
+  mat.customProgramCacheKey = () => 'vm-wall-lift-v1'
+  return mat
+}
+
 export interface ExtractedSlot {
   id: string
   transform: SlotTransform
@@ -353,9 +373,7 @@ export function RoomModel({
           const makeShell = (isTile: boolean) =>
             isTile
               ? makeTiledFloorMaterial(atlas, floorTint)
-              : new THREE.MeshBasicMaterial({
-                  map: atlas, color: wallTint, side: THREE.DoubleSide, toneMapped: false,
-                })
+              : makeWallMaterial(atlas, wallTint)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
           // fails on the 2nd pass and the floor slot gets overwritten with the plain
