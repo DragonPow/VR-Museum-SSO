@@ -103,7 +103,7 @@ function makeTiledFloorMaterial(
 function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasicMaterial {
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uLift = { value: 0.14 } // 0 = raw bake, higher = flatter/whiter (keep grain)
+    shader.uniforms.uLift = { value: 0.08 } // keep the baked lit/shaded variation (Blender-like), just a touch
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform float uLift;')
       .replace(
@@ -111,7 +111,7 @@ function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasi
         '#include <map_fragment>\n  diffuseColor.rgb = 1.0 - (1.0 - diffuseColor.rgb) * (1.0 - uLift);',
       )
   }
-  mat.customProgramCacheKey = () => 'vm-wall-lift-v2'
+  mat.customProgramCacheKey = () => 'vm-wall-lift-v3'
   return mat
 }
 
@@ -419,7 +419,7 @@ export function RoomModel({
           // (Eevee) view instead of the duller grey of the raw Reinhard bake.
           // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) — a soft warm
           // off-white, not stark white. Gentle brighten + faint warm, keep the grain.
-          const wallTint = new THREE.Color(1.10, 1.085, 1.045)
+          const wallTint = new THREE.Color(1.16, 1.10, 1.0)
           const floorTint = new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
           const isTileMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /tile/i.test(m.name)
