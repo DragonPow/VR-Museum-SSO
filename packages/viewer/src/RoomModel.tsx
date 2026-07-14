@@ -103,15 +103,16 @@ function makeTiledFloorMaterial(
 function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasicMaterial {
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uLift = { value: 0.33 } // lift shadows toward white (brighter than Blender), keep grain
+    shader.uniforms.uLift = { value: 0.45 } // lift toward a warm cream (bright, not dull grey)
+    shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.965, 0.9) }
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uLift;')
+      .replace('#include <common>', '#include <common>\nuniform float uLift;\nuniform vec3 uCream;')
       .replace(
         '#include <map_fragment>',
-        '#include <map_fragment>\n  diffuseColor.rgb = 1.0 - (1.0 - diffuseColor.rgb) * (1.0 - uLift);',
+        '#include <map_fragment>\n  diffuseColor.rgb = uCream - (uCream - diffuseColor.rgb) * (1.0 - uLift);',
       )
   }
-  mat.customProgramCacheKey = () => 'vm-wall-lift-v4'
+  mat.customProgramCacheKey = () => 'vm-wall-lift-v5'
   return mat
 }
 
@@ -420,7 +421,7 @@ export function RoomModel({
           // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) — a soft warm
           // off-white, not stark white. Gentle brighten + faint warm, keep the grain.
           // Boss preference: brighter/whiter than the Blender taupe — fresh warm-cream white.
-          const wallTint = new THREE.Color(1.30, 1.26, 1.16)
+          const wallTint = new THREE.Color(1.24, 1.23, 1.20)
           const floorTint = new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
           const isTileMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /tile/i.test(m.name)
