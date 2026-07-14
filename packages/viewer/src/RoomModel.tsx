@@ -40,10 +40,10 @@ function makeTiledFloorMaterial(
     shader.uniforms.uTile = { value: 0.8 }
     shader.uniforms.uGroutPx = { value: 0.8 }
     shader.uniforms.uGroutDark = { value: 0.13 }
-    shader.uniforms.uSheen = { value: 0.16 }
+    shader.uniforms.uSheen = { value: 0.24 }
     shader.uniforms.uMipBias = { value: 3.0 }
     shader.uniforms.uRef = { value: 0.7 }
-    shader.uniforms.uVeinStrength = { value: 0.45 } // <1 = veins faded toward white (calmer, more premium)
+    shader.uniforms.uVeinStrength = { value: 0.9 }  // <1 = veins faded toward white
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
       .replace(
@@ -91,7 +91,7 @@ function makeTiledFloorMaterial(
         ].join('\n'),
       )
   }
-  mat.customProgramCacheKey = () => 'vm-marble-floor-v2'
+  mat.customProgramCacheKey = () => 'vm-marble-floor-v3'
   return mat
 }
 
