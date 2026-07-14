@@ -103,16 +103,41 @@ function makeTiledFloorMaterial(
 function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasicMaterial {
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uLift = { value: 0.45 } // lift toward a warm cream (bright, not dull grey)
+    shader.uniforms.uLift = { value: 0.45 }
     shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.965, 0.9) }
+    shader.uniforms.uGrain = { value: 0.07 }        // subtle plaster grain amplitude
+    shader.uniforms.uGrainScale = { value: 26.0 }   // grain frequency (higher = finer)
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWWall;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\n  vWWall = (modelMatrix * vec4(transformed, 1.0)).xyz;')
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uLift;\nuniform vec3 uCream;')
+      .replace(
+        '#include <common>',
+        [
+          '#include <common>',
+          'varying vec3 vWWall;',
+          'uniform float uLift;',
+          'uniform vec3 uCream;',
+          'uniform float uGrain;',
+          'uniform float uGrainScale;',
+          'float vmHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+          'float vmNoise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f); return mix(mix(vmHash(i),vmHash(i+vec2(1.0,0.0)),u.x), mix(vmHash(i+vec2(0.0,1.0)),vmHash(i+vec2(1.0,1.0)),u.x), u.y); }',
+        ].join('\n'),
+      )
       .replace(
         '#include <map_fragment>',
-        '#include <map_fragment>\n  diffuseColor.rgb = uCream - (uCream - diffuseColor.rgb) * (1.0 - uLift);',
+        [
+          '#include <map_fragment>',
+          '  diffuseColor.rgb = uCream - (uCream - diffuseColor.rgb) * (1.0 - uLift);',
+          '  {',
+          '    vec3 P = vWWall * uGrainScale;',
+          '    float g = (vmNoise(P.xy) + vmNoise(P.yz) + vmNoise(P.xz)) / 3.0;',
+          '    diffuseColor.rgb *= (1.0 - uGrain * 0.5 + uGrain * g);',
+          '  }',
+        ].join('\n'),
       )
   }
-  mat.customProgramCacheKey = () => 'vm-wall-lift-v5'
+  mat.customProgramCacheKey = () => 'vm-wall-lift-v6'
   return mat
 }
 
