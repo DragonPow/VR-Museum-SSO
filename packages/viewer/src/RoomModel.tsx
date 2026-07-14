@@ -43,6 +43,7 @@ function makeTiledFloorMaterial(
     shader.uniforms.uSheen = { value: 0.16 }
     shader.uniforms.uMipBias = { value: 3.0 }
     shader.uniforms.uRef = { value: 0.7 }
+    shader.uniforms.uVeinStrength = { value: 0.45 } // <1 = veins faded toward white (calmer, more premium)
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
       .replace(
@@ -52,7 +53,7 @@ function makeTiledFloorMaterial(
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nvarying vec3 vVMWorld;\nuniform sampler2D uMarble;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uMipBias;\nuniform float uRef;',
+        '#include <common>\nvarying vec3 vVMWorld;\nuniform sampler2D uMarble;\nuniform float uTile;\nuniform float uGroutPx;\nuniform float uGroutDark;\nuniform float uSheen;\nuniform float uMipBias;\nuniform float uRef;\nuniform float uVeinStrength;',
       )
       .replace(
         '#include <map_fragment>',
@@ -73,6 +74,7 @@ function makeTiledFloorMaterial(
           '  else if (rot >= 2.0 && rot < 3.0) cc = -cc;',
           '  else if (rot >= 3.0) cc = vec2(cc.y, -cc.x);',
           '  vec3 marbleCol = texture2D(uMarble, cc + 0.5).rgb;',
+          '  marbleCol = 1.0 - (1.0 - marbleCol) * uVeinStrength;',
           '  float L = dot(lit.rgb, vec3(0.2126, 0.7152, 0.0722));',
           '  float light = clamp(L / uRef, 0.82, 1.12);',
           '  vec3 col = marbleCol * light;',
@@ -89,7 +91,7 @@ function makeTiledFloorMaterial(
         ].join('\n'),
       )
   }
-  mat.customProgramCacheKey = () => 'vm-marble-floor-v1'
+  mat.customProgramCacheKey = () => 'vm-marble-floor-v2'
   return mat
 }
 
