@@ -105,8 +105,8 @@ function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasi
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uLift = { value: 0.45 }
     shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.965, 0.9) }
-    shader.uniforms.uGrain = { value: 0.07 }        // subtle plaster grain amplitude
-    shader.uniforms.uGrainScale = { value: 26.0 }   // grain frequency (higher = finer)
+    shader.uniforms.uGrain = { value: 0.11 }        // plaster grain amplitude
+    shader.uniforms.uGrainScale = { value: 40.0 }   // grain frequency (higher = finer)
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWWall;')
       .replace('#include <project_vertex>', '#include <project_vertex>\n  vWWall = (modelMatrix * vec4(transformed, 1.0)).xyz;')
@@ -132,12 +132,14 @@ function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasi
           '  {',
           '    vec3 P = vWWall * uGrainScale;',
           '    float g = (vmNoise(P.xy) + vmNoise(P.yz) + vmNoise(P.xz)) / 3.0;',
+          '    float g2 = (vmNoise(P.xy * 2.7) + vmNoise(P.yz * 2.7) + vmNoise(P.xz * 2.7)) / 3.0;',
+          '    g = g * 0.62 + g2 * 0.38;',
           '    diffuseColor.rgb *= (1.0 - uGrain * 0.5 + uGrain * g);',
           '  }',
         ].join('\n'),
       )
   }
-  mat.customProgramCacheKey = () => 'vm-wall-lift-v6'
+  mat.customProgramCacheKey = () => 'vm-wall-lift-v7'
   return mat
 }
 
