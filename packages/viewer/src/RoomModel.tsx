@@ -344,7 +344,9 @@ export function RoomModel({
           // Cycles bake), so keep toneMapped:false to avoid a second (AgX) pass.
           // Per material slot: the floor tile slot gets a crisp procedural grout grid;
           // walls / ceiling stay on the plain baked atlas.
-          const wallTint = new THREE.Color(ATLAS_BRIGHTEN, ATLAS_BRIGHTEN, ATLAS_BRIGHTEN)
+          // Brighter + subtle warm-cream tint so walls read white & fresh like the Blender
+          // (Eevee) view instead of the duller grey of the raw Reinhard bake.
+          const wallTint = new THREE.Color(1.18, 1.16, 1.10)
           const floorTint = new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
           const isTileMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /tile/i.test(m.name)
