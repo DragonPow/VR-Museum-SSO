@@ -100,46 +100,50 @@ function makeTiledFloorMaterial(
  * the shell reads bright & fresh like the Blender (Eevee) view, instead of the duller
  * grey of the raw Reinhard-tonemapped Cycles bake. Pure shader, no re-bake.
  */
-function makeWallMaterial(map: THREE.Texture, tint: THREE.Color): THREE.MeshBasicMaterial {
+function makeWallMaterial(
+  map: THREE.Texture,
+  tint: THREE.Color,
+  normalTex?: THREE.Texture | null,
+): THREE.MeshBasicMaterial {
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
+  const hasBump = !!normalTex
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uLift = { value: 0.45 }
     shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.965, 0.9) }
-    shader.uniforms.uGrain = { value: 0.11 }        // plaster grain amplitude
-    shader.uniforms.uGrainScale = { value: 40.0 }   // grain frequency (higher = finer)
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vWWall;')
-      .replace('#include <project_vertex>', '#include <project_vertex>\n  vWWall = (modelMatrix * vec4(transformed, 1.0)).xyz;')
+    const commonLines = ['#include <common>', 'uniform float uLift;', 'uniform vec3 uCream;']
+    const mapLines = [
+      '#include <map_fragment>',
+      '  diffuseColor.rgb = uCream - (uCream - diffuseColor.rgb) * (1.0 - uLift);',
+    ]
+    if (hasBump) {
+      // Real wall relief: sample the Blender wall normal map (beige_wall_001) at the
+      // model's original UV0 and shade it against a fixed light dir -> the plaster
+      // "nham" the low-res baked atlas cannot hold. Multiply averages ~1.0 (keeps colour).
+      shader.uniforms.uWallNor = { value: normalTex }
+      shader.uniforms.uBumpStrength = { value: 0.6 }
+      shader.uniforms.uLightDir = { value: new THREE.Vector2(-0.45, 0.7) }
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec2 vWallUv0;')
+        .replace('#include <uv_vertex>', '#include <uv_vertex>\n  vWallUv0 = uv;')
+      commonLines.push(
+        'varying vec2 vWallUv0;',
+        'uniform sampler2D uWallNor;',
+        'uniform float uBumpStrength;',
+        'uniform vec2 uLightDir;',
+      )
+      mapLines.push(
+        '  {',
+        '    vec3 wn = texture2D(uWallNor, vWallUv0).xyz * 2.0 - 1.0;',
+        '    float shade = 1.0 + (wn.x * uLightDir.x + wn.y * uLightDir.y) * uBumpStrength;',
+        '    diffuseColor.rgb *= clamp(shade, 0.72, 1.28);',
+        '  }',
+      )
+    }
     shader.fragmentShader = shader.fragmentShader
-      .replace(
-        '#include <common>',
-        [
-          '#include <common>',
-          'varying vec3 vWWall;',
-          'uniform float uLift;',
-          'uniform vec3 uCream;',
-          'uniform float uGrain;',
-          'uniform float uGrainScale;',
-          'float vmHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
-          'float vmNoise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f); return mix(mix(vmHash(i),vmHash(i+vec2(1.0,0.0)),u.x), mix(vmHash(i+vec2(0.0,1.0)),vmHash(i+vec2(1.0,1.0)),u.x), u.y); }',
-        ].join('\n'),
-      )
-      .replace(
-        '#include <map_fragment>',
-        [
-          '#include <map_fragment>',
-          '  diffuseColor.rgb = uCream - (uCream - diffuseColor.rgb) * (1.0 - uLift);',
-          '  {',
-          '    vec3 P = vWWall * uGrainScale;',
-          '    float g = (vmNoise(P.xy) + vmNoise(P.yz) + vmNoise(P.xz)) / 3.0;',
-          '    float g2 = (vmNoise(P.xy * 2.7) + vmNoise(P.yz * 2.7) + vmNoise(P.xz * 2.7)) / 3.0;',
-          '    g = g * 0.62 + g2 * 0.38;',
-          '    diffuseColor.rgb *= (1.0 - uGrain * 0.5 + uGrain * g);',
-          '  }',
-        ].join('\n'),
-      )
+      .replace('#include <common>', commonLines.join('\n'))
+      .replace('#include <map_fragment>', mapLines.join('\n'))
   }
-  mat.customProgramCacheKey = () => 'vm-wall-lift-v7'
+  mat.customProgramCacheKey = () => (hasBump ? 'vm-wall-bump-v1' : 'vm-wall-lift-v7')
   return mat
 }
 
@@ -302,6 +306,39 @@ export function RoomModel({
     }
   }, [floorTileUrl, invalidate])
 
+  const wallNorUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_wall_nor') : null
+  const [wallNorTex, setWallNorTex] = useState<THREE.Texture | null>(null)
+  useEffect(() => {
+    if (!wallNorUrl) {
+      setWallNorTex(null)
+      return
+    }
+    let cancelled = false
+    new THREE.TextureLoader().load(
+      wallNorUrl,
+      (tex) => {
+        if (cancelled) {
+          tex.dispose()
+          return
+        }
+        tex.wrapS = THREE.RepeatWrapping
+        tex.wrapT = THREE.RepeatWrapping
+        tex.colorSpace = THREE.NoColorSpace
+        tex.anisotropy = 8
+        tex.needsUpdate = true
+        setWallNorTex(tex)
+        invalidate()
+      },
+      undefined,
+      () => {
+        /* wall normal texture is optional */
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [wallNorUrl, invalidate])
+
   useEffect(() => {
     scene.updateMatrixWorld(true)
 
@@ -455,7 +492,7 @@ export function RoomModel({
           const makeShell = (isTile: boolean) =>
             isTile
               ? makeTiledFloorMaterial(atlas, floorTileTex, floorTint)
-              : makeWallMaterial(atlas, wallTint)
+              : makeWallMaterial(atlas, wallTint, wallNorTex)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
           // fails on the 2nd pass and the floor slot gets overwritten with the plain
@@ -580,7 +617,7 @@ export function RoomModel({
     if (isFinite(archMinX) && isFinite(archMinZ)) {
       boundsCbRef.current?.({ minX: archMinX, maxX: archMaxX, minZ: archMinZ, maxZ: archMaxZ })
     }
-  }, [scene, knownIds, bakedAtlas, propsAtlas, floorTileTex])
+  }, [scene, knownIds, bakedAtlas, propsAtlas, floorTileTex, wallNorTex])
 
   return <primitive object={scene} position={offset ?? [0, 0, 0]} />
 }
