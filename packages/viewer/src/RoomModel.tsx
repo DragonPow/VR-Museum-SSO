@@ -41,7 +41,7 @@ function makeTiledFloorMaterial(
     // marble/grout -- the tile pattern & grout live in the real texture.
     shader.uniforms.uTileDiff = { value: tileDiff }
     shader.uniforms.uMipBias = { value: 2.0 }
-    shader.uniforms.uRef = { value: 0.7 }
+    shader.uniforms.uRef = { value: 0.64 }
     shader.uniforms.uSheen = { value: 0.06 }
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;\nvarying vec2 vFloorUv0;')
@@ -406,23 +406,12 @@ export function RoomModel({
           // compounding the desaturation by a different amount in dev vs prod, which is
           // why the dado looked paler on localhost than on the deploys. Always derive
           // from the stored base colour so the result is identical everywhere (1 pass).
-          const m0 = Array.isArray(obj.material) ? obj.material[0] : obj.material
-          const base = (obj.userData.dadoBase as THREE.Color | undefined)
-            ?? ((m0 as THREE.MeshStandardMaterial | undefined)?.color?.clone()
-              ?? new THREE.Color('#7f97b5'))
-          obj.userData.dadoBase = base
-          const col = base.clone()
-          // Soften the vivid PBR blue toward the pale Blender look: desaturate toward
-          // its own luminance, then lift slightly so it's a soft powder blue.
-          const lum = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b
-          const SAT = 0.6, LIFT = 0.82
-          col.setRGB(
-            Math.min(1, (lum + (col.r - lum) * SAT) * LIFT),
-            Math.min(1, (lum + (col.g - lum) * SAT) * LIFT),
-            Math.min(1, (lum + (col.b - lum) * SAT) * LIFT),
-          )
+          // Rich royal-blue skirting to match the reference render (raw NSMO_Blue_Dado
+          // reads pale and the earlier desaturation washed it out further). Flat UNLIT
+          // colour so it is identical everywhere in one pass.
+          const DADO_BLUE = new THREE.Color(0.13, 0.28, 0.6)
           obj.material = new THREE.MeshBasicMaterial({
-            color: col, side: THREE.DoubleSide, toneMapped: false,
+            color: DADO_BLUE, side: THREE.DoubleSide, toneMapped: false,
           })
           return
         }
@@ -518,13 +507,21 @@ export function RoomModel({
           // off-white, not stark white. Gentle brighten + faint warm, keep the grain.
           // Boss preference: brighter/whiter than the Blender taupe — fresh warm-cream white.
           const wallTint = new THREE.Color(1.24, 1.23, 1.20)
-          const floorTint = new THREE.Color(ATLAS_BRIGHTEN * 0.88, ATLAS_BRIGHTEN * 0.91, ATLAS_BRIGHTEN * 0.97)
+          const floorTint = new THREE.Color(1.1, 1.08, 1.02)
           const isTileMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /tile/i.test(m.name)
-          const makeShell = (isTile: boolean) =>
-            isTile
+          // Coloured accent surfaces (red niche, accent walls, gold/red titles) must NOT
+          // get the warm-cream wall lift -- that washes the deep red niche to faded pink.
+          // Show their baked atlas colour true (only a gentle brighten).
+          const isAccentMat = (m?: THREE.Material | null) =>
+            m != null && m.name != null && /accent|niche|red|gold|title/i.test(m.name)
+          const accentTint = new THREE.Color(1.06, 1.05, 1.03)
+          const makeShell = (m?: THREE.Material | null) =>
+            isTileMat(m)
               ? makeTiledFloorMaterial(atlas, floorTileTex, floorNorTex, floorTint)
-              : makeWallMaterial(atlas, wallTint, wallNorTex)
+              : isAccentMat(m)
+                ? new THREE.MeshBasicMaterial({ map: atlas, color: accentTint, side: THREE.DoubleSide, toneMapped: false })
+                : makeWallMaterial(atlas, wallTint, wallNorTex)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
           // fails on the 2nd pass and the floor slot gets overwritten with the plain
@@ -534,8 +531,8 @@ export function RoomModel({
             return mat
           }
           obj.material = Array.isArray(obj.material)
-            ? obj.material.map((m) => named(makeShell(isTileMat(m)), m))
-            : named(makeShell(isTileMat(obj.material as THREE.Material)), obj.material as THREE.Material)
+            ? obj.material.map((m) => named(makeShell(m), m))
+            : named(makeShell(obj.material as THREE.Material), obj.material as THREE.Material)
         } else {
           mats.forEach((mat) => {
             if (!mat) return
