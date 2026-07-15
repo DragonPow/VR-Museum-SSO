@@ -1,3 +1,4 @@
+import { splitContentForPublish } from '@vm/shared'
 import type { Content } from '@vm/shared'
 
 const BASE = import.meta.env.VITE_API_URL ?? ''
@@ -43,13 +44,18 @@ export async function saveDraft(content: Content): Promise<void> {
 }
 
 
+export async function deleteDraft(): Promise<void> {
+  await apiFetch('/api/draft', { method: 'DELETE' })
+}
+
+
 
 function normalizeLocalPublicUrl(url: string): string {
   if (typeof window === 'undefined') return url
   if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) return url
   try {
     const parsed = new URL(url)
-    if ((parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') && parsed.pathname.startsWith('/content/media/')) {
+    if ((parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') && (parsed.pathname.startsWith('/content/media/') || parsed.pathname.startsWith('/content/documents/'))) {
       return parsed.pathname
     }
     if ((parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') && parsed.pathname.startsWith('/media/')) {
@@ -102,15 +108,27 @@ export async function uploadModel(file: File, filename?: string): Promise<string
 export async function saveLocalContentFile(content: Content): Promise<boolean> {
   if (typeof window === 'undefined') return false
   if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) return false
+  const split = splitContentForPublish(content)
   const res = await fetch('/__local-content/content.json', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(content, null, 2),
+    body: JSON.stringify(split.content, null, 2),
   })
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
     throw new Error(text)
   }
+  await Promise.all(Object.values(split.documents).map(async (document) => {
+    const docRes = await fetch(`/__local-content/documents/${encodeURIComponent(document.documentKey)}/document.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(document, null, 2),
+    })
+    if (!docRes.ok) {
+      const text = await docRes.text().catch(() => docRes.statusText)
+      throw new Error(text)
+    }
+  }))
   return true
 }
 

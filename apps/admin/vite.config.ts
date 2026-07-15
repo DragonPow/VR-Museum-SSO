@@ -38,12 +38,43 @@ function localContentPlugin() {
         }
       })
 
+
+      server.middlewares.use('/__local-content/documents', async (req: any, res: any, next: any) => {
+        if (req.method !== 'POST') return next()
+        try {
+          const pathname = (req.url ?? '').split('?')[0] ?? ''
+          const parts = pathname.replace(/^\/+/, '').split('/').filter(Boolean)
+          const keyPart = parts[0] ?? ''
+          const filename = parts[1] ?? ''
+          const id = decodeURIComponent(keyPart)
+          if (!id || id.includes('/') || id.includes('..') || filename !== 'document.json') {
+            res.statusCode = 400
+            res.end(JSON.stringify({ ok: false, error: 'Invalid document path' }))
+            return
+          }
+          let body = ''
+          req.setEncoding('utf8')
+          for await (const chunk of req) body += chunk
+          JSON.parse(body)
+          const filePath = resolve(contentRoot, 'documents', id, 'document.json')
+          await mkdir(resolve(filePath, '..'), { recursive: true })
+          await writeFile(filePath, `${body}
+`, 'utf-8')
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+          res.end(JSON.stringify({ ok: true }))
+        } catch (err) {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+          res.end(JSON.stringify({ ok: false, error: String(err) }))
+        }
+      })
+
       server.middlewares.use('/__local-media', async (req: any, res: any, next: any) => {
         if (req.method !== 'POST') return next()
         try {
           const rawUrl = new URL(req.url ?? '/', 'http://localhost')
           const key = rawUrl.searchParams.get('key') ?? ''
-          if (!key.startsWith('content/media/') || key.includes('..')) {
+          if (!(key.startsWith('content/media/') || key.startsWith('content/documents/')) || key.includes('..')) {
             res.statusCode = 400
             res.end(JSON.stringify({ ok: false, error: 'Invalid media key' }))
             return

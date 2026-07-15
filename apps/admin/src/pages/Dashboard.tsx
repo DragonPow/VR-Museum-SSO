@@ -12,20 +12,20 @@ export function Dashboard() {
   if (!content) return <LoadingState />
 
   const totalSlots = content.rooms.flatMap((r) => r.slots).length
-  const assignedSlots = content.rooms.flatMap((r) => r.slots).filter((s) => s.itemId).length
-  const totalItems = content.items.length
+  const assignedSlots = content.rooms.flatMap((r) => r.slots).filter((s) => (s.documentIds ?? []).length > 0).length
+  const totalItems = content.documents.length
   const progress = totalSlots > 0 ? Math.round((assignedSlots / totalSlots) * 100) : 0
 
   const stats = [
     { label: 'Thời kỳ', value: content.periods.length, icon: '📅' },
     { label: 'Phòng', value: content.rooms.length, icon: '🚪' },
     { label: 'Slot', value: `${assignedSlots}/${totalSlots}`, icon: '🖼', sub: `${progress}% đã gán` },
-    { label: 'Ảnh/Tư liệu', value: totalItems, icon: '📷' },
+    { label: 'Tư liệu', value: totalItems, icon: '📷' },
   ]
 
   const roomProgress = content.rooms.map((r) => {
     const period = content.periods.find((p) => p.id === r.periodId)
-    const filled = r.slots.filter((s) => s.itemId).length
+    const filled = r.slots.filter((s) => (s.documentIds ?? []).length > 0).length
     return { room: r, period, filled, total: r.slots.length }
   })
 

@@ -43,11 +43,10 @@ export function useContentIndex(): State {
   useEffect(() => {
     if (_cache) return
 
-    fetchFirstContentJson()
-      .then((raw) => {
-        const data = parseIndexPayload(raw)
-        _cache = data
-        setState({ status: 'ok', data })
+    fetchFirstContentJson((raw) => parseIndexPayload(raw))
+      .then((data) => {
+        _cache = data as ContentIndex
+        setState({ status: 'ok', data: data as ContentIndex })
       })
       .catch((err: unknown) => {
         setState({ status: 'error', message: String(err) })

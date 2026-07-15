@@ -1,26 +1,26 @@
 import { create } from 'zustand'
-import type { Item, ContentIndex, RoomStub } from '@vm/shared'
+import type { DocumentItem, ContentIndex, RoomStub } from '@vm/shared'
 
 interface MuseumStore {
   index: ContentIndex | null
   currentRoomId: string | null
   activeViewpointId: string | null
-  selectedItem: Item | null
+  selectedDocuments: DocumentItem[]
   selectedSlotId: string | null
 
   setIndex: (index: ContentIndex) => void
   navigateToRoom: (roomId: string) => void
-  selectSlot: (slotId: string, item: Item | null) => void
+  selectSlot: (slotId: string, documents: DocumentItem[]) => void
   closeModal: () => void
   setViewpoint: (vpId: string) => void
   setActiveViewpoint: (vpId: string) => void
 }
 
-export const useMuseumStore = create<MuseumStore>((set, get) => ({
+export const useMuseumStore = create<MuseumStore>((set) => ({
   index: null,
   currentRoomId: null,
   activeViewpointId: null,
-  selectedItem: null,
+  selectedDocuments: [],
   selectedSlotId: null,
 
   setIndex: (index) => {
@@ -28,16 +28,15 @@ export const useMuseumStore = create<MuseumStore>((set, get) => ({
   },
 
   navigateToRoom: (roomId) => {
-    set({ currentRoomId: roomId, activeViewpointId: null, selectedItem: null })
+    set({ currentRoomId: roomId, activeViewpointId: null, selectedDocuments: [] })
   },
 
-  selectSlot: (slotId, item) => set({ selectedSlotId: slotId, selectedItem: item }),
-  closeModal: () => set({ selectedItem: null, selectedSlotId: null }),
+  selectSlot: (slotId, documents) => set({ selectedSlotId: slotId, selectedDocuments: documents }),
+  closeModal: () => set({ selectedDocuments: [], selectedSlotId: null }),
   setViewpoint: (vpId) => set({ activeViewpointId: vpId }),
   setActiveViewpoint: (vpId) => set({ activeViewpointId: vpId }),
 }))
 
-/** Look up the current room stub from the index. */
 export function useCurrentRoomStub(): RoomStub | undefined {
   return useMuseumStore((s) => s.index?.rooms.find((r) => r.id === s.currentRoomId))
 }

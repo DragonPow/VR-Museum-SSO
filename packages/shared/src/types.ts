@@ -2,8 +2,9 @@ export type RoomTemplate = 'hall' | 'gallery' | 'corridor' | 'honor'
 export type LightingPreset = 'warm' | 'neutral' | 'cool'
 export type SlotType = 'image' | 'cluster' | 'poster' | 'video' | 'text'
 export type FrameStyle = 'classic' | 'modern' | 'none'
-export type MediaType = 'image' | 'video' | 'audio'
-export type ItemStatus = 'draft' | 'approved'
+export type DocumentMediaType = 'image' | 'youtube' | 'iframe' | 'external'
+export type DocumentImageVariant = 'thumb' | 'wall' | 'full'
+export type ViewerVariant = 'wall' | 'full'
 export type QualityTier = 'high' | 'medium' | 'low'
 
 export interface Vec3 {
@@ -54,10 +55,13 @@ export interface Slot {
    */
   transform?: SlotTransform
   frameStyle: FrameStyle
-  itemId: string | null
+  /** Ordered document ids. Each document is one page in this slot detail. */
+  documentIds: string[]
   visible: boolean
   /** Optional grouping label (physical zone) so the admin can bucket 100+ slots. */
   zone?: string
+  /** Viewer texture variant for this slot; backdrop slots may use full instead of wall. */
+  viewerVariant?: ViewerVariant
 }
 
 export interface RoomPortal {
@@ -81,29 +85,10 @@ export interface Room {
   title: string
   order: number
   template: RoomTemplate
-  /**
-   * Optional externally-authored room model, usually exported from Blender as GLB/GLTF.
-   * When present, the viewer uses this as the room shell and keeps slots/hotspots dynamic.
-   * When null, the viewer falls back to the built-in procedural room templates.
-   */
+  /** Optional externally-authored room model, usually exported from Blender as GLB/GLTF. */
   modelUrl: string | null
-  /**
-   * XYZ offset applied to the GLB model in Three.js world space.
-   * Needed when the Blender scene has the room at a non-origin world position.
-   * Example: side room at Blender x=40 → modelOffset: [-40, 0, 0]
-   */
   modelOffset?: [number, number, number]
-  /**
-   * Baked lighting texture (Blender lightmap) sampled through the model's 2nd UV set
-   * (TEXCOORD_1). Applied as `material.lightMap` to the architecture surfaces so the
-   * room shows baked light pools + shadows while keeping the tiled base textures sharp.
-   * When null/absent the room is lit only by the dynamic lighting preset.
-   */
   lightmapUrl?: string | null
-  /**
-   * Static collision zones for interior walls, pillars, and props in the GLB model
-   * that the outer-wall bounds alone cannot cover.
-   */
   obstacles?: ObstacleZone[]
   wallTextureId: string | null
   floorTextureId: string | null
@@ -115,29 +100,41 @@ export interface Room {
   portals: RoomPortal[]
 }
 
-export interface Item {
+export interface DocumentImage {
   id: string
+  caption?: string
+  alt?: string
+  rawExt?: string
+}
+
+export interface DocumentIndexItem {
+  id: string
+  documentKey: string
+  mediaType: DocumentMediaType
+  viewerImageId: string
+}
+
+export interface DocumentItem {
+  id: string
+  documentKey: string
   title: string
   year: number
   periodId: string
-  shortDesc: string
-  longDesc: string
+  summary: string
+  body: string
   tags: string[]
-  mediaType: MediaType
-  thumbUrl: string
-  wallTextureUrl: string
-  fullUrl: string
-  /** Untouched original upload — kept so resize variants can be regenerated later. */
-  rawUrl?: string
-  /** Optional embedded media URL, e.g. a YouTube embed link shown inside the modal. */
+  mediaType: DocumentMediaType
+  thumbnailImageId: string
+  viewerImageId: string
+  detailImageIds: string[]
+  images: DocumentImage[]
+  /** YouTube URL or embed URL shown directly in the modal. */
   embedUrl?: string
-  /** Optional external page for the artifact, e.g. Facebook fanpage or Drive dossier. */
+  /** External page for this document, e.g. Drive dossier. */
   externalUrl?: string
   externalLabel?: string
   source: string
-  approvedBy: string
   priority: number
-  status: ItemStatus
 }
 
 export interface TextureAsset {
@@ -147,19 +144,19 @@ export interface TextureAsset {
   type: 'wall' | 'floor' | 'ceiling' | 'decoration'
 }
 
-/** Snapshot đã ghép (denormalized) — public site đọc 1 phát */
+/** Public snapshot: slot positions + library documents. */
 export interface Content {
   version: string
   updatedAt: string
   periods: Period[]
   rooms: Room[]
-  items: Item[]
+  documentIndex: DocumentIndexItem[]
+  /** Admin/draft-only full documents. Public content.json omits this and lazy-loads /content/documents/{id}.json. */
+  documents: DocumentItem[]
   textures: TextureAsset[]
 }
 
-// ─── Split-content types (lazy per-room loading) ───────────────────────────────
-
-/** Lightweight room descriptor stored in the index file — no slots or items. */
+// Split-content types (lazy per-room loading)
 export interface RoomStub {
   id: string
   periodId: string
@@ -167,15 +164,10 @@ export interface RoomStub {
   title: string
   order: number
   template: RoomTemplate
-  /** Path to the full per-room JSON file, e.g. "/content/room-hall.sample.json" */
+  /** Path to the full per-room JSON file, e.g. /content/rooms/main.json */
   dataUrl: string
 }
 
-/**
- * Lightweight index file loaded on startup.
- * Contains everything needed to render Landing + navigate rooms, but NOT
- * the heavy slot/item data (that lives in per-room files).
- */
 export interface ContentIndex {
   version: string
   updatedAt: string
@@ -183,13 +175,11 @@ export interface ContentIndex {
   totalItems: number
   periods: Period[]
   rooms: RoomStub[]
+  documentIndex: DocumentIndexItem[]
   textures: TextureAsset[]
 }
 
-/**
- * Per-room file loaded on demand when the user enters a room.
- * Extends Room with the items that appear in that room's slots.
- */
+/** Per-room file loaded on demand when the user enters a room. */
 export interface RoomData extends Room {
-  items: Record<string, Item>
+  documents: Record<string, DocumentIndexItem>
 }

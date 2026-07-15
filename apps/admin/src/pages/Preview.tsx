@@ -45,7 +45,7 @@ export function Preview() {
           <SceneCanvas style={{ width: '100%', height: '100%' }}>
             <RoomScene
               room={roomProps.room}
-              items={roomProps.items}
+              documents={roomProps.documents}
               textures={roomProps.textures}
               activeViewpointId={roomProps.room.entryViewpointId}
               onSlotSelect={() => {}}

@@ -197,7 +197,7 @@ export function RoomEditor() {
       </div>
     )
 
-  const items = Object.fromEntries(content.items.map((it) => [it.id, it]))
+  const documents = Object.fromEntries(content.documents.map((it) => [it.id, it]))
   const textures = Object.fromEntries(content.textures.map((t) => [t.id, t.url]))
 
   useEffect(() => {
@@ -618,7 +618,7 @@ export function RoomEditor() {
           <SceneCanvas>
             <RoomScene
               room={room}
-              items={items}
+              documents={documents}
               textures={textures}
               activeViewpointId={currentVpId}
               hideLabels

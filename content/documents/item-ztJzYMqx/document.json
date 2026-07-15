@@ -1,0 +1,24 @@
+{
+  "id": "item-ztJzYMqx",
+  "documentKey": "item-ztJzYMqx",
+  "title": "backdrop",
+  "year": 2026,
+  "periodId": "period-1975-1985",
+  "summary": "",
+  "body": "",
+  "tags": [],
+  "mediaType": "image",
+  "images": [
+    {
+      "id": "photo1",
+      "rawExt": "png"
+    }
+  ],
+  "source": "",
+  "priority": 0,
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ]
+}

@@ -1,13 +1,14 @@
 import { useRef, useState, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import type { Slot, Item } from '@vm/shared'
+import type { Slot, DocumentIndexItem } from '@vm/shared'
 import { loadTexture, greyTexture } from './TextureManager.js'
 
 interface Props {
   slot: Slot
-  item: Item | null
-  onSelect: (slotId: string, item: Item | null) => void
+  documentItem: DocumentIndexItem | null
+  viewerTextureUrl: string | null
+  onSelect: (slotId: string) => void
   hideLabel?: boolean
 }
 
@@ -15,7 +16,7 @@ const FRAME_THICKNESS = 0.04
 const FRAME_DEPTH     = 0.05   // how far the frame protrudes from the wall
 const FRAME_BASE      = 0.01   // gap between wall surface and back of frame (prevents z-fighting)
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
-export function SlotFrame({ slot, item, onSelect }: Props) {
+export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
   const matRef  = useRef<THREE.MeshLambertMaterial | THREE.MeshBasicMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
@@ -45,7 +46,7 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
       matRef.current.needsUpdate = true
       invalidate()
     }
-  }, [item?.id, invalidate])
+  }, [documentItem?.id, invalidate])
 
   // Load texture as soon as item is available.
   // Using useEffect instead of useFrame so textures load even in frameloop='demand'
@@ -53,17 +54,23 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
   useEffect(() => {
     // Backdrop uses the FULL-res original (no downscaling); normal slots use the
     // wall-optimised texture.
-    const url = isBackdrop ? (item?.fullUrl ?? item?.wallTextureUrl) : item?.wallTextureUrl
+    const url = viewerTextureUrl
     if (!url || !matRef.current) return
     loadTexture(url, (tex) => {
       if (!matRef.current) return
-      if (isBackdrop) tex.colorSpace = THREE.SRGBColorSpace
+      if (isBackdrop) {
+        tex.colorSpace = THREE.SRGBColorSpace
+        tex.generateMipmaps = false
+        tex.minFilter = THREE.LinearFilter
+        tex.magFilter = THREE.LinearFilter
+        tex.needsUpdate = true
+      }
       matRef.current.map = tex
       matRef.current.color.set('#ffffff')
       matRef.current.needsUpdate = true
       invalidate()
     })
-  }, [item?.wallTextureUrl, item?.fullUrl, isBackdrop, invalidate])
+  }, [viewerTextureUrl, isBackdrop, invalidate])
 
   // Guard after all hooks — slot has no transform yet (GLB not extracted)
   if (!transform) return null
@@ -78,26 +85,26 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
           Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
         position={[0, 0, canvasZ]}
-        {...(item && !isBackdrop ? {
+        {...(documentItem && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
-          onClick:       (e) => { e.stopPropagation(); onSelect(slot.id, item) },
+          onClick:       (e) => { e.stopPropagation(); onSelect(slot.id) },
         } : {})}
       >
         <planeGeometry args={[size.w, size.h]} />
         {isBackdrop ? (
           <meshBasicMaterial
             ref={matRef as never}
-            map={item ? greyTexture() : null}
-            color={item ? '#ffffff' : '#d8cfbf'}
+            map={documentItem ? greyTexture() : null}
+            color={documentItem ? '#ffffff' : '#d8cfbf'}
             toneMapped={false}
             side={THREE.DoubleSide}
           />
         ) : (
           <meshLambertMaterial
             ref={matRef as never}
-            map={item?.wallTextureUrl ? greyTexture() : null}
-            color={item ? '#d8cfbf' : '#d8cfbf'}
+            map={viewerTextureUrl ? greyTexture() : null}
+            color={documentItem ? '#d8cfbf' : '#d8cfbf'}
             emissive={hovered ? '#333300' : '#000000'}
             emissiveIntensity={hovered ? 0.15 : 0}
             side={THREE.DoubleSide}

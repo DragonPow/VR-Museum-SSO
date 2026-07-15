@@ -37,7 +37,7 @@ export function Rooms() {
       const stats = map.get(room.periodId)
       if (stats) stats.rooms += 1
     })
-    content.items.forEach((item) => {
+    content.documents.forEach((item) => {
       const stats = map.get(item.periodId)
       if (stats) stats.items += 1
     })

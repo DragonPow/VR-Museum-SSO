@@ -4,29 +4,18 @@ import {
   LIGHTING_PRESETS,
   SLOT_TYPES,
   FRAME_STYLES,
-  MEDIA_TYPES,
-  ITEM_STATUSES,
+  DOCUMENT_MEDIA_TYPES,
+  VIEWER_VARIANTS,
   TEXTURE_TYPES,
   CONTENT_VERSION,
 } from './constants.js'
 
-// ─── Primitives ───────────────────────────────────────────────────────────────
-const Vec3Schema = z.object({
-  x: z.number(),
-  y: z.number(),
-  z: z.number(),
-})
-
-const Vec2Schema = z.object({
-  w: z.number().positive(),
-  h: z.number().positive(),
-})
-
+const Vec3Schema = z.object({ x: z.number(), y: z.number(), z: z.number() })
+const Vec2Schema = z.object({ w: z.number().positive(), h: z.number().positive() })
 const NonEmptyString = z.string().min(1)
 const UrlString = z.string().url().or(z.string().startsWith('/'))
 const HexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a hex color like #FF0000')
 
-// ─── Schemas ──────────────────────────────────────────────────────────────────
 export const PeriodSchema = z.object({
   id: NonEmptyString,
   slug: z.string().regex(/^[a-z0-9-]+$/, 'slug must be lowercase-kebab'),
@@ -56,15 +45,12 @@ export const SlotSchema = z.object({
   roomId: NonEmptyString,
   name: NonEmptyString,
   type: z.enum(SLOT_TYPES),
-  // Optional: GLB-driven rooms omit transform (derived from VM_Slot_* mesh at runtime).
-  // Procedural rooms (no modelUrl) must provide it.
   transform: SlotTransformSchema.optional(),
   frameStyle: z.enum(FRAME_STYLES),
-  itemId: NonEmptyString.nullable(),
+  documentIds: z.array(NonEmptyString).default([]),
   visible: z.boolean(),
-  // Optional grouping label (e.g. "Khu 1", "Hoc do - Co") so the admin can bucket
-  // 100+ slots by physical zone instead of one flat list.
   zone: z.string().optional(),
+  viewerVariant: z.enum(VIEWER_VARIANTS).optional(),
 })
 
 export const RoomPortalSchema = z.object({
@@ -103,26 +89,40 @@ export const RoomSchema = z.object({
   portals: z.array(RoomPortalSchema).default([]),
 })
 
-export const ItemSchema = z.object({
+export const DocumentImageSchema = z.object({
   id: NonEmptyString,
+  caption: z.string().optional(),
+  alt: z.string().optional(),
+  rawExt: z.string().optional(),
+})
+
+
+export const DocumentIndexItemSchema = z.object({
+  id: NonEmptyString,
+  documentKey: NonEmptyString,
+  mediaType: z.enum(DOCUMENT_MEDIA_TYPES),
+  viewerImageId: NonEmptyString,
+})
+
+export const DocumentItemSchema = z.object({
+  id: NonEmptyString,
+  documentKey: NonEmptyString,
   title: NonEmptyString,
   year: z.number().int().min(1900).max(2100),
   periodId: NonEmptyString,
-  shortDesc: z.string(),
-  longDesc: z.string(),
+  summary: z.string(),
+  body: z.string(),
   tags: z.array(z.string()),
-  mediaType: z.enum(MEDIA_TYPES),
-  thumbUrl: UrlString,
-  wallTextureUrl: UrlString,
-  fullUrl: UrlString,
-  rawUrl: UrlString.optional(),
+  mediaType: z.enum(DOCUMENT_MEDIA_TYPES),
+  thumbnailImageId: NonEmptyString.default('photo1'),
+  viewerImageId: NonEmptyString.default('photo1'),
+  detailImageIds: z.array(NonEmptyString).default(['photo1']),
+  images: z.array(DocumentImageSchema).default([]),
   embedUrl: UrlString.optional(),
   externalUrl: UrlString.optional(),
   externalLabel: z.string().optional(),
   source: z.string(),
-  approvedBy: z.string(),
   priority: z.number().int().min(0),
-  status: z.enum(ITEM_STATUSES),
 })
 
 export const TextureAssetSchema = z.object({
@@ -137,11 +137,10 @@ export const ContentSchema = z.object({
   updatedAt: z.string().datetime(),
   periods: z.array(PeriodSchema).min(1),
   rooms: z.array(RoomSchema).min(1),
-  items: z.array(ItemSchema),
+  documentIndex: z.array(DocumentIndexItemSchema).default([]),
+  documents: z.array(DocumentItemSchema).default([]),
   textures: z.array(TextureAssetSchema),
 })
-
-// ─── Split-content schemas ─────────────────────────────────────────────────────
 
 export const RoomStubSchema = z.object({
   id: NonEmptyString,
@@ -160,16 +159,17 @@ export const ContentIndexSchema = z.object({
   totalItems: z.number().int().nonnegative(),
   periods: z.array(PeriodSchema).min(1),
   rooms: z.array(RoomStubSchema).min(1),
+  documentIndex: z.array(DocumentIndexItemSchema).default([]),
   textures: z.array(TextureAssetSchema),
 })
 
 export const RoomDataSchema = RoomSchema.extend({
-  items: z.record(z.string(), ItemSchema),
+  documents: z.record(z.string(), DocumentIndexItemSchema),
 })
 
-// ─── Inferred types (re-export for consumers who prefer schema-inferred) ──────
 export type PeriodInput = z.input<typeof PeriodSchema>
 export type RoomInput = z.input<typeof RoomSchema>
 export type SlotInput = z.input<typeof SlotSchema>
-export type ItemInput = z.input<typeof ItemSchema>
+export type DocumentIndexItemInput = z.input<typeof DocumentIndexItemSchema>
+export type DocumentItemInput = z.input<typeof DocumentItemSchema>
 export type ContentInput = z.input<typeof ContentSchema>

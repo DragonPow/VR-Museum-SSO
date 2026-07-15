@@ -81,3 +81,62 @@ function shouldResolveAssetString(value: string): boolean {
 function trimTrailingSlash(value: string | null | undefined): string {
   return (value ?? '').replace(/\/+$/, '')
 }
+
+
+export type DocumentMediaVariant = 'thumb' | 'wall' | 'full' | 'raw'
+
+interface ResolveDocumentMediaOptions extends ResolveAssetUrlOptions {
+  contentRoot?: string | null | undefined
+}
+
+function cleanSegment(value: string): string {
+  return value.replace(/^\/+|\/+$/g, '')
+}
+
+export function documentFolderPath(documentKey: string, contentRoot = '/content'): string {
+  const root = `/${cleanSegment(contentRoot)}`
+  return `${root}/documents/${cleanSegment(documentKey)}`
+}
+
+export function documentDetailPath(documentKey: string, contentRoot = '/content'): string {
+  return `${documentFolderPath(documentKey, contentRoot)}/document.json`
+}
+
+export function documentImageVariantPath(
+  documentKey: string,
+  imageId: string,
+  variant: DocumentMediaVariant,
+  rawExt?: string | null,
+  contentRoot = '/content',
+): string {
+  const folder = `${documentFolderPath(documentKey, contentRoot)}/images/${cleanSegment(imageId)}`
+  if (variant === 'raw') return `${folder}/raw.${rawExt ?? 'bin'}`
+  return `${folder}/${variant}.webp`
+}
+
+export function resolveDocumentDetailUrl(
+  documentKey: string | null | undefined,
+  options: ResolveDocumentMediaOptions = {},
+): string | null {
+  if (!documentKey) return null
+  return resolveAssetUrl(documentDetailPath(documentKey, options.contentRoot ?? '/content'), options)
+}
+
+export function resolveDocumentImageVariantUrl(
+  documentKey: string | null | undefined,
+  imageId: string | null | undefined,
+  variant: DocumentMediaVariant,
+  options: ResolveDocumentMediaOptions = {},
+  rawExt?: string | null,
+): string | null {
+  if (!documentKey || !imageId) return null
+  return resolveAssetUrl(documentImageVariantPath(documentKey, imageId, variant, rawExt, options.contentRoot ?? '/content'), options)
+}
+
+// Backward-compatible aliases for older call sites while the app migrates.
+export const documentMediaPath = documentImageVariantPath
+export const documentImagePath = (documentKey: string, imageId: string, contentRoot = '/content') =>
+  documentImageVariantPath(documentKey, imageId, 'full', null, contentRoot)
+export const resolveDocumentMediaUrl = resolveDocumentImageVariantUrl
+export const resolveDocumentImageUrl = (documentKey: string | null | undefined, imageId: string | null | undefined, options: ResolveDocumentMediaOptions = {}) =>
+  resolveDocumentImageVariantUrl(documentKey, imageId, 'full', options)

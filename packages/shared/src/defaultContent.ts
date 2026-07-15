@@ -1,10 +1,5 @@
-import type { Content, ContentIndex, Room, RoomData } from './types.js'
+import type { Content, ContentIndex, DocumentIndexItem, DocumentItem, Room, RoomData } from './types.js'
 
-/**
- * Minimal valid content used to bootstrap a fresh R2 bucket and to keep the UI usable
- * before the first real publish. This is intentionally tiny: one period, one room,
- * no media objects.
- */
 export const DEFAULT_CONTENT: Content = {
   version: '1',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -46,24 +41,39 @@ export const DEFAULT_CONTENT: Content = {
       portals: [],
     },
   ],
-  items: [],
+  documentIndex: [],
+  documents: [],
   textures: [],
 }
 
+
+export function documentIndexFromDocument(document: DocumentItem): DocumentIndexItem {
+  return {
+    id: document.id,
+    documentKey: document.documentKey,
+    mediaType: document.mediaType,
+    viewerImageId: document.viewerImageId,
+  }
+}
+
+export function getContentDocumentIndex(content: Content): DocumentIndexItem[] {
+  if (content.documents.length === 0) return content.documentIndex
+  const existing = new Map(content.documentIndex.map((document) => [document.id, document]))
+  return content.documents.map((document) => ({
+    ...documentIndexFromDocument(document),
+    viewerImageId: existing.get(document.id)?.viewerImageId ?? document.viewerImageId,
+  }))
+}
+
 export function roomDataFromContent(content: Content, room: Room): RoomData {
-  const assignedItemIds = new Set(
-    room.slots
-      .map((slot) => slot.itemId)
-      .filter((itemId): itemId is string => typeof itemId === 'string'),
+  const assignedDocumentIds = new Set(room.slots.flatMap((slot) => slot.documentIds ?? []))
+  const documents = Object.fromEntries(
+    getContentDocumentIndex(content)
+      .filter((document) => assignedDocumentIds.has(document.id))
+      .map((document) => [document.id, document]),
   )
 
-  const items = Object.fromEntries(
-    content.items
-      .filter((item) => assignedItemIds.has(item.id))
-      .map((item) => [item.id, item]),
-  )
-
-  return { ...room, items }
+  return { ...room, documents }
 }
 
 export function contentIndexFromContent(
@@ -74,7 +84,7 @@ export function contentIndexFromContent(
     version: content.version,
     updatedAt: content.updatedAt,
     defaultRoomId: content.rooms[0]?.id ?? '',
-    totalItems: content.items.length,
+    totalItems: getContentDocumentIndex(content).length,
     periods: content.periods,
     rooms: content.rooms.map((room) => ({
       id: room.id,
@@ -85,6 +95,23 @@ export function contentIndexFromContent(
       template: room.template,
       dataUrl: dataUrlForRoom(room),
     })),
+    documentIndex: getContentDocumentIndex(content),
     textures: content.textures,
+  }
+}
+
+
+export function contentForPublicIndex(content: Content): Content {
+  return {
+    ...content,
+    documentIndex: getContentDocumentIndex(content),
+    documents: [],
+  }
+}
+
+export function splitContentForPublish(content: Content): { content: Content; documents: Record<string, DocumentItem> } {
+  return {
+    content: contentForPublicIndex(content),
+    documents: Object.fromEntries(content.documents.map((document) => [document.id, document])),
   }
 }

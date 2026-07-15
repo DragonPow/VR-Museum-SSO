@@ -1,4 +1,4 @@
-import { DEFAULT_CONTENT, parseContent } from '@vm/shared'
+import { DEFAULT_CONTENT, parseContent, splitContentForPublish } from '@vm/shared'
 
 interface Env {
   MEDIA_BUCKET: R2Bucket
@@ -8,6 +8,7 @@ interface Env {
 
 const DRAFT_KEY = 'draft.json'
 const CONTENT_KEY = 'content.json'
+const DOCUMENT_PREFIX = 'content/documents/'
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -51,6 +52,17 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return new Response(body, { headers: { 'Content-Type': 'application/json' } })
   }
 
+
+
+  if (method === 'GET' && pathname.startsWith('/api/documents/')) {
+    const id = decodeURIComponent(pathname.replace('/api/documents/', '')).replace(/\.json$/, '')
+    if (!id || id.includes('/') || id.includes('..')) return json({ error: 'Invalid document id' }, 400)
+    const obj = await env.MEDIA_BUCKET.get(`${DOCUMENT_PREFIX}${id}/document.json`)
+    if (!obj) return json({ error: 'Not found' }, 404)
+    const body = await obj.text()
+    return new Response(body, { headers: { 'Content-Type': 'application/json' } })
+  }
+
   // GET /api/draft — return draft (fallback to published content.json; bootstrap R2 if empty)
   if (method === 'GET' && pathname === '/api/draft') {
     const obj = (await env.MEDIA_BUCKET.get(DRAFT_KEY)) ?? (await env.MEDIA_BUCKET.get(CONTENT_KEY))
@@ -68,6 +80,12 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return json({ ok: true })
   }
 
+  // DELETE /api/draft — discard draft so admin/web can fall back to published content.json.
+  if (method === 'DELETE' && pathname === '/api/draft') {
+    await env.MEDIA_BUCKET.delete(DRAFT_KEY)
+    return json({ ok: true })
+  }
+
   // POST /api/upload — proxy file upload to R2
   if (method === 'POST' && pathname === '/api/upload') {
     const form = await request.formData()
@@ -75,7 +93,7 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     const key = form.get('key') as string | null
 
     if (!file || !key) return json({ error: 'Missing file or key' }, 400)
-    const isMediaAsset = key.startsWith('content/media/') || key.startsWith('media/')
+    const isMediaAsset = key.startsWith('content/media/') || key.startsWith('content/documents/') || key.startsWith('media/')
     const isRoomModel = key.startsWith('content/models/')
     if (!isMediaAsset && !isRoomModel) {
       return json({ error: 'Invalid key prefix' }, 400)
@@ -105,9 +123,16 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
       return json({ error: `Validation failed: ${err}` }, 422)
     }
 
-    await env.MEDIA_BUCKET.put(CONTENT_KEY, body, {
+    const parsed = parseContent(data)
+    const split = splitContentForPublish(parsed)
+    await env.MEDIA_BUCKET.put(CONTENT_KEY, JSON.stringify(split.content, null, 2), {
       httpMetadata: { contentType: 'application/json' },
     })
+    await Promise.all(Object.values(split.documents).map((document) => env.MEDIA_BUCKET.put(
+      `${DOCUMENT_PREFIX}${document.documentKey}/document.json`,
+      JSON.stringify(document, null, 2),
+      { httpMetadata: { contentType: 'application/json' } },
+    )))
     await env.MEDIA_BUCKET.put(DRAFT_KEY, body, {
       httpMetadata: { contentType: 'application/json' },
     })
@@ -116,7 +141,7 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
 
   // GET content assets from R2. Needed for local dev (no public R2 URL) so uploads are
   // viewable; in production PUBLIC_R2_URL points at the bucket directly and this is a fallback.
-  if (method === 'GET' && (pathname.startsWith('/content/media/') || pathname.startsWith('/media/') || pathname.startsWith('/content/models/'))) {
+  if (method === 'GET' && (pathname.startsWith('/content/media/') || pathname.startsWith('/content/documents/') || pathname.startsWith('/media/') || pathname.startsWith('/content/models/'))) {
     const key = pathname.replace(/^\/+/, '')
     const obj = await env.MEDIA_BUCKET.get(key)
     if (!obj) return json({ error: 'Not found' }, 404)
@@ -130,14 +155,16 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
 }
 
 async function seedDefaultContent(env: Env): Promise<Response> {
-  const body = JSON.stringify(DEFAULT_CONTENT, null, 2)
-  await env.MEDIA_BUCKET.put(DRAFT_KEY, body, {
+  const draftBody = JSON.stringify(DEFAULT_CONTENT, null, 2)
+  const split = splitContentForPublish(DEFAULT_CONTENT)
+  const publicBody = JSON.stringify(split.content, null, 2)
+  await env.MEDIA_BUCKET.put(DRAFT_KEY, draftBody, {
     httpMetadata: { contentType: 'application/json' },
   })
-  await env.MEDIA_BUCKET.put(CONTENT_KEY, body, {
+  await env.MEDIA_BUCKET.put(CONTENT_KEY, publicBody, {
     httpMetadata: { contentType: 'application/json' },
   })
-  return new Response(body, { headers: { 'Content-Type': 'application/json' } })
+  return new Response(publicBody, { headers: { 'Content-Type': 'application/json' } })
 }
 
 function json(data: unknown, status = 200): Response {
@@ -150,7 +177,7 @@ function json(data: unknown, status = 200): Response {
 function cors(res: Response, requestOrigin: string, allowedOrigin: string): Response {
   const headers = new Headers(res.headers)
   headers.set('Access-Control-Allow-Origin', resolveAllowedOrigin(requestOrigin, allowedOrigin))
-  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   headers.set('Vary', 'Origin')
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers })

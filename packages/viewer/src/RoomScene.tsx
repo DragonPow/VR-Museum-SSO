@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
-import { resolveAssetUrl } from '@vm/shared'
-import type { Room, Item, Slot, Vec3 } from '@vm/shared'
+import { resolveAssetUrl, resolveDocumentImageVariantUrl } from '@vm/shared'
+import type { Room, DocumentIndexItem, Slot, Vec3 } from '@vm/shared'
 import { getRoomSurfaces, getRoomDimensions } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
@@ -14,13 +14,13 @@ import type { CameraState } from './NavController.js'
 
 interface Props {
   room: Room
-  items: Record<string, Item>
+  documents: Record<string, DocumentIndexItem>
   textures: Record<string, string>
   activeViewpointId: string
   gyroEnabled?: boolean
   mobileMoveRef?: { current: { dx: number; dz: number } }
   hideLabels?: boolean
-  onSlotSelect: (slotId: string, item: Item | null) => void
+  onSlotSelect: (slotId: string, documents: DocumentIndexItem[]) => void
   onNavigate?: (roomId: string) => void
   /** Admin editor: receives live camera position+lookAt each frame */
   cameraStateRef?: React.MutableRefObject<CameraState | null>
@@ -35,7 +35,7 @@ interface Props {
 
 export function RoomScene({
   room,
-  items,
+  documents,
   textures,
   activeViewpointId,
   gyroEnabled = false,
@@ -65,24 +65,9 @@ export function RoomScene({
   const modelUrl = resolveAssetUrl(room.modelUrl, { assetBaseUrl })
   const lightmapUrl = resolveAssetUrl(room.lightmapUrl, { assetBaseUrl })
 
-  const resolvedItems = useMemo(() => {
-    return Object.fromEntries(
-      Object.entries(items).map(([id, item]) => [
-        id,
-        {
-          ...item,
-          thumbUrl: resolveAssetUrl(item.thumbUrl, { assetBaseUrl }) ?? item.thumbUrl,
-          wallTextureUrl:
-            resolveAssetUrl(item.wallTextureUrl, { assetBaseUrl }) ?? item.wallTextureUrl,
-          fullUrl: resolveAssetUrl(item.fullUrl, { assetBaseUrl }) ?? item.fullUrl,
-        },
-      ]),
-    )
-  }, [assetBaseUrl, items])
-
   // ── GLB slot extraction ──────────────────────────────────────────────────────
   // When the room has a GLB model, VM_Slot_* meshes are the source of truth for
-  // slot positions. The JSON only provides metadata (itemId, frameStyle, etc.).
+  // slot positions. The JSON only provides metadata (documentIds, frameStyle, etc.).
   const [glbSlots, setGlbSlots] = useState<ExtractedSlot[]>([])
   const handleSlotsExtracted = useCallback((slots: ExtractedSlot[]) => {
     setGlbSlots(slots)
@@ -183,7 +168,7 @@ export function RoomScene({
             type: json?.type ?? 'image',
             // When Blender already provides a 3D Frame primitive, suppress R3F frame boxes
             frameStyle: gs.hasBlenderFrame ? 'none' : (json?.frameStyle ?? 'classic'),
-            itemId: json?.itemId ?? null,
+            documentIds: json?.documentIds ?? [],
             visible: json?.visible ?? true,
             transform: gs.transform,
             hasBlenderFrame: gs.hasBlenderFrame,
@@ -226,8 +211,14 @@ export function RoomScene({
         <SlotFrame
           key={slot.id}
           slot={slot}
-          item={slot.itemId ? (resolvedItems[slot.itemId] ?? null) : null}
-          onSelect={onSlotSelect}
+          documentItem={(slot.documentIds ?? [])[0] ? (documents[(slot.documentIds ?? [])[0]] ?? null) : null}
+          viewerTextureUrl={(() => {
+            const firstId = (slot.documentIds ?? [])[0]
+            const document = firstId ? documents[firstId] : null
+            const variant = (slot.id === 'VM_Slot_TT_9000' || slot.name === 'TT_9000') ? 'full' : (slot.viewerVariant ?? 'wall')
+            return resolveDocumentImageVariantUrl(document?.documentKey ?? null, document?.viewerImageId ?? null, variant, { assetBaseUrl })
+          })()}
+          onSelect={(slotId) => onSlotSelect(slotId, (slot.documentIds ?? []).map((id) => documents[id]).filter((document): document is DocumentIndexItem => Boolean(document)))}
           hideLabel={hideLabels}
         />
       ))}

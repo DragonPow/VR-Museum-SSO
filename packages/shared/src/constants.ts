@@ -5,8 +5,9 @@ export const ROOM_TEMPLATES: readonly RoomTemplate[] = ['hall', 'gallery', 'corr
 export const LIGHTING_PRESETS: readonly LightingPreset[] = ['warm', 'neutral', 'cool']
 export const SLOT_TYPES = ['image', 'cluster', 'poster', 'video', 'text'] as const
 export const FRAME_STYLES = ['classic', 'modern', 'none'] as const
-export const MEDIA_TYPES = ['image', 'video', 'audio'] as const
-export const ITEM_STATUSES = ['draft', 'approved'] as const
+export const DOCUMENT_MEDIA_TYPES = ['image', 'youtube', 'iframe', 'external'] as const
+export const DOCUMENT_IMAGE_VARIANTS = ['thumb', 'wall', 'full'] as const
+export const VIEWER_VARIANTS = ['wall', 'full'] as const
 export const TEXTURE_TYPES = ['wall', 'floor', 'ceiling', 'decoration'] as const
 
 // ─── Image size targets ───────────────────────────────────────────────────────
@@ -43,4 +44,4 @@ export const ROOM_DIMENSIONS: Record<string, { width: number; height: number; de
 
 // ─── Content version ──────────────────────────────────────────────────────────
 export const CONTENT_VERSION = '1'
-export { DEFAULT_CONTENT, contentIndexFromContent, roomDataFromContent } from './defaultContent.js'
+export { DEFAULT_CONTENT, contentForPublicIndex, contentIndexFromContent, documentIndexFromDocument, getContentDocumentIndex, roomDataFromContent, splitContentForPublish } from './defaultContent.js'

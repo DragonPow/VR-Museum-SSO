@@ -49,29 +49,29 @@ const VALID_CONTENT = {
             size: { w: 1.5, h: 1.2 },
           },
           frameStyle: 'classic',
-          itemId: 'item1',
+          documentIds: ['doc1'],
           visible: true,
         },
       ],
     },
   ],
-  items: [
+  documents: [
     {
-      id: 'item1',
+      id: 'doc1',
       title: 'Lễ khai trương 1975',
       year: 1975,
       periodId: 'p1',
-      shortDesc: 'Lễ khai trương thành lập công ty',
-      longDesc: 'Mô tả chi tiết về lễ khai trương...',
+      summary: 'Lễ khai trương thành lập công ty',
+      body: 'Mô tả chi tiết về lễ khai trương...',
       tags: ['khai-truong', 'thanh-lap'],
       mediaType: 'image',
-      thumbUrl: '/content/images/item1-thumb.jpg',
-      wallTextureUrl: '/content/images/item1-wall.jpg',
-      fullUrl: '/content/images/item1-full.jpg',
+      documentKey: 'doc1',
+      thumbnailImageId: 'photo1',
+      viewerImageId: 'photo1',
+      detailImageIds: ['photo1'],
+      images: [{ id: 'photo1' }],
       source: 'Lưu trữ công ty',
-      approvedBy: 'Ban lãnh đạo',
       priority: 1,
-      status: 'approved',
     },
   ],
   textures: [],
@@ -130,16 +130,16 @@ describe('parseAndValidateContent', () => {
     expect(() => parseAndValidateContent(bad)).toThrow(/entryViewpointId/)
   })
 
-  it('throws when slot references unknown item', () => {
+  it('throws when slot references unknown document', () => {
     const bad = {
       ...VALID_CONTENT,
       rooms: [
         {
           ...VALID_CONTENT.rooms[0],
-          slots: [{ ...VALID_CONTENT.rooms[0]!.slots[0]!, itemId: 'GHOST' }],
+          slots: [{ ...VALID_CONTENT.rooms[0]!.slots[0]!, documentIds: ['GHOST'] }],
         },
       ],
     }
-    expect(() => parseAndValidateContent(bad)).toThrow(/unknown item/)
+    expect(() => parseAndValidateContent(bad)).toThrow(/unknown document/)
   })
 })

@@ -16,13 +16,12 @@ export function useContent(): State {
 
   useEffect(() => {
     if (_cache) return
-    fetchFirstContentJson()
-      .then((raw) => {
-        const data = parseContent(
-          rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl }),
-        )
-        _cache = data
-        setState({ status: 'ok', data })
+    fetchFirstContentJson((raw) => parseContent(
+      rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl }),
+    ))
+      .then((data) => {
+        _cache = data as Content
+        setState({ status: 'ok', data: data as Content })
       })
       .catch((err: unknown) => {
         setState({ status: 'error', message: String(err) })

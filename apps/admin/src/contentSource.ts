@@ -1,4 +1,4 @@
-import { parseContent } from '@vm/shared'
+import { parseContent, parseDocumentItem } from '@vm/shared'
 import type { Content } from '@vm/shared'
 
 type ContentMode = 'local' | 'github' | 'cloudflare' | 'static'
@@ -54,11 +54,44 @@ export const ADMIN_CONTENT_SOURCE = (() => {
   }
 })()
 
+function documentUrlFor(contentUrl: string, id: string): string {
+  const safeId = encodeURIComponent(id)
+  if (contentUrl.endsWith('/api/draft')) return `${contentUrl.replace('/api/draft', '')}/api/documents/${safeId}`
+  if (ADMIN_CONTENT_SOURCE.mode === 'cloudflare' && ADMIN_CONTENT_SOURCE.assetBaseUrl) {
+    return `${ADMIN_CONTENT_SOURCE.assetBaseUrl}/content/documents/${safeId}/document.json`
+  }
+  const contentFileMatch = contentUrl.match(/^(.*\/content\/)content(?:\.sample)?\.json$/)
+  if (contentFileMatch) return `${contentFileMatch[1]}documents/${safeId}/document.json`
+  return `/content/documents/${safeId}/document.json`
+}
+
+async function hydrateSplitContent(content: Content, contentUrl: string): Promise<Content> {
+  if (content.documents.length > 0 || content.documentIndex.length === 0) return content
+  const settled = await Promise.allSettled(
+    content.documentIndex.map(async (document) => {
+      const res = await fetch(documentUrlFor(contentUrl, document.documentKey))
+      if (!res.ok) throw new Error(`${document.id}: HTTP ${res.status}`)
+      return parseDocumentItem(await res.json())
+    }),
+  )
+  const documents = settled
+    .filter((result): result is PromiseFulfilledResult<Content['documents'][number]> => result.status === 'fulfilled')
+    .map((result) => result.value)
+  return { ...content, documents }
+}
+
 async function fetchContent(url: string): Promise<Content | null> {
   try {
     const res = await fetch(url)
     if (!res.ok) return null
-    return parseContent(await res.json())
+    const content = parseContent(await res.json())
+    const hydrated = await hydrateSplitContent(content, url)
+    if (url.endsWith('/api/draft')) {
+      const totalSlots = content.rooms.reduce((sum, room) => sum + room.slots.length, 0)
+      const splitDocumentsMissing = content.documentIndex.length > 0 && content.documents.length === 0 && hydrated.documents.length === 0
+      if (totalSlots === 0 || splitDocumentsMissing) return null
+    }
+    return hydrated
   } catch {
     return null
   }

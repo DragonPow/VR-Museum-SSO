@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useDraftStore } from '../store.js'
-import { publish, saveDraft, checkApi, ApiError, saveLocalContentFile } from '../api.js'
+import { loadStaticContent } from '../contentSource.js'
+import { publish, saveDraft, deleteDraft, checkApi, ApiError, saveLocalContentFile } from '../api.js'
 import type { Content } from '@vm/shared'
 
 const API_BASE = (import.meta.env['VITE_API_URL'] ?? '').replace(/\/+$/, '')
@@ -11,6 +12,9 @@ export function Publish() {
   const content = useDraftStore((s) => s.content)
   const dirty = useDraftStore((s) => s.dirty)
   const markClean = useDraftStore((s) => s.markClean)
+  const resetDraftStore = useDraftStore((s) => s.reset)
+  const initDraftStore = useDraftStore((s) => s.init)
+  const loadContent = useDraftStore((s) => s.loadContent)
   const [step, setStep] = useState<PublishStep>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [apiAvailable, setApiAvailable] = useState<boolean | null>(null)
@@ -31,7 +35,7 @@ export function Publish() {
     setStep('saving')
     setErrorMsg('')
     try {
-      assertNoBrokenItemRefs(content)
+      assertNoBrokenDocumentRefs(content)
       const snapshot: Content = { ...content, updatedAt: new Date().toISOString() }
       await publish(snapshot)
       await saveLocalContentFile(snapshot)
@@ -56,7 +60,7 @@ export function Publish() {
 
   const handleExport = () => {
     try {
-      assertNoBrokenItemRefs(content)
+      assertNoBrokenDocumentRefs(content)
     } catch (err) {
       setStep('error')
       setErrorMsg(String(err instanceof Error ? err.message : err))
@@ -76,10 +80,31 @@ export function Publish() {
   const handleSaveDraft = async () => {
     setStep('saving')
     try {
-      assertNoBrokenItemRefs(content)
+      assertNoBrokenDocumentRefs(content)
       await saveDraft(content)
       markClean()
       setStep('idle')
+    } catch (err) {
+      setStep('error')
+      setErrorMsg(String(err))
+    }
+  }
+
+  const handleDeleteDraft = async () => {
+    if (!confirm('Xóa bản draft hiện tại và tải lại content mới nhất? Các thay đổi chưa xuất bản sẽ mất.')) return
+    setStep('saving')
+    setErrorMsg('')
+    try {
+      await deleteDraft().catch(() => undefined)
+      resetDraftStore()
+      const staticContent = await loadStaticContent()
+      if (staticContent) {
+        loadContent(staticContent)
+      } else {
+        await initDraftStore()
+      }
+      setVerifyInfo('Đã xóa draft và tải lại content mới nhất')
+      setStep('done')
     } catch (err) {
       setStep('error')
       setErrorMsg(String(err))
@@ -104,7 +129,7 @@ export function Publish() {
           <SummaryRow label="Slot đã gán / tổng" value={`${stats.assigned} / ${stats.total}`} ok={stats.assigned === stats.total} />
           <SummaryRow label="Số tư liệu trong thư viện" value={stats.items} />
           <SummaryRow label="Slot còn trống" value={stats.total - stats.assigned} warn={stats.total - stats.assigned > 0} />
-          <SummaryRow label="Slot lỗi item" value={stats.brokenRefs} warn={stats.brokenRefs > 0} />
+          <SummaryRow label="Slot lỗi tư liệu" value={stats.brokenRefs} warn={stats.brokenRefs > 0} />
           <SummaryRow label="Tình trạng lưu" value={dirty ? 'Có thay đổi chưa lưu' : 'Đã đồng bộ'} warn={dirty} />
         </div>
       </div>
@@ -161,6 +186,15 @@ export function Publish() {
             disabled={busy}
             onClick={handleExport}
           />
+          <ActionCard
+            icon="↺"
+            title="Xóa draft và tải lại"
+            desc="Bỏ bản nháp đang đè dữ liệu, xóa cache admin local và nạp lại content mới nhất."
+            btnLabel="Xóa draft"
+            disabled={busy}
+            danger
+            onClick={handleDeleteDraft}
+          />
         </div>
       </div>
 
@@ -201,17 +235,17 @@ function SummaryRow({ label, value, ok, warn }: { label: string; value: string |
   )
 }
 
-function ActionCard({ icon, title, desc, btnLabel, primary, disabled, onClick }: {
+function ActionCard({ icon, title, desc, btnLabel, primary, danger, disabled, onClick }: {
   icon: string; title: string; desc: string; btnLabel: string;
-  primary?: boolean; disabled?: boolean; onClick: () => void
+  primary?: boolean; danger?: boolean; disabled?: boolean; onClick: () => void
 }) {
   return (
-    <div style={{ ...styles.actionCard, ...(primary ? styles.actionCardPrimary : {}) }}>
+    <div style={{ ...styles.actionCard, ...(primary ? styles.actionCardPrimary : {}), ...(danger ? styles.actionCardDanger : {}) }}>
       <div style={styles.actionIcon}>{icon}</div>
       <div style={styles.actionTitle}>{title}</div>
       <div style={styles.actionDesc}>{desc}</div>
       <button
-        style={{ ...styles.actionBtn, ...(primary ? styles.actionBtnPrimary : {}), opacity: disabled ? 0.5 : 1 }}
+        style={{ ...styles.actionBtn, ...(primary ? styles.actionBtnPrimary : {}), ...(danger ? styles.actionBtnDanger : {}), opacity: disabled ? 0.5 : 1 }}
         disabled={disabled}
         onClick={onClick}
       >
@@ -221,21 +255,23 @@ function ActionCard({ icon, title, desc, btnLabel, primary, disabled, onClick }:
   )
 }
 
-function findBrokenItemRefs(content: Content) {
-  const itemIds = new Set(content.items.map((item) => item.id))
+function findBrokenDocumentRefs(content: Content) {
+  const documentIds = new Set(content.documents.map((document) => document.id))
   return content.rooms.flatMap((room) =>
-    room.slots
-      .filter((slot) => slot.itemId && !itemIds.has(slot.itemId))
-      .map((slot) => ({ roomTitle: room.title, slotId: slot.id, slotName: slot.name, itemId: slot.itemId as string })),
+    room.slots.flatMap((slot) =>
+      (slot.documentIds ?? [])
+        .filter((documentId) => !documentIds.has(documentId))
+        .map((documentId) => ({ roomTitle: room.title, slotId: slot.id, slotName: slot.name, documentId })),
+    ),
   )
 }
 
-function assertNoBrokenItemRefs(content: Content) {
-  const broken = findBrokenItemRefs(content)
+function assertNoBrokenDocumentRefs(content: Content) {
+  const broken = findBrokenDocumentRefs(content)
   if (broken.length === 0) return
   const details = broken
     .slice(0, 8)
-    .map((ref) => `- ${ref.roomTitle} / ${ref.slotName || ref.slotId}: thiếu item ${ref.itemId}`)
+    .map((ref) => `- ${ref.roomTitle} / ${ref.slotName || ref.slotId}: thiếu tư liệu ${ref.documentId}`)
     .join('\n')
   const suffix = broken.length > 8 ? `\n... và ${broken.length - 8} lỗi nữa` : ''
   throw new Error(`Không thể xuất bản vì có slot đang trỏ tới tư liệu không tồn tại:\n${details}${suffix}`)
@@ -286,10 +322,10 @@ function getSummary(content: Content) {
   return {
     periods: content.periods.length,
     rooms: content.rooms.length,
-    items: content.items.length,
+    items: content.documents.length,
     total: allSlots.length,
-    assigned: allSlots.filter((s) => s.itemId).length,
-    brokenRefs: findBrokenItemRefs(content).length,
+    assigned: allSlots.filter((s) => (s.documentIds ?? []).length > 0).length,
+    brokenRefs: findBrokenDocumentRefs(content).length,
   }
 }
 
@@ -307,14 +343,16 @@ const styles: Record<string, React.CSSProperties> = {
   summaryValue: { fontSize: '13px', fontWeight: 600, color: '#f0e8d8' },
   apiRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid #2a1e10', borderRadius: '10px' },
   checkBtn: { padding: '7px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid #3a2e1e', borderRadius: '6px', color: '#c8a85a', fontSize: '12px', cursor: 'pointer' },
-  actions: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' },
+  actions: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' },
   actionCard: { background: 'rgba(255,255,255,0.04)', border: '1px solid #2a1e10', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' },
   actionCardPrimary: { border: '1px solid rgba(200,168,90,0.3)', background: 'rgba(200,168,90,0.05)' },
+  actionCardDanger: { border: '1px solid rgba(200,90,90,0.45)', background: 'rgba(200,90,90,0.05)' },
   actionIcon: { fontSize: '28px' },
   actionTitle: { fontSize: '15px', fontWeight: 700, color: '#f0e8d8' },
   actionDesc: { fontSize: '12px', color: '#6a5a40', lineHeight: 1.5, flex: 1 },
   actionBtn: { marginTop: '4px', padding: '9px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid #3a2e1e', borderRadius: '7px', color: '#c8a85a', fontSize: '13px', cursor: 'pointer' },
   actionBtnPrimary: { background: 'rgba(200,168,90,0.15)', borderColor: '#c8a85a', fontWeight: 600 },
+  actionBtnDanger: { color: '#ffb0b0', borderColor: '#c85a5a', background: 'rgba(200,90,90,0.08)' },
   successBox: { padding: '14px 18px', background: 'rgba(90,200,90,0.1)', border: '1px solid #5ac85a', borderRadius: '8px', color: '#b0ffb0', fontSize: '14px' },
   errorBox: { padding: '14px 18px', background: 'rgba(200,90,90,0.1)', border: '1px solid #c85a5a', borderRadius: '8px', color: '#ffb0b0', fontSize: '14px' },
   infoBox: { padding: '14px 18px', background: 'rgba(200,168,90,0.08)', border: '1px solid #5a4a30', borderRadius: '8px', color: '#c8a85a', fontSize: '14px' },

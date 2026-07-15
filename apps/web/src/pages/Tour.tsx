@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ContentIndex } from '@vm/shared'
+import type { ContentIndex, DocumentIndexItem } from '@vm/shared'
 import {
   SceneCanvas,
   RoomScene,
@@ -7,9 +7,9 @@ import {
   useGyroToggle,
   shouldUseFallback,
 } from '@vm/viewer'
-import type { Item } from '@vm/shared'
 import { useMuseumStore, useCurrentRoomStub } from '../store.js'
 import { useRoom } from '../content/useRoom.js'
+import { fetchDocumentDetails } from '../content/documents.js'
 import { InfoModal } from '../ui/InfoModal.js'
 import { ViewpointNav } from '../ui/ViewpointNav.js'
 import { MobileControls } from '../ui/MobileControls.js'
@@ -28,7 +28,7 @@ export function Tour({ content, onBack }: Props) {
     index,
     currentRoomId,
     activeViewpointId,
-    selectedItem,
+    selectedDocuments,
     navigateToRoom,
     selectSlot,
     closeModal,
@@ -60,22 +60,16 @@ export function Tour({ content, onBack }: Props) {
 
   if (!currentRoomId || !roomStub) return null
 
-  const handleSlotSelect = (slotId: string, item: Item | null) => {
-    selectSlot(slotId, item)
+  const handleSlotSelect = (slotId: string, documents: DocumentIndexItem[]) => {
+    void fetchDocumentDetails(documents).then((details) => selectSlot(slotId, details))
   }
 
   if (useFallback) {
     if (roomState.status !== 'ok') return <RoomLoadingScreen />
-    const itemsArr = Object.values(roomState.data.items)
-    const fakeContent = {
-      ...content,
-      rooms: [roomState.data],
-      items: itemsArr,
-      textures: content.textures,
-    } as any
     return (
       <Gallery2D
-        content={fakeContent}
+        content={content}
+        roomData={roomState.data}
         currentRoomId={currentRoomId}
         onNavigate={navigateToRoom}
         onBack={onBack}
@@ -101,7 +95,7 @@ export function Tour({ content, onBack }: Props) {
 
   if (!activeViewpointId) return <RoomLoadingScreen />
 
-  const { room, items, textures } = buildRoomDataProps(roomState.data, content.textures)
+  const { room, documents, textures } = buildRoomDataProps(roomState.data, content.textures)
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', fontFamily: brand.fontFamily }}>
@@ -109,12 +103,12 @@ export function Tour({ content, onBack }: Props) {
       <SceneCanvas style={{ position: 'absolute', inset: 0 }}>
         <RoomScene
           room={room}
-          items={items}
+          documents={documents}
           textures={textures}
           activeViewpointId={activeViewpointId}
           gyroEnabled={gyroEnabled}
           mobileMoveRef={mobileMoveRef}
-          hideLabels={!!selectedItem}
+          hideLabels={selectedDocuments.length > 0}
           onSlotSelect={handleSlotSelect}
           onNavigate={navigateToRoom}
           assetBaseUrl={ASSET_BASE_URL}
@@ -149,7 +143,7 @@ export function Tour({ content, onBack }: Props) {
       <DragHint isMobile={isMobile} />
 
       {/* Info modal */}
-      {selectedItem && <InfoModal item={selectedItem} onClose={closeModal} />}
+      {selectedDocuments.length > 0 && <InfoModal documents={selectedDocuments} onClose={closeModal} />}
     </div>
   )
 }
