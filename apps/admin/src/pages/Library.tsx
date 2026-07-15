@@ -243,8 +243,7 @@ function UploadModal({ periods, onClose, onDone }: {
   })
 
   const handleSubmit = async () => {
-    if (!form.title.trim() || !form.periodId) return
-    if (form.contentType === 'image' && !selectedFile) return
+    if (!form.title.trim() || !form.periodId || !selectedFile) return
     if (form.contentType === 'youtube' && !form.embedUrl.trim()) return
     if (form.contentType === 'external' && !form.externalUrl.trim()) return
 
@@ -253,36 +252,6 @@ function UploadModal({ periods, onClose, onDone }: {
       const itemId = `item-${nanoid(8)}`
       const common = buildCommonItem(itemId)
 
-      if (form.contentType === 'youtube') {
-        const item: Item = {
-          ...common,
-          mediaType: 'video' as MediaType,
-          thumbUrl: YOUTUBE_PREVIEW,
-          wallTextureUrl: YOUTUBE_PREVIEW,
-          fullUrl: YOUTUBE_PREVIEW,
-          embedUrl: normalizeYouTubeUrl(form.embedUrl),
-        }
-        setStep('done')
-        onDone(item)
-        return
-      }
-
-      if (form.contentType === 'external') {
-        const item: Item = {
-          ...common,
-          mediaType: 'image' as MediaType,
-          thumbUrl: EXTERNAL_PREVIEW,
-          wallTextureUrl: EXTERNAL_PREVIEW,
-          fullUrl: EXTERNAL_PREVIEW,
-          externalUrl: form.externalUrl.trim(),
-          externalLabel: form.externalLabel.trim() || 'Mở trang',
-        }
-        setStep('done')
-        onDone(item)
-        return
-      }
-
-      if (!selectedFile) return
       setStep('resizing')
       const variants = await resizeImage(selectedFile)
       setStep('uploading')
@@ -307,11 +276,16 @@ function UploadModal({ periods, onClose, onDone }: {
 
       const item: Item = {
         ...common,
-        mediaType: 'image' as MediaType,
+        mediaType: form.contentType === 'youtube' ? 'video' as MediaType : 'image' as MediaType,
         thumbUrl,
         wallTextureUrl: wallUrl,
         fullUrl,
         rawUrl,
+        ...(form.contentType === 'youtube' ? { embedUrl: normalizeYouTubeUrl(form.embedUrl) } : {}),
+        ...(form.contentType === 'external' ? {
+          externalUrl: form.externalUrl.trim(),
+          externalLabel: form.externalLabel.trim() || 'Mở link đính kèm',
+        } : {}),
       }
 
       setStep('done')
@@ -324,8 +298,8 @@ function UploadModal({ periods, onClose, onDone }: {
 
   const busy = step === 'resizing' || step === 'uploading'
   const canSubmit = Boolean(
-    form.title.trim() && form.periodId && !busy &&
-    (form.contentType === 'image' ? selectedFile : form.contentType === 'youtube' ? form.embedUrl.trim() : form.externalUrl.trim())
+    form.title.trim() && form.periodId && selectedFile && !busy &&
+    (form.contentType === 'image' ? true : form.contentType === 'youtube' ? form.embedUrl.trim() : form.externalUrl.trim())
   )
 
   return (
@@ -337,37 +311,37 @@ function UploadModal({ periods, onClose, onDone }: {
         </div>
 
         <div style={styles.modalBody}>
-          {form.contentType === 'image' ? (
-            <div
-              style={{ ...styles.dropZone, ...(preview ? styles.dropZoneWithPreview : {}) }}
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              onClick={() => fileRef.current?.click()}
-            >
-              {preview ? (
-                <img src={preview} alt="preview" style={styles.previewImg} />
-              ) : (
-                <div style={styles.dropHint}>
-                  <div style={styles.dropIcon}>IMG</div>
-                  <div>Kéo thả ảnh vào đây hoặc click để chọn</div>
-                  <div style={{ fontSize: '12px', color: '#6a5a40' }}>JPG, PNG, WebP - tự động resize</div>
-                </div>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-              />
-            </div>
-          ) : (
+          <div
+            style={{ ...styles.dropZone, ...(preview ? styles.dropZoneWithPreview : {}) }}
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            onClick={() => fileRef.current?.click()}
+          >
+            {preview ? (
+              <img src={preview} alt="preview" style={styles.previewImg} />
+            ) : (
+              <div style={styles.dropHint}>
+                <div style={styles.dropIcon}>IMG</div>
+                <div>Chọn ảnh hiển thị trong phòng và trong detail</div>
+                <div style={{ fontSize: '12px', color: '#6a5a40' }}>Bắt buộc cho ảnh, YouTube và link ngoài</div>
+              </div>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+            />
+          </div>
+
+          {form.contentType !== 'image' && (
             <div style={styles.typePanel}>
               <div style={styles.typePanelTitle}>{form.contentType === 'youtube' ? 'Iframe YouTube' : 'Link ngoài'}</div>
               <div style={styles.typePanelText}>
                 {form.contentType === 'youtube'
-                  ? 'Nhập link YouTube, khi khách bấm slot sẽ mở iframe video trực tiếp.'
-                  : 'Nhập đường dẫn ngoài, khi khách bấm slot sẽ hiện hộp xác nhận trước khi rời trang.'}
+                  ? 'Ảnh trên dùng để treo trong phòng; khi khách bấm slot sẽ mở iframe video trực tiếp.'
+                  : 'Ảnh trên dùng để treo trong phòng và mở detail. Trong detail sẽ có nút mở link đính kèm.'}
               </div>
             </div>
           )}

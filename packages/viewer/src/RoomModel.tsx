@@ -20,6 +20,9 @@ const INTERIOR_WALL_COLLIDER_MARGIN = 0.08
 /** Small brightness lift on the baked atlas so the web reads as bright as the Blender
  *  (AgX) viewport instead of the slightly duller Reinhard bake. */
 const ATLAS_BRIGHTEN = 1.08
+// Toggle for the experimental clean-wall shader. Keep this false for the current
+// room so the baked lightmap shadows/ceiling gradients stay visible like cloud.
+const USE_CLEAN_WALL_SHADER = false
 
 /**
  * Floor material: Marble021 projected from world X/Z, with a crisp grout grid. Using
@@ -551,9 +554,6 @@ export function RoomModel({
           const isAccentMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /accent|niche|red|gold|title|wood|trim|cabinet|plinth|desk|podium|case/i.test(m.name)
           const accentTint = new THREE.Color(1.06, 1.05, 1.03)
-          // The restored Blender file no longer matches the old shell lightmap UV2
-          // perfectly: walls pick up stale cabinet/title shadows from the bake. Keep
-          // the atlas for tile/accent surfaces, but render plain walls/ceilings clean.
           const makeCleanWall = (m?: THREE.Material | null) => {
             const sourceName = m?.name ?? ''
             const baseColor = /top|ceiling/i.test(sourceName)
@@ -576,8 +576,6 @@ export function RoomModel({
                 '#ifdef USE_MAP',
                 '  vec3 bake = texture2D(map, vMapUv, uBakeBias).rgb;',
                 '  float lum = dot(bake, vec3(0.2126, 0.7152, 0.0722));',
-                // Wider, softer gentle-light range so the room reads lit (not flat/glary),
-                // while the heavy mip blur keeps stale bake shadows from showing sharply.
                 '  float shade = clamp((lum - 0.62) * 1.15 + 0.9, 0.74, 1.14);',
                 '  diffuseColor.rgb = uBaseCream * shade;',
                 '#else',
@@ -585,8 +583,6 @@ export function RoomModel({
                 '#endif',
               ]
               if (hasBump) {
-                // Real plaster relief from the Blender wall normal map (UV0), so the wall
-                // is not a flat painted colour.
                 shader.uniforms.uWallNor = { value: wallNorTex }
                 shader.uniforms.uBumpStrength = { value: 0.9 }
                 shader.uniforms.uLightDir = { value: new THREE.Vector2(-0.45, 0.7) }
@@ -615,12 +611,17 @@ export function RoomModel({
             mat.name = sourceName
             return mat
           }
+          // Keep the baked atlas visible on walls/ceilings so the room preserves
+          // the cloud render's soft shadow and ceiling light gradients. Flip
+          // USE_CLEAN_WALL_SHADER to true later to use the experimental clean-wall look.
           const makeShell = (m?: THREE.Material | null) =>
             isTileMat(m)
               ? makeTiledFloorMaterial(atlas, floorTileTex, floorNorTex, floorTint)
               : isAccentMat(m)
                 ? new THREE.MeshBasicMaterial({ map: atlas, color: accentTint, side: THREE.DoubleSide, toneMapped: false })
-                : makeCleanWall(m)
+                : USE_CLEAN_WALL_SHADER
+                  ? makeCleanWall(m)
+                  : makeWallMaterial(atlas, wallTint, wallNorTex)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
           // fails on the 2nd pass and the floor slot gets overwritten with the plain
