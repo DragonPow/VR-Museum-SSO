@@ -42,6 +42,35 @@ export async function saveDraft(content: Content): Promise<void> {
   })
 }
 
+
+
+function normalizeLocalPublicUrl(url: string): string {
+  if (typeof window === 'undefined') return url
+  if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) return url
+  try {
+    const parsed = new URL(url)
+    if ((parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') && parsed.pathname.startsWith('/content/media/')) {
+      return parsed.pathname
+    }
+    if ((parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') && parsed.pathname.startsWith('/media/')) {
+      return `/content${parsed.pathname}`
+    }
+  } catch {
+    if (url.startsWith('/media/')) return `/content${url}`
+  }
+  return url
+}
+
+async function mirrorLocalUpload(blob: Blob, key: string): Promise<void> {
+  if (typeof window === 'undefined') return
+  if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) return
+  await fetch(`/__local-media?key=${encodeURIComponent(key)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': blob.type || 'application/octet-stream' },
+    body: blob,
+  }).catch(() => undefined)
+}
+
 /** Upload a file variant to the worker (which puts it to R2). Returns public URL. */
 export async function uploadFile(blob: Blob, key: string): Promise<string> {
   const form = new FormData()
@@ -49,7 +78,8 @@ export async function uploadFile(blob: Blob, key: string): Promise<string> {
   form.append('key', key)
   const res = await apiFetch('/api/upload', { method: 'POST', body: form })
   const { publicUrl } = (await res.json()) as { publicUrl: string }
-  return publicUrl
+  await mirrorLocalUpload(blob, key)
+  return normalizeLocalPublicUrl(publicUrl)
 }
 
 export async function uploadModel(file: File, filename?: string): Promise<string> {
@@ -66,6 +96,22 @@ export async function uploadModel(file: File, filename?: string): Promise<string
   const key = `content/models/${safeName}`
   await uploadFile(file, key)
   return `/${key}`
+}
+
+
+export async function saveLocalContentFile(content: Content): Promise<boolean> {
+  if (typeof window === 'undefined') return false
+  if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) return false
+  const res = await fetch('/__local-content/content.json', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(content, null, 2),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText)
+    throw new Error(text)
+  }
+  return true
 }
 
 export async function publish(content: Content): Promise<void> {

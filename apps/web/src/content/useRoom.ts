@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { parseRoomData, rebaseAssetUrls } from '@vm/shared'
 import type { RoomData, RoomStub } from '@vm/shared'
+import { CONTENT_SOURCE } from './source.js'
 
 type RoomState =
   | { status: 'idle' }
@@ -8,8 +9,6 @@ type RoomState =
   | { status: 'error'; message: string }
   | { status: 'ok'; data: RoomData }
 
-const BASE = import.meta.env.BASE_URL
-const ASSET_BASE_URL = (import.meta.env['VITE_ASSET_BASE_URL'] ?? '').replace(/\/+$/, '')
 const cache = new Map<string, RoomData>()
 
 export function useRoom(stub: RoomStub | undefined): RoomState {
@@ -22,15 +21,16 @@ export function useRoom(stub: RoomStub | undefined): RoomState {
       return
     }
 
-    const cached = cache.get(stub.id)
+    const cacheKey = `${stub.id}:${stub.dataUrl}`
+    const cached = cache.get(cacheKey)
     if (cached) {
       setState({ status: 'ok', data: cached })
       return
     }
 
     // Already fetching this room (React StrictMode double-fire guard)
-    if (loadingRef.current === stub.id) return
-    loadingRef.current = stub.id
+    if (loadingRef.current === cacheKey) return
+    loadingRef.current = cacheKey
 
     setState({ status: 'loading' })
 
@@ -41,9 +41,9 @@ export function useRoom(stub: RoomStub | undefined): RoomState {
       })
       .then((raw) => {
         const data = parseRoomData(
-          rebaseAssetUrls(raw, { assetBaseUrl: ASSET_BASE_URL, appBaseUrl: BASE }),
+          rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl }),
         )
-        cache.set(stub.id, data)
+        cache.set(cacheKey, data)
         setState({ status: 'ok', data })
       })
       .catch((err: unknown) => {

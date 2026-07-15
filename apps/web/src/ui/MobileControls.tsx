@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { brand } from './theme.js'
 
 interface Props {
   moveRef: { current: { dx: number; dz: number } }
@@ -41,7 +42,7 @@ export function MobileControls({ moveRef, gyroEnabled, onGyroToggle }: Props) {
         }}
         onClick={onGyroToggle}
       >
-        <span style={{ fontSize: '15px' }}>📱</span>
+        <PhoneIcon />
         <span style={{ fontSize: '10px', marginTop: '1px' }}>
           {gyroEnabled ? 'Cảm biến BẬT' : 'Cảm biến TẮT'}
         </span>
@@ -51,23 +52,37 @@ export function MobileControls({ moveRef, gyroEnabled, onGyroToggle }: Props) {
       <div style={styles.dpad}>
         <div style={styles.row}>
           <span style={styles.corner} />
-          <button style={styles.btn} {...makeHandlers('up')}>▲</button>
+          <button style={styles.btn} {...makeHandlers('up')}><ChevronUp /></button>
           <span style={styles.corner} />
         </div>
         <div style={styles.row}>
-          <button style={styles.btn} {...makeHandlers('left')}>◀</button>
+          <button style={styles.btn} {...makeHandlers('left')}><ChevronLeft /></button>
           <span style={styles.center} />
-          <button style={styles.btn} {...makeHandlers('right')}>▶</button>
+          <button style={styles.btn} {...makeHandlers('right')}><ChevronRight /></button>
         </div>
         <div style={styles.row}>
           <span style={styles.corner} />
-          <button style={styles.btn} {...makeHandlers('down')}>▼</button>
+          <button style={styles.btn} {...makeHandlers('down')}><ChevronDown /></button>
           <span style={styles.corner} />
         </div>
       </div>
     </div>
   )
 }
+
+function PhoneIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+      <rect x="7" y="2.5" width="10" height="19" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M11 18h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronUp() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 15l6-6 6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
+function ChevronDown() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
+function ChevronLeft() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
+function ChevronRight() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
 
 const BTN_SIZE = 40
 
@@ -92,10 +107,10 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     width: BTN_SIZE * 3 + 4,  // same width as d-pad
     minHeight: '38px',
-    background: 'rgba(10,8,4,0.75)',
-    border: '1px solid #5a4a30',
+    background: 'rgba(255,255,255,0.88)',
+    border: `1px solid ${brand.line}`,
     borderRadius: '12px',
-    color: '#9a9080',
+    color: brand.muted,
     cursor: 'pointer',
     backdropFilter: 'blur(8px)',
     gap: '2px',
@@ -103,9 +118,9 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.2,
   },
   gyroBtnOn: {
-    background: 'rgba(20,60,20,0.85)',
-    borderColor: '#5ac85a',
-    color: '#b0ffb0',
+    background: 'rgba(16,80,160,0.12)',
+    borderColor: brand.blue,
+    color: brand.blue,
   },
   dpad: {
     display: 'flex',
@@ -119,11 +134,11 @@ const styles: Record<string, React.CSSProperties> = {
   btn: {
     width: BTN_SIZE,
     height: BTN_SIZE,
-    background: 'rgba(10,8,4,0.75)',
-    border: '1px solid #5a4a30',
+    background: 'rgba(255,255,255,0.88)',
+    border: `1px solid ${brand.line}`,
     borderRadius: '8px',
-    color: '#c8a85a',
-    fontSize: '18px',
+    color: brand.blue,
+    fontSize: 0,
     cursor: 'pointer',
     backdropFilter: 'blur(8px)',
     display: 'flex',
@@ -141,8 +156,8 @@ const styles: Record<string, React.CSSProperties> = {
     width: BTN_SIZE,
     height: BTN_SIZE,
     flexShrink: 0,
-    background: 'rgba(10,8,4,0.4)',
+    background: 'rgba(16,80,160,0.08)',
     borderRadius: '8px',
-    border: '1px solid rgba(90,74,48,0.3)',
+    border: `1px solid ${brand.line}`,
   },
 }

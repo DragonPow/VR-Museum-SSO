@@ -42,6 +42,12 @@ const EYE_HEIGHT = 1.6
 // 1 - exp(-GYRO_LERP * delta) so it feels identical at any frame rate.
 // Higher = snappier, lower = smoother/floatier.
 const GYRO_LERP = 18
+const PLAYER_RADIUS = 0.32
+// The invisible floor hit target needs to reach slightly beyond the walkable
+// clamp. Otherwise clicks near perimeter walls can hit the rendered floor/wall
+// but miss navigation, creating a dead strip about half a tile wide.
+const FLOOR_HIT_MARGIN = 1.8
+const WALKABLE_EPSILON = 0.035
 
 function toVec3(v: { x: number; y: number; z: number }) {
   return new THREE.Vector3(v.x, v.y, v.z)
@@ -74,7 +80,90 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 function isBlocked(x: number, z: number, obstacles: RoomBounds[]): boolean {
-  return obstacles.some((o) => x > o.minX && x < o.maxX && z > o.minZ && z < o.maxZ)
+  return obstacles.some((o) =>
+    x > o.minX - PLAYER_RADIUS &&
+    x < o.maxX + PLAYER_RADIUS &&
+    z > o.minZ - PLAYER_RADIUS &&
+    z < o.maxZ + PLAYER_RADIUS,
+  )
+}
+
+function segmentIntersectsRect(
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  rect: RoomBounds,
+): boolean {
+  const minX = rect.minX - PLAYER_RADIUS
+  const maxX = rect.maxX + PLAYER_RADIUS
+  const minZ = rect.minZ - PLAYER_RADIUS
+  const maxZ = rect.maxZ + PLAYER_RADIUS
+  const dx = bx - ax
+  const dz = bz - az
+  let t0 = 0
+  let t1 = 1
+  const clip = (p: number, q: number) => {
+    if (Math.abs(p) < 1e-8) return q >= 0
+    const r = q / p
+    if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r }
+    else { if (r < t0) return false; if (r < t1) t1 = r }
+    return true
+  }
+  return (
+    clip(-dx, ax - minX) &&
+    clip(dx, maxX - ax) &&
+    clip(-dz, az - minZ) &&
+    clip(dz, maxZ - az) &&
+    t1 >= t0
+  )
+}
+
+function pathBlocked(from: THREE.Vector3, x: number, z: number, obstacles: RoomBounds[]): boolean {
+  return obstacles.some((o) => {
+    // If we are already touching an expanded obstacle edge, allow moving away from it.
+    if (isBlocked(from.x, from.z, [o])) return false
+    return segmentIntersectsRect(from.x, from.z, x, z, o)
+  })
+}
+
+function resolveWalkTarget(
+  x: number,
+  z: number,
+  bounds: RoomBounds,
+  obstacles: RoomBounds[],
+): { x: number; z: number } {
+  let tx = clamp(x, bounds.minX, bounds.maxX)
+  let tz = clamp(z, bounds.minZ, bounds.maxZ)
+
+  for (let pass = 0; pass < 2; pass++) {
+    for (const o of obstacles) {
+      const minX = o.minX - PLAYER_RADIUS
+      const maxX = o.maxX + PLAYER_RADIUS
+      const minZ = o.minZ - PLAYER_RADIUS
+      const maxZ = o.maxZ + PLAYER_RADIUS
+      if (!(tx > minX && tx < maxX && tz > minZ && tz < maxZ)) continue
+
+      const options = [
+        { d: Math.abs(tx - minX), x: minX - WALKABLE_EPSILON, z: tz },
+        { d: Math.abs(maxX - tx), x: maxX + WALKABLE_EPSILON, z: tz },
+        { d: Math.abs(tz - minZ), x: tx, z: minZ - WALKABLE_EPSILON },
+        { d: Math.abs(maxZ - tz), x: tx, z: maxZ + WALKABLE_EPSILON },
+      ].sort((a, b) => a.d - b.d)
+
+      for (const option of options) {
+        const nx = clamp(option.x, bounds.minX, bounds.maxX)
+        const nz = clamp(option.z, bounds.minZ, bounds.maxZ)
+        if (!isBlocked(nx, nz, obstacles)) {
+          tx = nx
+          tz = nz
+          break
+        }
+      }
+    }
+  }
+
+  return { x: tx, z: tz }
 }
 
 /** Apply movement delta with outer-bounds clamping and obstacle sliding collision. */
@@ -178,14 +267,11 @@ export function NavController({
     // "the view angle can't be selected".)
     transitioning.current = true
 
-    // Hard-snap the body only when actually travelling to a new spot and not mid-drag;
-    // when already there, just turn in place to the saved angle.
-    const alreadyThere = camera.position.distanceTo(pos) < 0.15
-    if (!alreadyThere && !isDragging.current) {
-      camera.position.copy(pos)
-      yaw.current = y
-      pitch.current = p
-    }
+    // Move smoothly toward the new viewpoint. The previous hard snap caused a visible
+    // hitch before movement started, especially for far viewpoints.
+    walkTarget.current = null
+    velocity.current.x = 0
+    velocity.current.z = 0
     invalidate()
   }, [activeViewpointId, camera, viewpoints, invalidate])
 
@@ -481,6 +567,8 @@ export function NavController({
   const floorD = bounds.maxZ - bounds.minZ
   const floorCX = (bounds.minX + bounds.maxX) / 2
   const floorCZ = (bounds.minZ + bounds.maxZ) / 2
+  const floorHitW = floorW + FLOOR_HIT_MARGIN * 2
+  const floorHitD = floorD + FLOOR_HIT_MARGIN * 2
 
   // Walk-here indicator — updated via ref to avoid React re-renders on every mousemove
   const indicatorRef = useRef<THREE.Group>(null)
@@ -488,13 +576,14 @@ export function NavController({
   const handleFloorClick = (e: { point: THREE.Vector3; stopPropagation: () => void }) => {
     if (dragPx.current > 6) return
     e.stopPropagation()
-    const tx = clamp(e.point.x, bounds.minX, bounds.maxX)
-    const tz = clamp(e.point.z, bounds.minZ, bounds.maxZ)
+    const target = resolveWalkTarget(e.point.x, e.point.z, bounds, obstacles)
+    const tx = target.x
+    const tz = target.z
     if (portalPlaceMode && onPortalPlace) {
       onPortalPlace({ x: tx, z: tz })
       return
     }
-    if (isBlocked(tx, tz, obstacles)) return
+    if (isBlocked(tx, tz, obstacles) || pathBlocked(targetPos.current, tx, tz, obstacles)) return
     walkTarget.current = new THREE.Vector3(tx, eyeHeight, tz)
     invalidate()
   }
@@ -504,10 +593,15 @@ export function NavController({
     e.stopPropagation()
     const ind = indicatorRef.current
     if (ind) {
-      ind.position.set(e.point.x, 0.018, e.point.z)
-      ind.visible = true
+      const tx = e.point.x
+      const tz = e.point.z
+      const insideBounds =
+        tx >= bounds.minX && tx <= bounds.maxX &&
+        tz >= bounds.minZ && tz <= bounds.maxZ
+      ind.position.set(tx, 0.018, tz)
+      ind.visible = insideBounds && !isBlocked(tx, tz, obstacles) && !pathBlocked(targetPos.current, tx, tz, obstacles)
     }
-    document.body.style.cursor = portalPlaceMode ? 'cell' : 'crosshair'
+    if (portalPlaceMode) document.body.style.cursor = 'cell'
     invalidate()
   }
 
@@ -526,7 +620,7 @@ export function NavController({
         onPointerMove={handleFloorMove}
         onPointerLeave={handleFloorLeave}
       >
-        <planeGeometry args={[floorW, floorD]} />
+        <planeGeometry args={[floorHitW, floorHitD]} />
         <meshBasicMaterial visible={false} />
       </mesh>
 

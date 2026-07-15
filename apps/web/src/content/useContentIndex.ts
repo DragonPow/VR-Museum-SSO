@@ -6,6 +6,7 @@ import {
   rebaseAssetUrls,
   roomDataFromContent,
 } from '@vm/shared'
+import { CONTENT_SOURCE, fetchFirstContentJson } from './source.js'
 import type { Content, ContentIndex, Room } from '@vm/shared'
 
 type State =
@@ -13,11 +14,6 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ok'; data: ContentIndex }
 
-const BASE = import.meta.env.BASE_URL
-const ASSET_BASE_URL = (import.meta.env['VITE_ASSET_BASE_URL'] ?? '').replace(/\/+$/, '')
-const INDEX_URL = ASSET_BASE_URL
-  ? `${ASSET_BASE_URL}/content.json`
-  : `${BASE}content/content.sample.json`
 
 function roomDataUrl(content: Content, room: Room): string {
   const data = roomDataFromContent(content, room)
@@ -29,7 +25,7 @@ function indexFromContent(content: Content): ContentIndex {
 }
 
 function parseIndexPayload(raw: unknown): ContentIndex {
-  const rebased = rebaseAssetUrls(raw, { assetBaseUrl: ASSET_BASE_URL, appBaseUrl: BASE })
+  const rebased = rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl })
   try {
     return parseContentIndex(rebased)
   } catch {
@@ -47,11 +43,7 @@ export function useContentIndex(): State {
   useEffect(() => {
     if (_cache) return
 
-    fetch(INDEX_URL)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
+    fetchFirstContentJson()
       .then((raw) => {
         const data = parseIndexPayload(raw)
         _cache = data

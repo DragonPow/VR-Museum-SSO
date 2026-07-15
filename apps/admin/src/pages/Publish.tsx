@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useDraftStore } from '../store.js'
-import { publish, saveDraft, checkApi, ApiError } from '../api.js'
+import { publish, saveDraft, checkApi, ApiError, saveLocalContentFile } from '../api.js'
 import type { Content } from '@vm/shared'
 
 const API_BASE = (import.meta.env['VITE_API_URL'] ?? '').replace(/\/+$/, '')
@@ -31,8 +31,10 @@ export function Publish() {
     setStep('saving')
     setErrorMsg('')
     try {
+      assertNoBrokenItemRefs(content)
       const snapshot: Content = { ...content, updatedAt: new Date().toISOString() }
       await publish(snapshot)
+      await saveLocalContentFile(snapshot)
       markClean()
       // Verify by reading back from /api/content
       setStep('verifying')
@@ -53,6 +55,13 @@ export function Publish() {
   }
 
   const handleExport = () => {
+    try {
+      assertNoBrokenItemRefs(content)
+    } catch (err) {
+      setStep('error')
+      setErrorMsg(String(err instanceof Error ? err.message : err))
+      return
+    }
     const snapshot: Content = { ...content, updatedAt: new Date().toISOString() }
     const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -67,6 +76,7 @@ export function Publish() {
   const handleSaveDraft = async () => {
     setStep('saving')
     try {
+      assertNoBrokenItemRefs(content)
       await saveDraft(content)
       markClean()
       setStep('idle')
@@ -92,9 +102,10 @@ export function Publish() {
           <SummaryRow label="Tổng số thời kỳ" value={stats.periods} />
           <SummaryRow label="Tổng số phòng" value={stats.rooms} />
           <SummaryRow label="Slot đã gán / tổng" value={`${stats.assigned} / ${stats.total}`} ok={stats.assigned === stats.total} />
-          <SummaryRow label="Số ảnh trong thư viện" value={stats.items} />
+          <SummaryRow label="Số tư liệu trong thư viện" value={stats.items} />
           <SummaryRow label="Slot còn trống" value={stats.total - stats.assigned} warn={stats.total - stats.assigned > 0} />
-          <SummaryRow label="Trạng thái draft" value={dirty ? 'Có thay đổi chưa lưu' : 'Đã đồng bộ'} warn={dirty} />
+          <SummaryRow label="Slot lỗi item" value={stats.brokenRefs} warn={stats.brokenRefs > 0} />
+          <SummaryRow label="Tình trạng lưu" value={dirty ? 'Có thay đổi chưa lưu' : 'Đã đồng bộ'} warn={dirty} />
         </div>
       </div>
 
@@ -210,6 +221,26 @@ function ActionCard({ icon, title, desc, btnLabel, primary, disabled, onClick }:
   )
 }
 
+function findBrokenItemRefs(content: Content) {
+  const itemIds = new Set(content.items.map((item) => item.id))
+  return content.rooms.flatMap((room) =>
+    room.slots
+      .filter((slot) => slot.itemId && !itemIds.has(slot.itemId))
+      .map((slot) => ({ roomTitle: room.title, slotId: slot.id, slotName: slot.name, itemId: slot.itemId as string })),
+  )
+}
+
+function assertNoBrokenItemRefs(content: Content) {
+  const broken = findBrokenItemRefs(content)
+  if (broken.length === 0) return
+  const details = broken
+    .slice(0, 8)
+    .map((ref) => `- ${ref.roomTitle} / ${ref.slotName || ref.slotId}: thiếu item ${ref.itemId}`)
+    .join('\n')
+  const suffix = broken.length > 8 ? `\n... và ${broken.length - 8} lỗi nữa` : ''
+  throw new Error(`Không thể xuất bản vì có slot đang trỏ tới tư liệu không tồn tại:\n${details}${suffix}`)
+}
+
 function formatPublishError(err: unknown, content: Content): string {
   if (!(err instanceof ApiError)) return String(err)
 
@@ -258,6 +289,7 @@ function getSummary(content: Content) {
     items: content.items.length,
     total: allSlots.length,
     assigned: allSlots.filter((s) => s.itemId).length,
+    brokenRefs: findBrokenItemRefs(content).length,
   }
 }
 

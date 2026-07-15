@@ -1,4 +1,5 @@
 import type { Period, RoomStub } from '@vm/shared'
+import { brand, glassPanel } from './theme.js'
 
 interface Props {
   periods: Period[]
@@ -15,7 +16,7 @@ export function TimelineNav({ periods, rooms, currentRoomId, onNavigate, onBack 
   return (
     <div style={styles.wrap}>
       <button style={styles.backBtn} onClick={onBack} title="Về trang chủ">
-        ← Trang chủ
+        Trang chủ
       </button>
 
       <div style={styles.timeline}>
@@ -27,31 +28,31 @@ export function TimelineNav({ periods, rooms, currentRoomId, onNavigate, onBack 
               <div
                 style={{
                   ...styles.periodLabel,
-                  color: isActive ? period.themeColor : '#7a7060',
-                  borderBottom: isActive ? `2px solid ${period.themeColor}` : '2px solid transparent',
+                  color: isActive ? brand.blue : brand.muted,
+                  borderBottom: isActive ? `2px solid ${brand.blue}` : '2px solid transparent',
                 }}
               >
-                {period.yearStart}–{period.yearEnd}
+                {period.yearStart}-{period.yearEnd}
               </div>
               <div style={styles.roomList}>
-                {periodRooms.map((room) => (
-                  <button
-                    key={room.id}
-                    style={{
-                      ...styles.roomBtn,
-                      background: room.id === currentRoomId
-                        ? `${period.themeColor}33`
-                        : 'transparent',
-                      borderColor: room.id === currentRoomId
-                        ? period.themeColor
-                        : 'transparent',
-                      color: room.id === currentRoomId ? '#f5e6c8' : '#9a9080',
-                    }}
-                    onClick={() => onNavigate(room.id)}
-                  >
-                    {room.title}
-                  </button>
-                ))}
+                {periodRooms.map((room) => {
+                  const active = room.id === currentRoomId
+                  return (
+                    <button
+                      key={room.id}
+                      style={{
+                        ...styles.roomBtn,
+                        background: active ? 'rgba(16,80,160,0.12)' : 'rgba(255,255,255,0.58)',
+                        borderColor: active ? brand.blue : 'rgba(16,80,160,0.12)',
+                        color: active ? brand.blueDeep : brand.text,
+                        fontWeight: active ? 800 : 600,
+                      }}
+                      onClick={() => onNavigate(room.id)}
+                    >
+                      {room.title}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )
@@ -64,31 +65,31 @@ export function TimelineNav({ periods, rooms, currentRoomId, onNavigate, onBack 
 const styles: Record<string, React.CSSProperties> = {
   wrap: {
     position: 'absolute', top: 0, left: 0, right: 0,
-    background: 'linear-gradient(to bottom, rgba(15,10,5,0.92), transparent)',
-    padding: '10px 16px 24px',
+    padding: '10px 16px 28px',
     display: 'flex', alignItems: 'flex-start', gap: '12px',
-    zIndex: 10, pointerEvents: 'auto',
+    zIndex: 10, pointerEvents: 'none',
   },
   backBtn: {
-    background: 'rgba(0,0,0,0.4)', border: '1px solid #5a4a30',
-    color: '#c8a85a', borderRadius: '6px',
-    padding: '6px 12px', fontSize: '12px', cursor: 'pointer',
-    whiteSpace: 'nowrap', flexShrink: 0,
+    ...glassPanel,
+    color: brand.blue, borderRadius: '8px',
+    padding: '7px 13px', fontSize: '12px', cursor: 'pointer',
+    whiteSpace: 'nowrap', flexShrink: 0, fontWeight: 800, pointerEvents: 'auto',
   },
   timeline: {
-    display: 'flex', gap: '4px', overflowX: 'auto',
-    scrollbarWidth: 'none', flexGrow: 1,
+    display: 'flex', gap: '6px', overflowX: 'auto',
+    scrollbarWidth: 'none', flexGrow: 1, pointerEvents: 'auto',
   },
   periodGroup: { flexShrink: 0 },
   periodLabel: {
-    fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em',
-    paddingBottom: '4px', marginBottom: '4px', whiteSpace: 'nowrap',
+    fontSize: '11px', fontWeight: 800, letterSpacing: '0.04em',
+    paddingBottom: '4px', marginBottom: '5px', whiteSpace: 'nowrap',
     transition: 'color 0.2s',
   },
-  roomList: { display: 'flex', flexDirection: 'column', gap: '2px' },
+  roomList: { display: 'flex', flexDirection: 'column', gap: '3px' },
   roomBtn: {
-    border: '1px solid', borderRadius: '4px',
-    padding: '4px 10px', fontSize: '11px', cursor: 'pointer',
+    border: '1px solid', borderRadius: '6px',
+    padding: '5px 10px', fontSize: '11px', cursor: 'pointer',
     whiteSpace: 'nowrap', textAlign: 'left', transition: 'all 0.15s',
+    boxShadow: '0 8px 18px rgba(8,47,109,0.08)',
   },
 }

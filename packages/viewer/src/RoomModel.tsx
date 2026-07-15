@@ -9,20 +9,22 @@ export const VM_SLOT_PREFIX = 'VM_Slot_'
 
 /** Architecture meshes the visitor must not walk through. Matched by substring so
  *  three.js' `_1`/`_2` duplicate-name suffixes still hit. */
-const COLLIDER_NAME_HINTS = ['CenterBlock']
-/** Push walkable boundary this far (m) outside the mesh footprint — keeps the camera
+const COLLIDER_NAME_HINTS = ['CenterBlock', 'Display_Case', 'VM_Display', 'Niche_Plinth', 'Hero_Cabinet', 'TT_Right_Alcove']
+/** Push walkable boundary this far (m) outside the mesh footprint â€” keeps the camera
  *  a comfortable distance from the wall instead of clipping right into it. */
 const COLLIDER_MARGIN = 0.5
+// NavController expands obstacles by PLAYER_RADIUS (0.32m). Wall-like interior
+// dividers use this shared margin to stay readable up close while keeping the
+// camera from clipping through thin walls and exposing their outside faces.
+const INTERIOR_WALL_COLLIDER_MARGIN = 0.08
 /** Small brightness lift on the baked atlas so the web reads as bright as the Blender
  *  (AgX) viewport instead of the slightly duller Reinhard bake. */
 const ATLAS_BRIGHTEN = 1.08
 
 /**
- * Floor material: a real marble tile texture (Marble021) laid per 0.8 m tile, with
- * per-tile rotation so the vein does not obviously repeat, crisp fwidth-AA grout, a
- * soft polished sheen, and a gentle lighting factor pulled from the baked atlas so it
- * still sits in the room's light. Falls back to the plain atlas until the tile texture
- * has loaded.
+ * Floor material: Marble021 projected from world X/Z, with a crisp grout grid. Using
+ * world projection keeps the tile lines square to the room even if the Blender UV0
+ * gets skewed during modelling/export.
  */
 function makeTiledFloorMaterial(
   map: THREE.Texture,
@@ -36,25 +38,28 @@ function makeTiledFloorMaterial(
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   const hasNor = !!tileNor
   mat.onBeforeCompile = (shader) => {
-    // Real Blender floor: sample interior_tiles diffuse (+ normal) at the model's own
-    // UV0 (same tiling as Blender), lit by the baked atlas luminance. No procedural
-    // marble/grout -- the tile pattern & grout live in the real texture.
+    // Sample Marble021 in world space so tile seams stay perpendicular to the walls.
+    // The baked atlas still supplies the room's soft light/shadow.
     shader.uniforms.uTileDiff = { value: tileDiff }
     shader.uniforms.uMipBias = { value: 2.0 }
-    shader.uniforms.uRef = { value: 0.64 }
-    shader.uniforms.uSheen = { value: 0.06 }
+    shader.uniforms.uRef = { value: 0.72 }
+    shader.uniforms.uSheen = { value: 0.045 }
+    shader.uniforms.uTileSize = { value: 1.42 }
+    shader.uniforms.uGroutWidth = { value: 0.006 }
+    shader.uniforms.uGroutColor = { value: new THREE.Color(0.55, 0.52, 0.47) }
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;\nvarying vec2 vFloorUv0;')
+      .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
       .replace('#include <project_vertex>', '#include <project_vertex>\n  vVMWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\n  vFloorUv0 = uv;')
     const commonLines = [
       '#include <common>',
       'varying vec3 vVMWorld;',
-      'varying vec2 vFloorUv0;',
       'uniform sampler2D uTileDiff;',
       'uniform float uMipBias;',
       'uniform float uRef;',
       'uniform float uSheen;',
+      'uniform float uTileSize;',
+      'uniform float uGroutWidth;',
+      'uniform vec3 uGroutColor;',
     ]
     const body = [
       '#ifdef USE_MAP',
@@ -63,18 +68,25 @@ function makeTiledFloorMaterial(
       '  vec4 lit = vec4(0.7);',
       '#endif',
       '{',
-      '  vec3 tileCol = texture2D(uTileDiff, vFloorUv0).rgb;',
+      '  vec2 floorUv = vVMWorld.xz / uTileSize;',
+      '  vec3 tileCol = texture2D(uTileDiff, floorUv).rgb;',
+      '  vec2 cell = fract(floorUv);',
+      '  vec2 edge2 = min(cell, 1.0 - cell);',
+      '  float edge = min(edge2.x, edge2.y);',
+      '  float aa = max(fwidth(floorUv.x), fwidth(floorUv.y));',
+      '  float grout = 1.0 - smoothstep(uGroutWidth, uGroutWidth + aa * 1.6, edge);',
       '  float L = dot(lit.rgb, vec3(0.2126, 0.7152, 0.0722));',
-      '  float light = clamp(L / uRef, 0.82, 1.14);',
+      '  float light = clamp(L / uRef, 0.74, 1.04);',
       '  vec3 col = tileCol * light * diffuse;',
+      '  col = mix(col, uGroutColor * light, grout * 0.35);',
     ]
     if (hasNor) {
       shader.uniforms.uTileNor = { value: tileNor }
-      shader.uniforms.uBumpStrength = { value: 0.45 }
+      shader.uniforms.uBumpStrength = { value: 0.7 }
       shader.uniforms.uLightDir = { value: new THREE.Vector2(-0.45, 0.7) }
       commonLines.push('uniform sampler2D uTileNor;', 'uniform float uBumpStrength;', 'uniform vec2 uLightDir;')
       body.push(
-        '  vec3 tn = texture2D(uTileNor, vFloorUv0).xyz * 2.0 - 1.0;',
+        '  vec3 tn = texture2D(uTileNor, floorUv).xyz * 2.0 - 1.0;',
         '  float shade = 1.0 + (tn.x * uLightDir.x + tn.y * uLightDir.y) * uBumpStrength;',
         '  col *= clamp(shade, 0.78, 1.22);',
       )
@@ -82,7 +94,7 @@ function makeTiledFloorMaterial(
     body.push(
       '  vec3 V = normalize(cameraPosition - vVMWorld);',
       '  float fres = pow(1.0 - clamp(V.y, 0.0, 1.0), 3.0);',
-      '  col += fres * uSheen;',
+      '  col += fres * uSheen * 0.55;',
       '  diffuseColor.rgb = col;',
       '}',
     )
@@ -90,7 +102,7 @@ function makeTiledFloorMaterial(
       .replace('#include <common>', commonLines.join('\n'))
       .replace('#include <map_fragment>', body.join('\n'))
   }
-  mat.customProgramCacheKey = () => (hasNor ? 'vm-tilefloor-real-v1' : 'vm-tilefloor-real-nonor-v1')
+  mat.customProgramCacheKey = () => (hasNor ? 'vm-tilefloor-world-v2' : 'vm-tilefloor-world-nonor-v2')
   return mat
 }
 
@@ -99,6 +111,7 @@ function makeTiledFloorMaterial(
  * the shell reads bright & fresh like the Blender (Eevee) view, instead of the duller
  * grey of the raw Reinhard-tonemapped Cycles bake. Pure shader, no re-bake.
  */
+
 function makeWallMaterial(
   map: THREE.Texture,
   tint: THREE.Color,
@@ -107,8 +120,8 @@ function makeWallMaterial(
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   const hasBump = !!normalTex
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uLift = { value: 0.45 }
-    shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.965, 0.9) }
+    shader.uniforms.uLift = { value: 0.34 }
+    shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.955, 0.875) }
     const commonLines = ['#include <common>', 'uniform float uLift;', 'uniform vec3 uCream;']
     const mapLines = [
       '#include <map_fragment>',
@@ -119,7 +132,7 @@ function makeWallMaterial(
       // model's original UV0 and shade it against a fixed light dir -> the plaster
       // "nham" the low-res baked atlas cannot hold. Multiply averages ~1.0 (keeps colour).
       shader.uniforms.uWallNor = { value: normalTex }
-      shader.uniforms.uBumpStrength = { value: 0.6 }
+      shader.uniforms.uBumpStrength = { value: 0.78 }
       shader.uniforms.uLightDir = { value: new THREE.Vector2(-0.45, 0.7) }
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec2 vWallUv0;')
@@ -134,7 +147,7 @@ function makeWallMaterial(
         '  {',
         '    vec3 wn = texture2D(uWallNor, vWallUv0).xyz * 2.0 - 1.0;',
         '    float shade = 1.0 + (wn.x * uLightDir.x + wn.y * uLightDir.y) * uBumpStrength;',
-        '    diffuseColor.rgb *= clamp(shade, 0.72, 1.28);',
+        '    diffuseColor.rgb *= clamp(shade, 0.78, 1.22);',
         '  }',
       )
     }
@@ -170,7 +183,7 @@ interface Props {
 /**
  * A single Blender slot node holds two primitives (frame + canvas). glTF gives
  * them the same node name, but three.js `createUniqueName` renames duplicates to
- * `<name>_1`, `<name>_2`… so a runtime mesh is called e.g. `VM_Slot_TT_3000_2`.
+ * `<name>_1`, `<name>_2`â€¦ so a runtime mesh is called e.g. `VM_Slot_TT_3000_2`.
  * Resolve it back to the JSON slot id (`VM_Slot_TT_3000`) by longest-prefix match.
  */
 function resolveSlotId(meshName: string, knownIds: string[]): string | null {
@@ -206,10 +219,10 @@ export function RoomModel({
   const knownKey = (knownSlotIds ?? []).join('|')
   const knownIds = useMemo(() => knownSlotIds ?? [], [knownKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Load the baked COMBINED atlas (full Blender render: albedo + light + GI +
+  // â”€â”€ Load the baked COMBINED atlas (full Blender render: albedo + light + GI +
   //    shadow, sampled through UV2). Shell meshes switch to MeshBasicMaterial and
-  //    display this 1:1, so three.js does NO lighting of its own → pixel-identical
-  //    to the Blender bake regardless of scene lights. ──────────────────────────
+  //    display this 1:1, so three.js does NO lighting of its own â†’ pixel-identical
+  //    to the Blender bake regardless of scene lights. â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [bakedAtlas, setBakedAtlas] = useState<THREE.Texture | null>(null)
   useEffect(() => {
     if (!lightmapUrl) {
@@ -235,9 +248,9 @@ export function RoomModel({
     }
   }, [lightmapUrl, invalidate])
 
-  // ── Second baked atlas: the props (niche wood frames, plinth, display cases).
+  // â”€â”€ Second baked atlas: the props (niche wood frames, plinth, display cases).
   //    Same idea as the shell atlas but its own UV2 packing, so it needs its own
-  //    texture. Derived from lightmapUrl by filename convention. ────────────────
+  //    texture. Derived from lightmapUrl by filename convention. â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const propsUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_props') : null
   const [propsAtlas, setPropsAtlas] = useState<THREE.Texture | null>(null)
   useEffect(() => {
@@ -263,7 +276,7 @@ export function RoomModel({
       },
       undefined,
       () => {
-        /* props atlas is optional — ignore if missing */
+        /* props atlas is optional â€” ignore if missing */
       },
     )
     return () => {
@@ -271,7 +284,7 @@ export function RoomModel({
     }
   }, [propsUrl, invalidate])
 
-  // ── Floor marble tile texture (Marble021) — tiled per 0.8 m in the floor shader. ──
+  // â”€â”€ Floor marble tile texture (Marble021) â€” tiled per 0.8 m in the floor shader. â”€â”€
   const floorTileUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_floortile') : null
   const [floorTileTex, setFloorTileTex] = useState<THREE.Texture | null>(null)
   useEffect(() => {
@@ -389,7 +402,6 @@ export function RoomModel({
       obj.castShadow    = false
       obj.receiveShadow = false
       obj.frustumCulled = true
-
       const mats     = Array.isArray(obj.material) ? obj.material : [obj.material]
       const isCanvas = mats.some((m) => m?.name === 'SlotCanvas' || m?.name?.endsWith('_SlotCanvas'))
       const isSlot   = obj.name.startsWith(VM_SLOT_PREFIX)
@@ -402,14 +414,14 @@ export function RoomModel({
         if (obj.name.startsWith('TT_Dado')) {
           // Capture the ORIGINAL base colour ONCE. This effect re-runs when the async
           // lightmap atlases arrive (and twice under <StrictMode> in dev), so reading
-          // the LIVE material every time would re-soften an already-softened colour —
+          // the LIVE material every time would re-soften an already-softened colour â€”
           // compounding the desaturation by a different amount in dev vs prod, which is
           // why the dado looked paler on localhost than on the deploys. Always derive
           // from the stored base colour so the result is identical everywhere (1 pass).
           // Rich royal-blue skirting to match the reference render (raw NSMO_Blue_Dado
           // reads pale and the earlier desaturation washed it out further). Flat UNLIT
           // colour so it is identical everywhere in one pass.
-          const DADO_BLUE = new THREE.Color(0.13, 0.28, 0.6)
+          const DADO_BLUE = new THREE.Color('#0057a8')
           obj.material = new THREE.MeshBasicMaterial({
             color: DADO_BLUE, side: THREE.DoubleSide, toneMapped: false,
           })
@@ -419,10 +431,13 @@ export function RoomModel({
         // obstacle so the camera can't pass through it.
         if (COLLIDER_NAME_HINTS.some((h) => obj.name.includes(h))) {
           const box = new THREE.Box3().setFromObject(obj)
+          const margin = obj.name.includes('CenterBlock')
+            ? INTERIOR_WALL_COLLIDER_MARGIN
+            : COLLIDER_MARGIN
           if (isFinite(box.min.x) && isFinite(box.min.z)) {
             obstacles.push({
-              minX: box.min.x - COLLIDER_MARGIN, maxX: box.max.x + COLLIDER_MARGIN,
-              minZ: box.min.z - COLLIDER_MARGIN, maxZ: box.max.z + COLLIDER_MARGIN,
+              minX: box.min.x - margin, maxX: box.max.x + margin,
+              minZ: box.min.z - margin, maxZ: box.max.z + margin,
             })
           }
         }
@@ -441,7 +456,7 @@ export function RoomModel({
         }
         // Free-standing dividers that form the U-bays (khu 1-4). A single mesh holds
         // all fins, so split it into one collision box per fin (gap-clustered along
-        // its long axis) — a single AABB would wall off the whole bay strip and stop
+        // its long axis) â€” a single AABB would wall off the whole bay strip and stop
         // the visitor entering the bays at all.
         if (obj.name.includes('AlcoveComb')) {
           const pos = obj.geometry.getAttribute('position')
@@ -470,20 +485,40 @@ export function RoomModel({
             for (const [g0, g1] of groups) {
               obstacles.push(
                 sepAlongZ
-                  ? { minX: bxMin - COLLIDER_MARGIN, maxX: bxMax + COLLIDER_MARGIN,
-                      minZ: g0 - COLLIDER_MARGIN, maxZ: g1 + COLLIDER_MARGIN }
-                  : { minX: g0 - COLLIDER_MARGIN, maxX: g1 + COLLIDER_MARGIN,
-                      minZ: bzMin - COLLIDER_MARGIN, maxZ: bzMax + COLLIDER_MARGIN },
+                  ? { minX: bxMin - INTERIOR_WALL_COLLIDER_MARGIN, maxX: bxMax + INTERIOR_WALL_COLLIDER_MARGIN,
+                      minZ: g0 - INTERIOR_WALL_COLLIDER_MARGIN, maxZ: g1 + INTERIOR_WALL_COLLIDER_MARGIN }
+                  : { minX: g0 - INTERIOR_WALL_COLLIDER_MARGIN, maxX: g1 + INTERIOR_WALL_COLLIDER_MARGIN,
+                      minZ: bzMin - INTERIOR_WALL_COLLIDER_MARGIN, maxZ: bzMax + INTERIOR_WALL_COLLIDER_MARGIN },
               )
             }
           }
         }
+        if (obj.name.startsWith('TT_Niche_Red_')) {
+          obj.material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color('#b73524'),
+            side: THREE.DoubleSide,
+            toneMapped: false,
+          })
+          return
+        }
+        if (obj.name.startsWith('TT_Display_Case_') && obj.name.endsWith('_Glass')) {
+          obj.material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color('#d7e8ee'),
+            transparent: true,
+            opacity: 0.22,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+            toneMapped: false,
+          })
+          return
+        }
+
         // Architecture meshes carrying a 2nd UV set (uv1 = TEXCOORD_1) get the baked
-        // Combined atlas as an unlit material — pixel-identical to the Blender render.
+        // Combined atlas as an unlit material â€” pixel-identical to the Blender render.
         const hasLightmapUv = obj.geometry.hasAttribute('uv1')
         // Two separate baked atlases, each with its OWN UV2 packing:
-        //  · shell  → walls / floor / ceiling / fins / centre block / red niche
-        //  · props  → niche wood frames, plinth, display cases
+        //  Â· shell  â†’ walls / floor / ceiling / fins / centre block / red niche
+        //  Â· props  â†’ niche wood frames, plinth, display cases
         // A mesh must sample the atlas its UV2 was packed into, so route by name.
         const isProp =
           obj.name.startsWith('TT_Niche_Frame') ||
@@ -493,9 +528,9 @@ export function RoomModel({
 
         if (atlas && hasLightmapUv) {
           // Unlit MeshBasicMaterial showing the baked atlas 1:1 (matches the Blender
-          // render exactly). No scene light touches it — the atlas already contains
+          // render exactly). No scene light touches it â€” the atlas already contains
           // all lighting, shadows and GI.
-          // Floor tiles read almost identical to the warm walls — give the tile plane a
+          // Floor tiles read almost identical to the warm walls â€” give the tile plane a
           // slightly cooler + darker tint so it's distinguishable (kept subtle).
           // The baked atlas was already tone-mapped in Blender (Reinhard on the raw
           // Cycles bake), so keep toneMapped:false to avoid a second (AgX) pass.
@@ -503,25 +538,89 @@ export function RoomModel({
           // walls / ceiling stay on the plain baked atlas.
           // Brighter + subtle warm-cream tint so walls read white & fresh like the Blender
           // (Eevee) view instead of the duller grey of the raw Reinhard bake.
-          // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) — a soft warm
+          // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) â€” a soft warm
           // off-white, not stark white. Gentle brighten + faint warm, keep the grain.
-          // Boss preference: brighter/whiter than the Blender taupe — fresh warm-cream white.
+          // Boss preference: brighter/whiter than the Blender taupe â€” fresh warm-cream white.
           const wallTint = new THREE.Color(1.24, 1.23, 1.20)
-          const floorTint = new THREE.Color(1.1, 1.08, 1.02)
+          const floorTint = new THREE.Color(0.92, 0.90, 0.84)
           const isTileMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /tile/i.test(m.name)
           // Coloured accent surfaces (red niche, accent walls, gold/red titles) must NOT
           // get the warm-cream wall lift -- that washes the deep red niche to faded pink.
           // Show their baked atlas colour true (only a gentle brighten).
           const isAccentMat = (m?: THREE.Material | null) =>
-            m != null && m.name != null && /accent|niche|red|gold|title/i.test(m.name)
+            m != null && m.name != null && /accent|niche|red|gold|title|wood|trim|cabinet|plinth|desk|podium|case/i.test(m.name)
           const accentTint = new THREE.Color(1.06, 1.05, 1.03)
+          // The restored Blender file no longer matches the old shell lightmap UV2
+          // perfectly: walls pick up stale cabinet/title shadows from the bake. Keep
+          // the atlas for tile/accent surfaces, but render plain walls/ceilings clean.
+          const makeCleanWall = (m?: THREE.Material | null) => {
+            const sourceName = m?.name ?? ''
+            const baseColor = /top|ceiling/i.test(sourceName)
+              ? new THREE.Color('#d5cec0')
+              : /ew/i.test(sourceName)
+                ? new THREE.Color('#dfd7c8')
+                : new THREE.Color('#e8dfcf')
+            const mat = new THREE.MeshBasicMaterial({
+              map: atlas,
+              color: baseColor,
+              side: THREE.DoubleSide,
+              toneMapped: false,
+            })
+            const hasBump = !!wallNorTex
+            mat.onBeforeCompile = (shader) => {
+              shader.uniforms.uBaseCream = { value: baseColor }
+              shader.uniforms.uBakeBias = { value: /top|ceiling/i.test(sourceName) ? 5.5 : 4.5 }
+              const commonLines = ['#include <common>', 'uniform vec3 uBaseCream;', 'uniform float uBakeBias;']
+              const mapLines = [
+                '#ifdef USE_MAP',
+                '  vec3 bake = texture2D(map, vMapUv, uBakeBias).rgb;',
+                '  float lum = dot(bake, vec3(0.2126, 0.7152, 0.0722));',
+                // Wider, softer gentle-light range so the room reads lit (not flat/glary),
+                // while the heavy mip blur keeps stale bake shadows from showing sharply.
+                '  float shade = clamp((lum - 0.62) * 1.15 + 0.9, 0.74, 1.14);',
+                '  diffuseColor.rgb = uBaseCream * shade;',
+                '#else',
+                '  diffuseColor.rgb = uBaseCream;',
+                '#endif',
+              ]
+              if (hasBump) {
+                // Real plaster relief from the Blender wall normal map (UV0), so the wall
+                // is not a flat painted colour.
+                shader.uniforms.uWallNor = { value: wallNorTex }
+                shader.uniforms.uBumpStrength = { value: 0.9 }
+                shader.uniforms.uLightDir = { value: new THREE.Vector2(-0.45, 0.7) }
+                shader.vertexShader = shader.vertexShader
+                  .replace('#include <common>', '#include <common>\nvarying vec2 vWallUv0;')
+                  .replace('#include <uv_vertex>', '#include <uv_vertex>\n  vWallUv0 = uv;')
+                commonLines.push(
+                  'varying vec2 vWallUv0;',
+                  'uniform sampler2D uWallNor;',
+                  'uniform float uBumpStrength;',
+                  'uniform vec2 uLightDir;',
+                )
+                mapLines.push(
+                  '{',
+                  '  vec3 wn = texture2D(uWallNor, vWallUv0).xyz * 2.0 - 1.0;',
+                  '  float b = 1.0 + (wn.x * uLightDir.x + wn.y * uLightDir.y) * uBumpStrength;',
+                  '  diffuseColor.rgb *= clamp(b, 0.78, 1.22);',
+                  '}',
+                )
+              }
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', commonLines.join('\n'))
+                .replace('#include <map_fragment>', mapLines.join('\n'))
+            }
+            mat.customProgramCacheKey = () => `vm-clean-wall-bump-${sourceName}-${hasBump}`
+            mat.name = sourceName
+            return mat
+          }
           const makeShell = (m?: THREE.Material | null) =>
             isTileMat(m)
               ? makeTiledFloorMaterial(atlas, floorTileTex, floorNorTex, floorTint)
               : isAccentMat(m)
                 ? new THREE.MeshBasicMaterial({ map: atlas, color: accentTint, side: THREE.DoubleSide, toneMapped: false })
-                : makeWallMaterial(atlas, wallTint, wallNorTex)
+                : makeCleanWall(m)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
           // fails on the 2nd pass and the floor slot gets overwritten with the plain
@@ -560,7 +659,7 @@ export function RoomModel({
         const nrmAttr = obj.geometry?.getAttribute('normal')
         if (posAttr) {
           // The slot tilt (leaning against the wall) is baked into the mesh
-          // VERTICES — VM_Slot nodes export with identity rotation — so we must
+          // VERTICES â€” VM_Slot nodes export with identity rotation â€” so we must
           // derive the canvas basis from geometry, not from the node transform.
           const normalMat = new THREE.Matrix3().getNormalMatrix(obj.matrixWorld)
 
@@ -601,21 +700,18 @@ export function RoomModel({
       } else {
         // Frame primitive: keep visible; fix PBR
         entry.hasFrame = true
-        // The wide hero banner shares CR_Frame with all 119 frames — give ITS frame a
-        // dedicated dark, sleek material so the premium banner isn't boxed in a brown
-        // picture frame, WITHOUT touching the other 118 frames.
+        // The wide hero banner shares CR_Frame with all 119 frames â€” give ITS frame a
+        // dedicated NSMO-blue material so the premium banner matches the room palette,
+        // WITHOUT touching the other 118 frames.
         if (slotId === 'VM_Slot_TT_9000') {
-          const base = (Array.isArray(obj.material) ? obj.material[0] : obj.material) as
-            | THREE.MeshStandardMaterial
-            | undefined
-          if (base) {
-            const m = base.clone()
-            m.color = new THREE.Color(0.05, 0.05, 0.06)
-            m.metalness = 0
-            m.roughness = 0.5
-            m.needsUpdate = true
-            obj.material = m
-          }
+          const frameMat = new THREE.MeshBasicMaterial({
+            color: new THREE.Color('#0d0d0d'),
+            side: THREE.DoubleSide,
+            toneMapped: false,
+          })
+          obj.material = Array.isArray(obj.material)
+            ? obj.material.map(() => frameMat.clone())
+            : frameMat
           return
         }
         mats.forEach((mat) => {

@@ -101,12 +101,13 @@ export function RoomScene({
   // Procedural rooms (no modelUrl) use the fixed template box. GLB rooms derive
   // walkable bounds from the real slot positions extracted from the model, since
   // custom room geometry rarely matches one of the small fixed template presets.
-  const WALL_MARGIN = 0.5
+  const WALL_MARGIN = 0.28
   const bounds: RoomBounds = useMemo(() => {
     if (boundsOverride) return boundsOverride
 
     // Prefer the real room-shell footprint so the visitor can't walk out through
-    // the perimeter walls. Inset by WALL_MARGIN to keep the camera off the surface.
+    // the perimeter walls. Outer shell walls need a firmer inset than interior
+    // dividers so the camera cannot reveal the outside/back faces.
     if (modelUrl && glbBounds) {
       return {
         minX: glbBounds.minX + WALL_MARGIN,

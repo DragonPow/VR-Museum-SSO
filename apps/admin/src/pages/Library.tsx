@@ -9,7 +9,49 @@ import { resolveAssetUrl } from '@vm/shared'
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 const assetUrl = (u?: string | null) => resolveAssetUrl(u, { assetBaseUrl: ASSET_BASE_URL }) ?? undefined
 
+const YOUTUBE_PREVIEW = '/content/images/photo-2025.png'
+const EXTERNAL_PREVIEW = '/content/images/photo-1995.png'
+
 type UploadStep = 'form' | 'resizing' | 'uploading' | 'done' | 'error'
+type ContentItemType = 'image' | 'youtube' | 'external'
+
+function getItemContentType(item: Item): ContentItemType {
+  if (item.embedUrl) return 'youtube'
+  if (item.externalUrl) return 'external'
+  return 'image'
+}
+
+function getItemTypeLabel(item: Item) {
+  const type = getItemContentType(item)
+  if (type === 'youtube') return 'YouTube'
+  if (type === 'external') return 'Link ngoài'
+  if (item.mediaType === 'video') return 'Video'
+  if (item.mediaType === 'audio') return 'Audio'
+  return 'Ảnh'
+}
+
+function normalizeYouTubeUrl(value: string) {
+  const raw = value.trim()
+  if (!raw) return raw
+  try {
+    const url = new URL(raw)
+    if (url.hostname.includes('youtu.be')) {
+      const id = url.pathname.replace(/^\/+/, '').split('/')[0]
+      return id ? `https://www.youtube.com/embed/${id}` : raw
+    }
+    if (url.hostname.includes('youtube.com')) {
+      const id = url.searchParams.get('v')
+      if (id) return `https://www.youtube.com/embed/${id}`
+    }
+  } catch {
+    return raw
+  }
+  return raw
+}
+
+function splitTags(value: string) {
+  return value.split(',').map((t) => t.trim()).filter(Boolean)
+}
 
 export function Library() {
   const content = useDraftStore((s) => s.content)
@@ -33,10 +75,13 @@ export function Library() {
   }, [content.rooms])
 
   const filtered = content.items.filter((it) => {
+    const typeLabel = getItemTypeLabel(it).toLowerCase()
+    const query = search.toLowerCase()
     const matchSearch = !search ||
-      it.title.toLowerCase().includes(search.toLowerCase()) ||
-      it.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())) ||
-      String(it.year).includes(search)
+      it.title.toLowerCase().includes(query) ||
+      it.tags.some((t) => t.toLowerCase().includes(query)) ||
+      String(it.year).includes(search) ||
+      typeLabel.includes(query)
     const matchPeriod = !periodFilter || it.periodId === periodFilter
     return matchSearch && matchPeriod
   })
@@ -45,22 +90,20 @@ export function Library() {
 
   return (
     <div style={styles.root}>
-      {/* Toolbar */}
       <div style={styles.toolbar}>
         <div>
-          <h2 style={styles.title}>Thư viện ảnh</h2>
+          <h2 style={styles.title}>Thư viện tư liệu</h2>
           <p style={styles.sub}>{content.items.length} tư liệu · {Object.values(assignCount).reduce((a, b) => a + b, 0)} lần gán</p>
         </div>
         <button style={styles.uploadBtn} onClick={() => setShowUpload(true)}>
-          + Upload ảnh mới
+          + Thêm tư liệu
         </button>
       </div>
 
-      {/* Filters */}
       <div style={styles.filters}>
         <input
           style={styles.searchInput}
-          placeholder="Tìm theo tên, năm, tag..."
+          placeholder="Tìm theo tên, năm, tag, loại..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -76,12 +119,11 @@ export function Library() {
         </select>
       </div>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <div style={styles.empty}>
           {content.items.length === 0
-            ? 'Chưa có ảnh nào. Nhấn "Upload ảnh mới" để bắt đầu.'
-            : 'Không tìm thấy ảnh phù hợp.'}
+            ? 'Chưa có tư liệu nào. Nhấn "Thêm tư liệu" để bắt đầu.'
+            : 'Không tìm thấy tư liệu phù hợp.'}
         </div>
       ) : (
         <div style={styles.grid}>
@@ -92,7 +134,7 @@ export function Library() {
               assignCount={assignCount[item.id] ?? 0}
               onEdit={() => setEditId(item.id)}
               onRemove={() => {
-                if (confirm(`Xóa "${item.title}"? Ảnh sẽ bị bỏ gán khỏi tất cả slot.`)) {
+                if (confirm(`Xóa "${item.title}"? Tư liệu sẽ bị bỏ gán khỏi tất cả slot.`)) {
                   removeItem(item.id)
                 }
               }}
@@ -101,7 +143,6 @@ export function Library() {
         </div>
       )}
 
-      {/* Upload modal */}
       {showUpload && (
         <UploadModal
           periods={content.periods}
@@ -110,7 +151,6 @@ export function Library() {
         />
       )}
 
-      {/* Edit modal */}
       {editItem && (
         <EditModal
           item={editItem}
@@ -123,8 +163,6 @@ export function Library() {
   )
 }
 
-// ── ItemCard ──────────────────────────────────────────────────────────────────
-
 function ItemCard({ item, assignCount, onEdit, onRemove }: {
   item: Item
   assignCount: number
@@ -135,6 +173,7 @@ function ItemCard({ item, assignCount, onEdit, onRemove }: {
     <div style={styles.card}>
       <div style={styles.cardThumbWrap}>
         <img src={assetUrl(item.thumbUrl)} alt={item.title} style={styles.cardThumb} loading="lazy" />
+        <div style={styles.typeBadge}>{getItemTypeLabel(item)}</div>
         {assignCount > 0 && (
           <div style={styles.assignBadge}>{assignCount} slot</div>
         )}
@@ -158,8 +197,6 @@ function ItemCard({ item, assignCount, onEdit, onRemove }: {
   )
 }
 
-// ── UploadModal ───────────────────────────────────────────────────────────────
-
 function UploadModal({ periods, onClose, onDone }: {
   periods: { id: string; title: string }[]
   onClose: () => void
@@ -172,8 +209,10 @@ function UploadModal({ periods, onClose, onDone }: {
   const [errorMsg, setErrorMsg] = useState('')
 
   const [form, setForm] = useState({
+    contentType: 'image' as ContentItemType,
     title: '', year: new Date().getFullYear(), periodId: periods[0]?.id ?? '',
-    shortDesc: '', longDesc: '', tags: '', source: '', approvedBy: '',
+    shortDesc: '', longDesc: '', tags: '', source: '',
+    embedUrl: '', externalUrl: '', externalLabel: '',
   })
 
   const handleFile = (file: File) => {
@@ -189,30 +228,77 @@ function UploadModal({ periods, onClose, onDone }: {
     if (file?.type.startsWith('image/')) handleFile(file)
   }
 
+  const buildCommonItem = (itemId: string) => ({
+    id: itemId,
+    title: form.title.trim(),
+    year: form.year,
+    periodId: form.periodId,
+    shortDesc: form.shortDesc.trim(),
+    longDesc: form.longDesc.trim(),
+    tags: splitTags(form.tags),
+    source: form.source.trim(),
+    approvedBy: '',
+    priority: 0,
+    status: 'draft' as const,
+  })
+
   const handleSubmit = async () => {
-    if (!selectedFile || !form.title || !form.periodId) return
-    setStep('resizing')
+    if (!form.title.trim() || !form.periodId) return
+    if (form.contentType === 'image' && !selectedFile) return
+    if (form.contentType === 'youtube' && !form.embedUrl.trim()) return
+    if (form.contentType === 'external' && !form.externalUrl.trim()) return
+
     setErrorMsg('')
     try {
+      const itemId = `item-${nanoid(8)}`
+      const common = buildCommonItem(itemId)
+
+      if (form.contentType === 'youtube') {
+        const item: Item = {
+          ...common,
+          mediaType: 'video' as MediaType,
+          thumbUrl: YOUTUBE_PREVIEW,
+          wallTextureUrl: YOUTUBE_PREVIEW,
+          fullUrl: YOUTUBE_PREVIEW,
+          embedUrl: normalizeYouTubeUrl(form.embedUrl),
+        }
+        setStep('done')
+        onDone(item)
+        return
+      }
+
+      if (form.contentType === 'external') {
+        const item: Item = {
+          ...common,
+          mediaType: 'image' as MediaType,
+          thumbUrl: EXTERNAL_PREVIEW,
+          wallTextureUrl: EXTERNAL_PREVIEW,
+          fullUrl: EXTERNAL_PREVIEW,
+          externalUrl: form.externalUrl.trim(),
+          externalLabel: form.externalLabel.trim() || 'Mở trang',
+        }
+        setStep('done')
+        onDone(item)
+        return
+      }
+
+      if (!selectedFile) return
+      setStep('resizing')
       const variants = await resizeImage(selectedFile)
       setStep('uploading')
 
-      const itemId = `item-${nanoid(8)}`
       const apiAvailable = await checkApi()
-
-      // Keep the untouched ORIGINAL so we never need a re-upload to make new sizes.
       const rawExt = (selectedFile.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '')
 
       let thumbUrl: string, wallUrl: string, fullUrl: string, rawUrl: string
       if (apiAvailable) {
         ;[thumbUrl, wallUrl, fullUrl, rawUrl] = await Promise.all([
-          uploadFile(variants.thumb, `media/${itemId}/thumb.webp`),
-          uploadFile(variants.wall,  `media/${itemId}/wall.webp`),
-          uploadFile(variants.full,  `media/${itemId}/full.webp`),
-          uploadFile(selectedFile,   `media/${itemId}/raw.${rawExt}`),
+          uploadFile(variants.thumb, `content/media/${itemId}/thumb.webp`),
+          uploadFile(variants.wall,  `content/media/${itemId}/wall.webp`),
+          uploadFile(variants.full,  `content/media/${itemId}/full.webp`),
+          uploadFile(selectedFile,   `content/media/${itemId}/raw.${rawExt}`),
         ])
       } else {
-        // Dev fallback: use object URLs (session-only)
         thumbUrl = blobToObjectUrl(variants.thumb)
         wallUrl  = blobToObjectUrl(variants.wall)
         fullUrl  = blobToObjectUrl(variants.full)
@@ -220,22 +306,12 @@ function UploadModal({ periods, onClose, onDone }: {
       }
 
       const item: Item = {
-        id: itemId,
-        title: form.title.trim(),
-        year: form.year,
-        periodId: form.periodId,
-        shortDesc: form.shortDesc.trim(),
-        longDesc: form.longDesc.trim(),
-        tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
+        ...common,
         mediaType: 'image' as MediaType,
         thumbUrl,
         wallTextureUrl: wallUrl,
         fullUrl,
         rawUrl,
-        source: form.source.trim(),
-        approvedBy: form.approvedBy.trim(),
-        priority: 0,
-        status: 'draft',
       }
 
       setStep('done')
@@ -247,43 +323,78 @@ function UploadModal({ periods, onClose, onDone }: {
   }
 
   const busy = step === 'resizing' || step === 'uploading'
+  const canSubmit = Boolean(
+    form.title.trim() && form.periodId && !busy &&
+    (form.contentType === 'image' ? selectedFile : form.contentType === 'youtube' ? form.embedUrl.trim() : form.externalUrl.trim())
+  )
 
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div style={styles.modalHeader}>
-          <span style={styles.modalTitle}>Upload ảnh mới</span>
-          <button style={styles.closeBtn} onClick={onClose}>✕</button>
+          <span style={styles.modalTitle}>Thêm tư liệu</span>
+          <button style={styles.closeBtn} onClick={onClose}>×</button>
         </div>
 
         <div style={styles.modalBody}>
-          {/* Drop zone */}
-          <div
-            style={{ ...styles.dropZone, ...(preview ? styles.dropZoneWithPreview : {}) }}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onClick={() => fileRef.current?.click()}
-          >
-            {preview ? (
-              <img src={preview} alt="preview" style={styles.previewImg} />
-            ) : (
-              <div style={styles.dropHint}>
-                <div style={{ fontSize: '40px' }}>🖼</div>
-                <div>Kéo thả ảnh vào đây hoặc click để chọn</div>
-                <div style={{ fontSize: '12px', color: '#6a5a40' }}>JPG, PNG, WebP — tự động resize</div>
+          {form.contentType === 'image' ? (
+            <div
+              style={{ ...styles.dropZone, ...(preview ? styles.dropZoneWithPreview : {}) }}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              onClick={() => fileRef.current?.click()}
+            >
+              {preview ? (
+                <img src={preview} alt="preview" style={styles.previewImg} />
+              ) : (
+                <div style={styles.dropHint}>
+                  <div style={styles.dropIcon}>IMG</div>
+                  <div>Kéo thả ảnh vào đây hoặc click để chọn</div>
+                  <div style={{ fontSize: '12px', color: '#6a5a40' }}>JPG, PNG, WebP - tự động resize</div>
+                </div>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+              />
+            </div>
+          ) : (
+            <div style={styles.typePanel}>
+              <div style={styles.typePanelTitle}>{form.contentType === 'youtube' ? 'Iframe YouTube' : 'Link ngoài'}</div>
+              <div style={styles.typePanelText}>
+                {form.contentType === 'youtube'
+                  ? 'Nhập link YouTube, khi khách bấm slot sẽ mở iframe video trực tiếp.'
+                  : 'Nhập đường dẫn ngoài, khi khách bấm slot sẽ hiện hộp xác nhận trước khi rời trang.'}
               </div>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-            />
-          </div>
+            </div>
+          )}
 
-          {/* Form */}
           <div style={styles.formGrid}>
+            <FormField label="Loại tư liệu *" style={{ gridColumn: '1 / -1' }}>
+              <select style={styles.input} value={form.contentType} onChange={(e) => setForm((f) => ({ ...f, contentType: e.target.value as ContentItemType }))}>
+                <option value="image">Ảnh</option>
+                <option value="youtube">Iframe YouTube</option>
+                <option value="external">Link ngoài</option>
+              </select>
+            </FormField>
+            {form.contentType === 'youtube' && (
+              <FormField label="Link YouTube *" style={{ gridColumn: '1 / -1' }}>
+                <input style={styles.input} placeholder="https://www.youtube.com/watch?v=..." value={form.embedUrl} onChange={(e) => setForm((f) => ({ ...f, embedUrl: e.target.value }))} />
+              </FormField>
+            )}
+            {form.contentType === 'external' && (
+              <>
+                <FormField label="Đường dẫn ngoài *" style={{ gridColumn: '1 / -1' }}>
+                  <input style={styles.input} placeholder="https://..." value={form.externalUrl} onChange={(e) => setForm((f) => ({ ...f, externalUrl: e.target.value }))} />
+                </FormField>
+                <FormField label="Nhãn nút mở link" style={{ gridColumn: '1 / -1' }}>
+                  <input style={styles.input} placeholder="Mở trang" value={form.externalLabel} onChange={(e) => setForm((f) => ({ ...f, externalLabel: e.target.value }))} />
+                </FormField>
+              </>
+            )}
             <FormField label="Tiêu đề *" required>
               <input style={styles.input} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             </FormField>
@@ -298,21 +409,21 @@ function UploadModal({ periods, onClose, onDone }: {
             <FormField label="Mô tả ngắn" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.shortDesc} onChange={(e) => setForm((f) => ({ ...f, shortDesc: e.target.value }))} />
             </FormField>
+            <FormField label="Mô tả đầy đủ" style={{ gridColumn: '1 / -1' }}>
+              <textarea style={{ ...styles.input, height: '80px', resize: 'vertical' }} value={form.longDesc} onChange={(e) => setForm((f) => ({ ...f, longDesc: e.target.value }))} />
+            </FormField>
             <FormField label="Tags (cách nhau bởi dấu phẩy)" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} placeholder="kỷ niệm, lãnh đạo, 1975" value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} />
             </FormField>
-            <FormField label="Nguồn / Tác giả">
+            <FormField label="Nguồn / Tác giả" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
-            </FormField>
-            <FormField label="Người duyệt">
-              <input style={styles.input} value={form.approvedBy} onChange={(e) => setForm((f) => ({ ...f, approvedBy: e.target.value }))} />
             </FormField>
           </div>
 
-          {step === 'error' && <div style={styles.errorMsg}>⚠ {errorMsg}</div>}
+          {step === 'error' && <div style={styles.errorMsg}>{errorMsg}</div>}
           {busy && (
             <div style={styles.busyMsg}>
-              {step === 'resizing' ? '⚙ Đang xử lý ảnh...' : '⬆ Đang tải lên...'}
+              {step === 'resizing' ? 'Đang xử lý ảnh...' : 'Đang tải lên...'}
             </div>
           )}
         </div>
@@ -320,19 +431,17 @@ function UploadModal({ periods, onClose, onDone }: {
         <div style={styles.modalFooter}>
           <button style={styles.cancelBtn} onClick={onClose} disabled={busy}>Hủy</button>
           <button
-            style={{ ...styles.submitBtn, opacity: (!selectedFile || !form.title || busy) ? 0.5 : 1 }}
+            style={{ ...styles.submitBtn, opacity: canSubmit ? 1 : 0.5 }}
             onClick={handleSubmit}
-            disabled={!selectedFile || !form.title || busy}
+            disabled={!canSubmit}
           >
-            {busy ? 'Đang xử lý...' : 'Upload & Thêm vào thư viện'}
+            {busy ? 'Đang xử lý...' : 'Thêm vào thư viện'}
           </button>
         </div>
       </div>
     </div>
   )
 }
-
-// ── EditModal ─────────────────────────────────────────────────────────────────
 
 function EditModal({ item, periods, onClose, onSave }: {
   item: Item
@@ -341,28 +450,94 @@ function EditModal({ item, periods, onClose, onSave }: {
   onSave: (patch: Partial<Item>) => void
 }) {
   const [form, setForm] = useState({
+    contentType: getItemContentType(item),
     title: item.title, year: item.year, periodId: item.periodId,
     shortDesc: item.shortDesc, longDesc: item.longDesc,
-    tags: item.tags.join(', '), source: item.source, approvedBy: item.approvedBy,
-    status: item.status,
+    tags: item.tags.join(', '), source: item.source,
+    embedUrl: item.embedUrl ?? '',
+    externalUrl: item.externalUrl ?? '',
+    externalLabel: item.externalLabel ?? '',
   })
 
   const handleSave = () => {
-    onSave({
-      ...form,
-      tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
-    })
+    const patch: Partial<Item> = {
+      title: form.title.trim(),
+      year: form.year,
+      periodId: form.periodId,
+      shortDesc: form.shortDesc.trim(),
+      longDesc: form.longDesc.trim(),
+      tags: splitTags(form.tags),
+      source: form.source.trim(),
+      approvedBy: item.approvedBy ?? '',
+      status: item.status ?? 'draft',
+    }
+
+    const clearField = (key: keyof Item) => {
+      ;(patch as Record<string, unknown>)[key] = undefined
+    }
+
+    if (form.contentType === 'youtube') {
+      patch.mediaType = 'video' as MediaType
+      patch.embedUrl = normalizeYouTubeUrl(form.embedUrl)
+      clearField('externalUrl')
+      clearField('externalLabel')
+      if (!item.thumbUrl) patch.thumbUrl = YOUTUBE_PREVIEW
+      if (!item.wallTextureUrl) patch.wallTextureUrl = YOUTUBE_PREVIEW
+      if (!item.fullUrl) patch.fullUrl = YOUTUBE_PREVIEW
+    } else if (form.contentType === 'external') {
+      patch.mediaType = 'image' as MediaType
+      clearField('embedUrl')
+      patch.externalUrl = form.externalUrl.trim()
+      patch.externalLabel = form.externalLabel.trim() || 'Mở trang'
+      if (!item.thumbUrl) patch.thumbUrl = EXTERNAL_PREVIEW
+      if (!item.wallTextureUrl) patch.wallTextureUrl = EXTERNAL_PREVIEW
+      if (!item.fullUrl) patch.fullUrl = EXTERNAL_PREVIEW
+    } else {
+      patch.mediaType = 'image' as MediaType
+      clearField('embedUrl')
+      clearField('externalUrl')
+      clearField('externalLabel')
+    }
+
+    onSave(patch)
   }
+
+  const canSave = Boolean(
+    form.title.trim() && form.periodId &&
+    (form.contentType === 'image' ? true : form.contentType === 'youtube' ? form.embedUrl.trim() : form.externalUrl.trim())
+  )
 
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div style={styles.modalHeader}>
           <span style={styles.modalTitle}>Sửa thông tin</span>
-          <button style={styles.closeBtn} onClick={onClose}>✕</button>
+          <button style={styles.closeBtn} onClick={onClose}>×</button>
         </div>
         <div style={styles.modalBody}>
           <div style={styles.formGrid}>
+            <FormField label="Loại tư liệu *" style={{ gridColumn: '1 / -1' }}>
+              <select style={styles.input} value={form.contentType} onChange={(e) => setForm((f) => ({ ...f, contentType: e.target.value as ContentItemType }))}>
+                <option value="image">Ảnh</option>
+                <option value="youtube">Iframe YouTube</option>
+                <option value="external">Link ngoài</option>
+              </select>
+            </FormField>
+            {form.contentType === 'youtube' && (
+              <FormField label="Link YouTube *" style={{ gridColumn: '1 / -1' }}>
+                <input style={styles.input} placeholder="https://www.youtube.com/watch?v=..." value={form.embedUrl} onChange={(e) => setForm((f) => ({ ...f, embedUrl: e.target.value }))} />
+              </FormField>
+            )}
+            {form.contentType === 'external' && (
+              <>
+                <FormField label="Đường dẫn ngoài *" style={{ gridColumn: '1 / -1' }}>
+                  <input style={styles.input} placeholder="https://..." value={form.externalUrl} onChange={(e) => setForm((f) => ({ ...f, externalUrl: e.target.value }))} />
+                </FormField>
+                <FormField label="Nhãn nút mở link" style={{ gridColumn: '1 / -1' }}>
+                  <input style={styles.input} placeholder="Mở trang" value={form.externalLabel} onChange={(e) => setForm((f) => ({ ...f, externalLabel: e.target.value }))} />
+                </FormField>
+              </>
+            )}
             <FormField label="Tiêu đề *" required>
               <input style={styles.input} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             </FormField>
@@ -383,27 +558,19 @@ function EditModal({ item, periods, onClose, onSave }: {
             <FormField label="Tags" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} />
             </FormField>
-            <FormField label="Nguồn">
+            <FormField label="Nguồn" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
-            </FormField>
-            <FormField label="Trạng thái">
-              <select style={styles.input} value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as 'draft' | 'approved' }))}>
-                <option value="draft">Draft</option>
-                <option value="approved">Đã duyệt</option>
-              </select>
             </FormField>
           </div>
         </div>
         <div style={styles.modalFooter}>
           <button style={styles.cancelBtn} onClick={onClose}>Hủy</button>
-          <button style={styles.submitBtn} onClick={handleSave}>Lưu thay đổi</button>
+          <button style={{ ...styles.submitBtn, opacity: canSave ? 1 : 0.5 }} onClick={handleSave} disabled={!canSave}>Lưu thay đổi</button>
         </div>
       </div>
     </div>
   )
 }
-
-// ── FormField ─────────────────────────────────────────────────────────────────
 
 function FormField({ label, required, style, children }: {
   label: string
@@ -466,6 +633,11 @@ const styles: Record<string, React.CSSProperties> = {
   },
   cardThumbWrap: { position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#1a1208' },
   cardThumb: { width: '100%', height: '100%', objectFit: 'cover' },
+  typeBadge: {
+    position: 'absolute', top: '6px', left: '6px',
+    background: 'rgba(15,10,6,0.85)', border: '1px solid rgba(200,168,90,0.35)', borderRadius: '10px',
+    padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#c8a85a',
+  },
   assignBadge: {
     position: 'absolute', top: '6px', right: '6px',
     background: 'rgba(90,200,90,0.85)', borderRadius: '10px',
@@ -486,7 +658,6 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #3a2e1e', borderRadius: '5px',
     color: '#9a9080', fontSize: '11px', cursor: 'pointer',
   },
-  // Modal shared
   overlay: {
     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -502,7 +673,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '18px 24px', borderBottom: '1px solid #2a1e10',
   },
   modalTitle: { fontSize: '16px', fontWeight: 700, color: '#c8a85a' },
-  closeBtn: { background: 'none', border: 'none', color: '#6a5a40', fontSize: '16px', cursor: 'pointer', padding: '4px 8px' },
+  closeBtn: { background: 'none', border: 'none', color: '#6a5a40', fontSize: '20px', cursor: 'pointer', padding: '4px 8px', lineHeight: 1 },
   modalBody: { flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' },
   modalFooter: { display: 'flex', gap: '10px', justifyContent: 'flex-end', padding: '16px 24px', borderTop: '1px solid #2a1e10' },
   dropZone: {
@@ -513,7 +684,17 @@ const styles: Record<string, React.CSSProperties> = {
   },
   dropZoneWithPreview: { border: '2px solid #5a4a30', minHeight: '200px' },
   dropHint: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '20px' },
+  dropIcon: {
+    width: '44px', height: '32px', border: '1px solid #5a4a30', borderRadius: '6px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#c8a85a',
+  },
   previewImg: { width: '100%', maxHeight: '220px', objectFit: 'contain', background: '#1a1208' },
+  typePanel: {
+    border: '1px solid #3a2e1e', borderRadius: '10px', background: 'rgba(200,168,90,0.07)',
+    padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px',
+  },
+  typePanelTitle: { fontSize: '13px', fontWeight: 700, color: '#c8a85a' },
+  typePanelText: { fontSize: '12px', color: '#9a9080', lineHeight: 1.5 },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
   label: { fontSize: '12px', color: '#9a9080' },
   input: {

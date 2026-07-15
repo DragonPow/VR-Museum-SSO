@@ -10,12 +10,11 @@ import {
 import type { Item } from '@vm/shared'
 import { useMuseumStore, useCurrentRoomStub } from '../store.js'
 import { useRoom } from '../content/useRoom.js'
-import { TimelineNav } from '../ui/TimelineNav.js'
 import { InfoModal } from '../ui/InfoModal.js'
 import { ViewpointNav } from '../ui/ViewpointNav.js'
-import { Minimap } from '../ui/Minimap.js'
 import { MobileControls } from '../ui/MobileControls.js'
 import { Gallery2D } from './Gallery2D.js'
+import { brand, glassPanel } from '../ui/theme.js'
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 
@@ -43,9 +42,10 @@ export function Tour({ content, onBack }: Props) {
   const useFallback = shouldUseFallback()
   const mobileMoveRef = useRef<{ dx: number; dz: number }>({ dx: 0, dz: 0 })
 
-  // Sync index into store on first render
+  // Sync content into the navigation store. Published content can change while the
+  // tab stays open, so refresh the store when updatedAt changes.
   useEffect(() => {
-    if (!index) setIndex(content)
+    if (!index || index.updatedAt !== content.updatedAt) setIndex(content)
   }, [content, index, setIndex])
 
   const roomStub = useCurrentRoomStub()
@@ -89,7 +89,7 @@ export function Tour({ content, onBack }: Props) {
   if (roomState.status === 'error') {
     return (
       <div
-        style={{ ...centerStyle, color: '#c04040', fontSize: 14, flexDirection: 'column', gap: 8 }}
+        style={{ ...centerStyle, color: '#b3261e', fontSize: 14, flexDirection: 'column', gap: 8 }}
       >
         <p>Không thể tải phòng: {roomState.message}</p>
         <button style={retryBtn} onClick={() => navigateToRoom(currentRoomId)}>
@@ -104,7 +104,7 @@ export function Tour({ content, onBack }: Props) {
   const { room, items, textures } = buildRoomDataProps(roomState.data, content.textures)
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', fontFamily: brand.fontFamily }}>
       {/* 3D Scene */}
       <SceneCanvas style={{ position: 'absolute', inset: 0 }}>
         <RoomScene
@@ -121,14 +121,10 @@ export function Tour({ content, onBack }: Props) {
         />
       </SceneCanvas>
 
-      {/* Timeline nav (top) */}
-      <TimelineNav
-        periods={content.periods}
-        rooms={content.rooms}
-        currentRoomId={currentRoomId}
-        onNavigate={navigateToRoom}
-        onBack={onBack}
-      />
+      <button style={homeBtn} onClick={onBack} title="Về trang chủ" aria-label="Về trang chủ">
+        <HomeIcon />
+        <span>Trang chủ</span>
+      </button>
 
       {/* Viewpoint nav (bottom center) */}
       <ViewpointNav
@@ -149,22 +145,6 @@ export function Tour({ content, onBack }: Props) {
         />
       )}
 
-      {/* Minimap (bottom right) */}
-      <Minimap
-        rooms={content.rooms}
-        periods={content.periods}
-        currentRoomId={currentRoomId}
-        onNavigate={navigateToRoom}
-      />
-
-      {/* Room title badge */}
-      <div style={styles.roomBadge}>
-        <span style={styles.periodLabel}>
-          {content.periods.find((p) => p.id === room.periodId)?.title}
-        </span>
-        <span style={styles.roomTitle}>{room.title}</span>
-      </div>
-
       {/* Drag hint — fades out after 4s */}
       <DragHint isMobile={isMobile} />
 
@@ -174,11 +154,21 @@ export function Tour({ content, onBack }: Props) {
   )
 }
 
+function HomeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+      <path d="M3 10.8 12 3l9 7.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5.5 9.5V20h13V9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9.5 20v-6h5v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 function RoomLoadingScreen() {
   return (
     <div style={{ ...centerStyle, flexDirection: 'column', gap: 12 }}>
       <div style={spinnerStyle} />
-      <p style={{ color: '#7a7060', fontSize: 13 }}>Đang tải phòng…</p>
+      <p style={{ color: brand.muted, fontSize: 13 }}>Đang tải phòng…</p>
     </div>
   )
 }
@@ -197,9 +187,9 @@ function DragHint({ isMobile }: { isMobile: boolean }) {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%,-50%)',
-        background: 'rgba(0,0,0,0.6)',
-        border: '1px solid rgba(200,168,90,0.3)',
-        color: '#c8a85a',
+        background: 'rgba(255,255,255,0.9)',
+        border: `1px solid ${brand.line}`,
+        color: brand.blue,
         borderRadius: '12px',
         padding: '10px 20px',
         fontSize: '13px',
@@ -212,8 +202,8 @@ function DragHint({ isMobile }: { isMobile: boolean }) {
       }}
     >
       {isMobile
-        ? '👆 Kéo để nhìn quanh · D-pad (trái) để di chuyển · Nhấn 📱 để bật cảm biến gyro'
-        : '🖱 Kéo để nhìn quanh · Click sàn để di chuyển · WASD / ↑↓←→ để đi bộ · Click khung ảnh để xem chi tiết'}
+        ? 'Kéo để nhìn quanh · D-pad bên trái để di chuyển · Bật gyro trong nút điều khiển'
+        : 'Kéo để nhìn quanh · Click sàn để di chuyển · WASD hoặc phím điều hướng để đi bộ · Click khung ảnh để xem chi tiết'}
     </div>
   )
 }
@@ -224,43 +214,42 @@ const centerStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: '#1a1410',
+  background: `linear-gradient(135deg, ${brand.sky}, #d8e8f8)`,
+}
+
+const homeBtn: React.CSSProperties = {
+  position: 'absolute',
+  top: 12,
+  left: 12,
+  zIndex: 10,
+  ...glassPanel,
+  color: brand.blue,
+  borderRadius: 8,
+  padding: '7px 13px',
+  fontSize: 12,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  fontWeight: 800,
+  fontFamily: brand.fontFamily,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
 }
 
 const spinnerStyle: React.CSSProperties = {
   width: '36px',
   height: '36px',
-  border: '3px solid rgba(200,168,90,0.2)',
-  borderTop: '3px solid #c8a85a',
+  border: '3px solid rgba(16,80,160,0.18)',
+  borderTop: `3px solid ${brand.blue}`,
   borderRadius: '50%',
   animation: 'spin 1s linear infinite',
 }
 
 const retryBtn: React.CSSProperties = {
   padding: '8px 20px',
-  background: '#3a2e1e',
-  border: '1px solid #5a4a30',
-  color: '#c8a85a',
+  background: brand.blue,
+  border: `1px solid ${brand.blueDark}`,
+  color: '#ffffff',
   borderRadius: 6,
   cursor: 'pointer',
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  roomBadge: {
-    position: 'absolute',
-    top: '64px',
-    right: '16px',
-    background: 'rgba(15,10,5,0.75)',
-    border: '1px solid #5a4a30',
-    borderRadius: '8px',
-    padding: '8px 14px',
-    backdropFilter: 'blur(6px)',
-    zIndex: 10,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    maxWidth: '200px',
-  },
-  periodLabel: { fontSize: '11px', color: '#c8a85a', fontWeight: 600 },
-  roomTitle: { fontSize: '14px', color: '#f5e6c8', fontWeight: 700 },
 }

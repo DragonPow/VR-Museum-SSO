@@ -15,7 +15,7 @@ const BORDER = 0.055
 export function Portal({ portal, onNavigate }: Props) {
   const [hovered, setHovered] = useState(false)
 
-  const color = hovered ? '#f0d060' : '#c8a85a'
+  const color = hovered ? '#2f75c9' : '#1050a0'
   const bgOpacity = hovered ? 0.28 : 0.12
 
   const pos: [number, number, number] = [portal.position.x, portal.position.y, portal.position.z]
@@ -60,7 +60,7 @@ export function Portal({ portal, onNavigate }: Props) {
       <Text
         position={[0, 0.25, 0.012]}
         fontSize={0.45}
-        color={hovered ? '#ffffff' : '#c8a85a'}
+        color={hovered ? '#ffffff' : '#1050a0'}
         anchorX="center"
         anchorY="middle"
         {...handlers}
@@ -72,7 +72,7 @@ export function Portal({ portal, onNavigate }: Props) {
       <Text
         position={[0, -0.3, 0.012]}
         fontSize={0.14}
-        color={hovered ? '#ffe8a0' : '#a89060'}
+        color={hovered ? '#d8e8f8' : '#5f748c'}
         anchorX="center"
         anchorY="middle"
         maxWidth={ARCH_W - 0.2}

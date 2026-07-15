@@ -75,7 +75,7 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     const key = form.get('key') as string | null
 
     if (!file || !key) return json({ error: 'Missing file or key' }, 400)
-    const isMediaAsset = key.startsWith('media/')
+    const isMediaAsset = key.startsWith('content/media/') || key.startsWith('media/')
     const isRoomModel = key.startsWith('content/models/')
     if (!isMediaAsset && !isRoomModel) {
       return json({ error: 'Invalid key prefix' }, 400)
@@ -114,10 +114,9 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return json({ ok: true, publishedAt: new Date().toISOString() })
   }
 
-  // GET /media/* and /content/models/* — serve assets from R2. Needed for local dev
-  // (no public R2 URL) so uploads are viewable; in production PUBLIC_R2_URL points at
-  // the bucket directly and this is just a harmless fallback.
-  if (method === 'GET' && (pathname.startsWith('/media/') || pathname.startsWith('/content/models/'))) {
+  // GET content assets from R2. Needed for local dev (no public R2 URL) so uploads are
+  // viewable; in production PUBLIC_R2_URL points at the bucket directly and this is a fallback.
+  if (method === 'GET' && (pathname.startsWith('/content/media/') || pathname.startsWith('/media/') || pathname.startsWith('/content/models/'))) {
     const key = pathname.replace(/^\/+/, '')
     const obj = await env.MEDIA_BUCKET.get(key)
     if (!obj) return json({ error: 'Not found' }, 404)

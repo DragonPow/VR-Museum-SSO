@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react'
 import { parseContent, rebaseAssetUrls } from '@vm/shared'
+import { CONTENT_SOURCE, fetchFirstContentJson } from './source.js'
 import type { Content } from '@vm/shared'
 
 type State =
   { status: 'loading' } | { status: 'error'; message: string } | { status: 'ok'; data: Content }
 
-const BASE = import.meta.env.BASE_URL // e.g. '/VR-Museum-SSO/'
-const ASSET_BASE_URL = (import.meta.env['VITE_ASSET_BASE_URL'] ?? '').replace(/\/+$/, '')
-const CONTENT_URL = ASSET_BASE_URL
-  ? `${ASSET_BASE_URL}/content.json`
-  : `${BASE}content/content.sample.json`
 
 let _cache: Content | null = null
 
@@ -20,14 +16,10 @@ export function useContent(): State {
 
   useEffect(() => {
     if (_cache) return
-    fetch(CONTENT_URL)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
+    fetchFirstContentJson()
       .then((raw) => {
         const data = parseContent(
-          rebaseAssetUrls(raw, { assetBaseUrl: ASSET_BASE_URL, appBaseUrl: BASE }),
+          rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl }),
         )
         _cache = data
         setState({ status: 'ok', data })

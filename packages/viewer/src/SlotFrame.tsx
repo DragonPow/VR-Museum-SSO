@@ -15,7 +15,6 @@ const FRAME_THICKNESS = 0.04
 const FRAME_DEPTH     = 0.05   // how far the frame protrudes from the wall
 const FRAME_BASE      = 0.01   // gap between wall surface and back of frame (prevents z-fighting)
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
-
 export function SlotFrame({ slot, item, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
   const matRef  = useRef<THREE.MeshLambertMaterial | THREE.MeshBasicMaterial>(null)
@@ -31,6 +30,7 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
   // Fixed backdrop panel (the wide hero banner): show the full-res image exactly as-is
   // — unlit, uncropped, not clickable — so it reads like a real printed panel on the wall.
   const isBackdrop = slot.id === 'VM_Slot_TT_9000' || slot.name === 'TT_9000'
+  const canvasZ = isBackdrop ? -0.035 : (frameColor === null ? 0 : FRAME_BASE + FRAME_DEPTH - 0.01)
 
   useEffect(() => {
     document.body.style.cursor = hovered ? 'pointer' : 'auto'
@@ -77,7 +77,7 @@ export function SlotFrame({ slot, item, onSelect }: Props) {
           'none' = Blender frame present: sit at canvas face depth (~2 cm).
           Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
-        position={[0, 0, frameColor === null ? 0 : FRAME_BASE + FRAME_DEPTH - 0.01]}
+        position={[0, 0, canvasZ]}
         {...(item && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),

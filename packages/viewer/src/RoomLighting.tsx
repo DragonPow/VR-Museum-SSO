@@ -14,7 +14,7 @@ export function RoomLighting({ preset, baked = false }: Props) {
     // The shell uses an unlit MeshBasicMaterial baked from Blender, so scene lights
     // do NOT affect it. This ambient only lights the props that aren't baked yet
     // (frames, cases, photo canvases) so they remain visible.
-    return <ambientLight color="#ffffff" intensity={0.9} />
+    return <ambientLight color="#fff1df" intensity={0.32} />
   }
 
   const cfg = getLightConfig(preset)

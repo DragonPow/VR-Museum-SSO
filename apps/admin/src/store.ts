@@ -1,9 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { DEFAULT_CONTENT, parseContent } from '@vm/shared'
+import { DEFAULT_CONTENT } from '@vm/shared'
+import { loadDraftContent, loadStaticContent } from './contentSource.js'
 import type { Content, Item, Period, Room, Viewpoint, RoomPortal } from '@vm/shared'
-
-const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 interface DraftStore {
   content: Content | null
@@ -47,23 +46,31 @@ export const useDraftStore = create<DraftStore>()(
       init: async () => {
         set({ loading: true, error: null })
 
-        // Server (Worker + R2 draft.json) is the source of truth. Always load it when
-        // reachable so the admin can't get stuck on a stale localStorage draft — that
-        // bug made it show DEFAULT_CONTENT and, on publish, overwrite the real
-        // content.json (losing lightmapUrl / slots). Save edits via "Lưu draft".
-        try {
-          const res = await fetch(`${API_BASE}/api/draft`)
-          if (res.ok) {
-            const content = parseContent(await res.json())
-            set({ content, loading: false, dirty: false })
-            return
-          }
-        } catch {}
-
-        // Server unreachable: keep any local copy, else seed. NOT dirty, so a later
-        // successful load always replaces it.
         const local = get().content
-        set({ content: local ?? DEFAULT_CONTENT, loading: false, dirty: false })
+        const localDirty = get().dirty
+        const localIsBootstrap = local?.rooms.length === 1 && local.rooms[0]?.id === DEFAULT_CONTENT.rooms[0]?.id
+
+        // If the browser has unsaved edits (e.g. a fresh local upload/assignment), keep
+        // them across F5. Otherwise the static seed would overwrite the just-created item.
+        if (local && localDirty && !localIsBootstrap) {
+          set({ content: local, loading: false, dirty: true })
+          return
+        }
+
+        // Cloudflare and local-wrangler modes: Worker draft/content is the shared source.
+        const draftContent = await loadDraftContent()
+        if (draftContent) {
+          set({ content: draftContent, loading: false, dirty: false })
+          return
+        }
+
+        // Last fallback: committed static content files, then bootstrap seed.
+        const staticContent = await loadStaticContent()
+        set({
+          content: staticContent ?? (localIsBootstrap ? DEFAULT_CONTENT : (local ?? DEFAULT_CONTENT)),
+          loading: false,
+          dirty: false,
+        })
       },
 
       loadContent: (content) => set({ content, dirty: false }),
@@ -80,7 +87,14 @@ export const useDraftStore = create<DraftStore>()(
           return {
             content: {
               ...s.content,
-              items: s.content.items.map((it) => (it.id === id ? { ...it, ...patch } : it)),
+              items: s.content.items.map((it) => {
+                if (it.id !== id) return it
+                const next = { ...it, ...patch }
+                Object.entries(patch).forEach(([key, value]) => {
+                  if (value === undefined) delete (next as Record<string, unknown>)[key]
+                })
+                return next
+              }),
             },
             dirty: true,
           }

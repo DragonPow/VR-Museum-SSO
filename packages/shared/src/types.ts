@@ -129,6 +129,11 @@ export interface Item {
   fullUrl: string
   /** Untouched original upload — kept so resize variants can be regenerated later. */
   rawUrl?: string
+  /** Optional embedded media URL, e.g. a YouTube embed link shown inside the modal. */
+  embedUrl?: string
+  /** Optional external page for the artifact, e.g. Facebook fanpage or Drive dossier. */
+  externalUrl?: string
+  externalLabel?: string
   source: string
   approvedBy: string
   priority: number

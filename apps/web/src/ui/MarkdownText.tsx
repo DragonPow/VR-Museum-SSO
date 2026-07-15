@@ -1,3 +1,5 @@
+import { brand } from './theme.js'
+
 /** Minimal markdown renderer — supports **bold**, *italic*, # headings, newlines. No deps needed. */
 export function MarkdownText({ text, style }: { text: string; style?: React.CSSProperties }) {
   if (!text) return null
@@ -17,7 +19,7 @@ export function MarkdownText({ text, style }: { text: string; style?: React.CSSP
           const content = renderInline(headingMatch[2]!)
           const fontSize = level === 1 ? '20px' : level === 2 ? '17px' : '15px'
           return (
-            <p key={pi} style={{ fontWeight: 700, fontSize, color: '#f5e6c8', marginBottom: '10px' }}>
+            <p key={pi} style={{ fontWeight: 700, fontSize, color: brand.text, marginBottom: '10px' }}>
               {content}
             </p>
           )
@@ -27,7 +29,7 @@ export function MarkdownText({ text, style }: { text: string; style?: React.CSSP
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           const items = trimmed.split('\n').filter((l) => l.match(/^[-*]\s/))
           return (
-            <ul key={pi} style={{ paddingLeft: '18px', marginBottom: '10px', color: '#c8bfb0' }}>
+            <ul key={pi} style={{ paddingLeft: '18px', marginBottom: '10px', color: brand.text }}>
               {items.map((item, ii) => (
                 <li key={ii} style={{ marginBottom: '4px', lineHeight: 1.6 }}>
                   {renderInline(item.replace(/^[-*]\s+/, ''))}
@@ -40,7 +42,7 @@ export function MarkdownText({ text, style }: { text: string; style?: React.CSSP
         // Normal paragraph (handle \n as <br>)
         const lines = trimmed.split('\n')
         return (
-          <p key={pi} style={{ marginBottom: '10px', lineHeight: 1.7, color: '#c8bfb0' }}>
+          <p key={pi} style={{ marginBottom: '10px', lineHeight: 1.7, color: brand.text }}>
             {lines.map((line, li) => (
               <span key={li}>
                 {renderInline(line)}
@@ -59,7 +61,7 @@ function renderInline(text: string): React.ReactNode[] {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} style={{ color: '#f0e0c0', fontWeight: 700 }}>{part.slice(2, -2)}</strong>
+      return <strong key={i} style={{ color: brand.blue, fontWeight: 700 }}>{part.slice(2, -2)}</strong>
     }
     if (part.startsWith('*') && part.endsWith('*')) {
       return <em key={i}>{part.slice(1, -1)}</em>

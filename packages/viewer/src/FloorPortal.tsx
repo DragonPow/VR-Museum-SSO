@@ -30,7 +30,7 @@ export function FloorPortal({ portal, onNavigate }: Props) {
       {/* Outer pulsing ring */}
       <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.38, 0.52, 48]} />
-        <meshBasicMaterial color="#f0d060" transparent opacity={0.6} depthWrite={false} />
+        <meshBasicMaterial color="#1050a0" transparent opacity={0.6} depthWrite={false} />
       </mesh>
 
       {/* Inner clickable fill */}
@@ -52,7 +52,7 @@ export function FloorPortal({ portal, onNavigate }: Props) {
       >
         <circleGeometry args={[0.52, 40]} />
         <meshBasicMaterial
-          color={hovered ? '#f0e890' : '#c8a040'}
+          color={hovered ? '#74a8df' : '#1050a0'}
           transparent
           opacity={hovered ? 0.5 : 0.15}
           depthWrite={false}
@@ -62,14 +62,14 @@ export function FloorPortal({ portal, onNavigate }: Props) {
       {/* Center dot */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.1, 24]} />
-        <meshBasicMaterial color="#ffe060" transparent opacity={0.9} depthWrite={false} />
+        <meshBasicMaterial color="#2f75c9" transparent opacity={0.9} depthWrite={false} />
       </mesh>
 
       <Billboard follow lockX={false} lockY={false} lockZ={false}>
         <Text
           position={[0, 0.38, 0]}
           fontSize={0.22}
-          color={hovered ? '#ffffff' : '#f0d060'}
+          color={hovered ? '#ffffff' : '#1050a0'}
           anchorX="center"
           anchorY="middle"
         >
@@ -79,7 +79,7 @@ export function FloorPortal({ portal, onNavigate }: Props) {
         <Text
           position={[0, 0.65, 0]}
           fontSize={0.16}
-          color={hovered ? '#ffe8a0' : '#c8a85a'}
+          color={hovered ? '#d8e8f8' : '#1050a0'}
           anchorX="center"
           anchorY="middle"
         >

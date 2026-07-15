@@ -6,6 +6,14 @@ import { resolveAssetUrl } from '@vm/shared'
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 const assetUrl = (u?: string | null) => resolveAssetUrl(u, { assetBaseUrl: ASSET_BASE_URL }) ?? undefined
 
+function getItemTypeLabel(item: Item) {
+  if (item.embedUrl) return 'YouTube'
+  if (item.externalUrl) return 'Link ngoài'
+  if (item.mediaType === 'video') return 'Video'
+  if (item.mediaType === 'audio') return 'Audio'
+  return 'Ảnh'
+}
+
 export function Assign() {
   const content = useDraftStore((s) => s.content)
   const assignItem = useDraftStore((s) => s.assignItem)
@@ -29,7 +37,8 @@ export function Assign() {
     if (search) items = items.filter((it) =>
       it.title.toLowerCase().includes(search.toLowerCase()) ||
       String(it.year).includes(search) ||
-      it.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())),
+      it.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())) ||
+      getItemTypeLabel(it).toLowerCase().includes(search.toLowerCase()),
     )
     if (periodFilter) items = items.filter((it) => it.periodId === periodFilter)
     return items
@@ -87,14 +96,14 @@ export function Assign() {
       {/* Right: slot grid */}
       <div style={styles.main}>
         {!selectedRoom ? (
-          <div style={styles.center}>← Chọn một phòng để gán ảnh</div>
+          <div style={styles.center}>Chọn một phòng để gán tư liệu</div>
         ) : (
           <>
             <div style={styles.mainHeader}>
               <div>
                 <h2 style={styles.roomTitle}>{selectedRoom.title}</h2>
                 <p style={styles.roomSub}>
-                  {selectedRoom.slots.filter((s) => s.itemId).length} / {selectedRoom.slots.length} slot đã có ảnh
+                  {selectedRoom.slots.filter((s) => s.itemId).length} / {selectedRoom.slots.length} slot đã có tư liệu
                 </p>
               </div>
             </div>
@@ -137,10 +146,10 @@ export function Assign() {
           <div style={styles.picker} onClick={(e) => e.stopPropagation()}>
             <div style={styles.pickerHeader}>
               <div>
-                <span style={styles.pickerTitle}>Gán ảnh cho slot</span>
+                <span style={styles.pickerTitle}>Gán tư liệu cho slot</span>
                 <span style={styles.pickerSlotName}> — {pickerSlot.name}</span>
               </div>
-              <button style={styles.closeBtn} onClick={() => { setPickerSlot(null); setSearch('') }}>✕</button>
+              <button style={styles.closeBtn} onClick={() => { setPickerSlot(null); setSearch('') }}>×</button>
             </div>
 
             {pickerSlot.itemId && (
@@ -158,7 +167,7 @@ export function Assign() {
             <div style={styles.pickerFilters}>
               <input
                 autoFocus
-                placeholder="Tìm theo tên, năm, tag..."
+                placeholder="Tìm theo tên, năm, tag, loại..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={styles.pickerSearch}
@@ -178,7 +187,7 @@ export function Assign() {
             <div style={styles.pickerGrid}>
               {content.items.length === 0 && (
                 <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>
-                  Chưa có ảnh nào. Hãy upload ảnh trước.
+                  Chưa có tư liệu nào. Hãy thêm tư liệu trước.
                 </div>
               )}
               {pickerItems.map((item) => (
@@ -190,7 +199,10 @@ export function Assign() {
                   }}
                   onClick={() => handleAssign(item.id)}
                 >
-                  <img src={assetUrl(item.thumbUrl)} alt={item.title} style={styles.pickerThumb} />
+                  <div style={styles.pickerThumbWrap}>
+                    <img src={assetUrl(item.thumbUrl)} alt={item.title} style={styles.pickerThumb} />
+                    <span style={styles.typeBadge}>{getItemTypeLabel(item)}</span>
+                  </div>
                   <div style={styles.pickerItemTitle}>{item.title}</div>
                   <div style={styles.pickerItemYear}>{item.year}</div>
                   {item.id === pickerSlot.itemId && (
@@ -200,7 +212,7 @@ export function Assign() {
               ))}
               {pickerItems.length === 0 && content.items.length > 0 && (
                 <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>
-                  Không tìm thấy ảnh phù hợp.
+                  Không tìm thấy tư liệu phù hợp.
                 </div>
               )}
             </div>
@@ -261,11 +273,12 @@ function SlotCard({ slot, item, onClick }: { slot: Slot; item: Item | null; onCl
         <>
           <div style={styles.slotThumbWrap}>
             <img src={assetUrl(item.thumbUrl)} alt={item.title} style={styles.slotThumb} />
+            <span style={styles.typeBadge}>{getItemTypeLabel(item)}</span>
           </div>
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>
             <div style={styles.slotItemTitle}>{item.year} · {item.title}</div>
-            <div style={styles.slotStatus}>✓ Đã gán</div>
+            <div style={styles.slotStatus}>Đã gán</div>
           </div>
         </>
       ) : (
@@ -275,7 +288,7 @@ function SlotCard({ slot, item, onClick }: { slot: Slot; item: Item | null; onCl
           </div>
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>
-            <div style={styles.slotEmptyLabel}>Trống — click để gán</div>
+            <div style={styles.slotEmptyLabel}>Trống - click để gán</div>
           </div>
         </>
       )}
@@ -316,7 +329,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   scrollArea: { flex: 1, overflowY: 'auto', padding: '20px 24px' },
   slotCard: { background: 'rgba(255,255,255,0.04)', border: '1px solid #2a1e10', borderRadius: '10px', overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' },
-  slotThumbWrap: { aspectRatio: '4/3', overflow: 'hidden', background: '#1a1208' },
+  slotThumbWrap: { position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#1a1208' },
   slotThumb: { width: '100%', height: '100%', objectFit: 'cover' },
   slotEmpty: { aspectRatio: '4/3', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #2a1e10' },
   slotEmptyIcon: { fontSize: '28px', color: '#3a2e1e' },
@@ -346,7 +359,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
   pickerItem: { position: 'relative', background: 'rgba(255,255,255,0.04)', border: '1px solid #2a1e10', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' },
   pickerItemActive: { border: '2px solid #c8a85a', background: 'rgba(200,168,90,0.08)' },
-  pickerThumb: { width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block', background: '#1a1208' },
+  pickerThumbWrap: { position: 'relative', aspectRatio: '4/3', background: '#1a1208', overflow: 'hidden' },
+  pickerThumb: { width: '100%', height: '100%', objectFit: 'cover', display: 'block', background: '#1a1208' },
+  typeBadge: { position: 'absolute', top: '6px', left: '6px', background: 'rgba(15,10,6,0.85)', border: '1px solid rgba(200,168,90,0.35)', borderRadius: '10px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#c8a85a' },
   pickerItemTitle: { padding: '8px 8px 2px', fontSize: '12px', fontWeight: 600, color: '#f0e8d8', lineHeight: 1.3 },
   pickerItemYear: { padding: '0 8px 8px', fontSize: '11px', color: '#6a5a40' },
   pickerCheck: { position: 'absolute', top: '6px', right: '6px', background: '#c8a85a', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#0a0804' },

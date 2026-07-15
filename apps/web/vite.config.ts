@@ -72,5 +72,10 @@ export default defineConfig({
   },
   server: {
     port: Number(process.env['PORT']) || 5173,
+    proxy: {
+      // Worker API and uploaded media during local admin-upload tests.
+      '/api': { target: 'http://localhost:8787', changeOrigin: true },
+      '/media': { target: 'http://localhost:8787', changeOrigin: true },
+    },
   },
 })

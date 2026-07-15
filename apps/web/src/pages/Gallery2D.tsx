@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Content, Item } from '@vm/shared'
 import { InfoModal } from '../ui/InfoModal.js'
+import { brand, glassPanel } from '../ui/theme.js'
 
 interface Props {
   content: Content
@@ -24,7 +25,7 @@ export function Gallery2D({ content, currentRoomId, onNavigate, onBack }: Props)
   return (
     <div style={styles.wrap}>
       <div style={styles.header}>
-        <button style={styles.back} onClick={onBack}>← Trang chủ</button>
+        <button style={styles.back} onClick={onBack} title="Về trang chủ" aria-label="Về trang chủ"><HomeIcon /><span>Trang chủ</span></button>
         <h2 style={styles.title}>{room?.title}</h2>
       </div>
 
@@ -73,48 +74,66 @@ export function Gallery2D({ content, currentRoomId, onNavigate, onBack }: Props)
   )
 }
 
+function HomeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+      <path d="M3 10.8 12 3l9 7.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5.5 9.5V20h13V9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9.5 20v-6h5v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 const styles: Record<string, React.CSSProperties> = {
-  wrap: { width: '100%', height: '100%', overflowY: 'auto', background: '#1a1410', padding: '0 0 32px' },
+  wrap: { width: '100%', height: '100%', overflowY: 'auto', background: brand.sky, padding: '0 0 32px', fontFamily: brand.fontFamily },
   header: {
     padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px',
-    borderBottom: '1px solid #3a2e1e', position: 'sticky', top: 0,
-    background: '#1a1410', zIndex: 10,
+    borderBottom: `1px solid ${brand.line}`, position: 'sticky', top: 0,
+    background: 'rgba(255,255,255,0.92)', zIndex: 10,
   },
   back: {
-    background: 'rgba(0,0,0,0.4)', border: '1px solid #5a4a30',
-    color: '#c8a85a', borderRadius: '6px', padding: '6px 12px',
-    fontSize: '13px', cursor: 'pointer',
+    ...glassPanel,
+    color: brand.blue,
+    borderRadius: '8px',
+    padding: '7px 13px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    fontWeight: 800,
+    fontFamily: brand.fontFamily,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
   },
-  title: { fontSize: '20px', color: '#f5e6c8', fontWeight: 700 },
+  title: { fontSize: '20px', color: brand.text, fontWeight: 800 },
   tabs: {
     display: 'flex', gap: '8px', padding: '12px 24px',
-    borderBottom: '1px solid #2a1e10', flexWrap: 'wrap',
+    borderBottom: `1px solid ${brand.line}`, flexWrap: 'wrap',
   },
   tab: {
     display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px',
     padding: '8px 16px', borderRadius: '8px', cursor: 'pointer',
-    background: 'rgba(255,255,255,0.03)', border: '1px solid #2a1e10',
+    background: 'rgba(255,255,255,0.72)', border: `1px solid ${brand.line}`,
     transition: 'border-color 0.15s',
   },
-  tabActive: { border: '1px solid #c8a85a', background: 'rgba(200,168,90,0.08)' },
-  tabName: { fontSize: '13px', color: '#f5e6c8', fontWeight: 600 },
-  tabPeriod: { fontSize: '11px', color: '#6a5a40' },
-  tabCount: { fontSize: '11px', color: '#c8a85a', fontWeight: 600 },
+  tabActive: { border: `1px solid ${brand.blue}`, background: 'rgba(16,80,160,0.1)' },
+  tabName: { fontSize: '13px', color: brand.text, fontWeight: 700 },
+  tabPeriod: { fontSize: '11px', color: brand.muted },
+  tabCount: { fontSize: '11px', color: brand.blue, fontWeight: 800 },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
     gap: '16px', padding: '24px',
   },
   card: {
-    background: '#2a2218', border: '1px solid #3a2e1e',
+    background: '#ffffff', border: `1px solid ${brand.line}`,
     borderRadius: '8px', overflow: 'hidden', cursor: 'pointer',
     textAlign: 'left', display: 'flex', flexDirection: 'column',
     transition: 'border-color 0.15s',
   },
   thumb: { width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' },
   cardBody: { padding: '12px' },
-  year: { fontSize: '11px', color: '#c8a85a', fontWeight: 600, marginBottom: '4px' },
-  cardTitle: { fontSize: '14px', color: '#f5e6c8', fontWeight: 600, marginBottom: '6px' },
-  desc: { fontSize: '12px', color: '#9a9080', lineHeight: 1.5 },
-  empty: { gridColumn: '1/-1', color: '#6a5a40', fontSize: '14px', padding: '40px', textAlign: 'center' },
+  year: { fontSize: '11px', color: brand.blue, fontWeight: 800, marginBottom: '4px' },
+  cardTitle: { fontSize: '14px', color: brand.text, fontWeight: 700, marginBottom: '6px' },
+  desc: { fontSize: '12px', color: brand.muted, lineHeight: 1.5 },
+  empty: { gridColumn: '1/-1', color: brand.muted, fontSize: '14px', padding: '40px', textAlign: 'center' },
 }

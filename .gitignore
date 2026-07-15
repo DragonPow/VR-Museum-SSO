@@ -11,6 +11,7 @@ blender_2/
 apps/*/dist/
 packages/*/dist/
 workers/*/dist/
+content/media/
 
 # Cache
 .turbo/

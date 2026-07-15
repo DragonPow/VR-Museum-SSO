@@ -26,7 +26,7 @@ bucket_name         = "virtual-museum-media"
 preview_bucket_name = "virtual-museum-media-dev"
 
 [env.dev.vars]
-ALLOWED_ORIGIN = "http://localhost:5174"
+ALLOWED_ORIGIN = "http://localhost:5174,http://localhost:5173"
 PUBLIC_R2_URL  = ""
 
 # ── Secrets (never stored here — set via Cloudflare dashboard or CLI) ─────────
