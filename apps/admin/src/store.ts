@@ -59,7 +59,7 @@ function normalizeLegacyDocument(item: Record<string, unknown>): DocumentItem {
 
 function normalizeContentShape(content: Content): Content {
   const raw = content as Content & { items?: Array<Record<string, unknown>> }
-  const documents = (raw.documents ?? (raw.items ?? [])).map((document) => normalizeLegacyDocument(document as Record<string, unknown>))
+  const documents = (raw.documents ?? (raw.items ?? [])).map((document) => normalizeLegacyDocument(document as unknown as Record<string, unknown>))
   return {
     ...content,
     documentIndex: documents.length > 0 ? documents.map(documentIndexFromDocument) : (Array.isArray(raw.documentIndex) ? raw.documentIndex as Content['documentIndex'] : []),
