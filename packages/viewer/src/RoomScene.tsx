@@ -207,21 +207,23 @@ export function RoomScene({
         </>
       )}
 
-      {resolvedSlots.map((slot) => (
-        <SlotFrame
-          key={slot.id}
-          slot={slot}
-          documentItem={(slot.documentIds ?? [])[0] ? (documents[(slot.documentIds ?? [])[0]] ?? null) : null}
-          viewerTextureUrl={(() => {
-            const firstId = (slot.documentIds ?? [])[0]
-            const document = firstId ? documents[firstId] : null
-            const variant = (slot.id === 'VM_Slot_TT_9000' || slot.name === 'TT_9000') ? 'full' : (slot.viewerVariant ?? 'wall')
-            return resolveDocumentImageVariantUrl(document?.documentKey ?? null, document?.viewerImageId ?? null, variant, { assetBaseUrl })
-          })()}
-          onSelect={(slotId) => onSlotSelect(slotId, (slot.documentIds ?? []).map((id) => documents[id]).filter((document): document is DocumentIndexItem => Boolean(document)))}
-          hideLabel={hideLabels}
-        />
-      ))}
+      {resolvedSlots.map((slot) => {
+        const firstId = slot.documentIds?.[0]
+        const document = firstId ? documents[firstId] ?? null : null
+        const variant = (slot.id === 'VM_Slot_TT_9000' || slot.name === 'TT_9000') ? 'full' : (slot.viewerVariant ?? 'wall')
+        const viewerTextureUrl = resolveDocumentImageVariantUrl(document?.documentKey ?? null, document?.viewerImageId ?? null, variant, { assetBaseUrl })
+
+        return (
+          <SlotFrame
+            key={slot.id}
+            slot={slot}
+            documentItem={document}
+            viewerTextureUrl={viewerTextureUrl}
+            onSelect={(slotId) => onSlotSelect(slotId, (slot.documentIds ?? []).map((id) => documents[id]).filter((item): item is DocumentIndexItem => Boolean(item)))}
+            hideLabel={hideLabels}
+          />
+        )
+      })}
 
       {room.portals?.map((portal) => (
         <FloorPortal key={portal.id} portal={portal} onNavigate={onNavigate ?? (() => {})} />

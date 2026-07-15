@@ -1,4 +1,4 @@
-import { DEFAULT_CONTENT, parseContent, splitContentForPublish } from '@vm/shared'
+import { DEFAULT_CONTENT, parseContent, splitContentForPublish } from '../../../packages/shared/src/index.ts'
 
 interface Env {
   MEDIA_BUCKET: R2Bucket
