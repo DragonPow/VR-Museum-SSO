@@ -4,11 +4,39 @@
 > loang mảng xám, đèn vỡ, seam đen) đến từ việc bake lại sai cách.
 
 ## 0. Nguyên tắc cốt lõi
+
+### 0.0 Chỉ còn MỘT phòng đang dùng: `TruyenThong`
+File `.blend` còn sót các collection **`Hall`, `Side`, `Control`** — đây là **phòng cũ, KHÔNG
+còn dùng**, không export, không có trên R2, không có trong `content.sample.json`.
+Chỉ collection **`TruyenThong`** (+ `TT_Titles`) là thật.
+- Slot thật = `VM_Slot_TT_*`. Slot `VM_Slot_HALL_*`, `VM_Slot_SIDE_*`, `VM_Slot_CTRL_*` = **bỏ**.
+- ⚠️ **Bẫy:** slot của TruyenThong lại dùng material tên **`CR_Frame` / `CR_SlotCanvas`**
+  (tiền tố `CR_` = Control Room, di sản đặt tên cũ). **Đừng xóa material `CR_*`** khi dọn
+  collection `Control` — sẽ làm vỡ toàn bộ slot phòng chính.
+- Khi bake / export: **chỉ select nhóm trong `TruyenThong`**, đừng gom nhầm phòng cũ vào atlas.
+
+### 0.1 Unlit + atlas
 - Ánh sáng/bóng/GI được **bake sẵn** (Cycles) vào **atlas** (`*_combined.webp`,
   `*_props.webp`). Web hiển thị **unlit 1:1** bằng `MeshBasicMaterial` (`toneMapped:false`),
   sample qua **UV2 (TEXCOORD_1)**. → web = giống hệt bake, không tính sáng lại.
 - **Màu/độ sáng tinh chỉnh (dado, độ sáng tường) = CODE viewer**, KHÔNG phải bake.
   (Ví dụ `ATLAS_BRIGHTEN`, và khối `TT_Dado` trong `RoomModel.tsx`.)
+
+### 0.2 Atlas KHÔNG phải tất cả — còn lớp detail chạy bằng shader
+Atlas chỉ mang **ánh sáng**. **Vân bề mặt** được chồng thêm trong `RoomModel.tsx` bằng
+`onBeforeCompile`, dùng 3 file rời (không nằm trong GLB, không nằm trong atlas):
+
+| File | Dùng cho | Ghi chú |
+|---|---|---|
+| `truyenthong_floortile.webp` | sàn | tile Marble021, chiếu theo **world X/Z** (không theo UV0) nên mạch gạch luôn vuông với tường dù UV0 bị xéo |
+| `truyenthong_floor_nor.webp` | sàn | normal, tạo shading giả |
+| `truyenthong_wall_nor.webp` | tường | normal beige_wall_001 |
+
+Hệ quả: **“web = giống hệt bake” chỉ đúng với tầng ánh sáng.** Mạch gạch, grout, vân
+tường, sheen là **do code sinh ra** — muốn đổi thì sửa uniform trong `RoomModel.tsx`
+(`uTileSize`, `uGroutWidth`, `uGroutColor`, `uBumpStrength`…), **không phải bake lại**.
+Và khi upload R2 phải đủ **6 file**, không phải 2 — thiếu file detail thì sàn/tường phẳng
+trơn mà **không báo lỗi gì**.
 
 ## 1. ⚠️ Cạm bẫy chí mạng: UV Lightmap PACKED không nằm trong .blend
 - Mỗi atlas gộp nhiều mesh, mỗi mesh chiếm **một vùng UV2 riêng (packed, không chồng)**.

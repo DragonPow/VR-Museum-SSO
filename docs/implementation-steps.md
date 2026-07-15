@@ -1,5 +1,17 @@
 # Các bước triển khai (Implementation Steps)
 
+> ### 📜 TÀI LIỆU LẬP KẾ HOẠCH BAN ĐẦU — Wave 0→4 về cơ bản ĐÃ XONG (cập nhật 2026-07-15)
+>
+> Giữ lại để tra cấu trúc và tiêu chí nghiệm thu. **Đừng dùng như to-do list để làm lại từ đầu.**
+> Khác biệt lớn nhất so với kế hoạch:
+> - **S1.A** dự định dựng phòng bằng `templates/` parametric → thực tế phòng **load từ
+>   `truyenthong.glb`** (Blender, ánh sáng bake sẵn, render unlit). `templates/` chỉ còn là fallback.
+> - **S0.3** dự định slot có `transform` trong JSON → thực tế slot nằm trong GLB (`VM_Slot_TT_*`),
+>   viewer tự quét.
+> - Mới có **1 phòng** (`room-truyenthong`), chưa làm nhiều thời kỳ / nhiều phòng.
+>
+> Trạng thái thực tế: [cloudflare.md](cloudflare.md) · [asset-workflow.md](asset-workflow.md) · [blender-bake-and-color.md](blender-bake-and-color.md).
+
 Tài liệu giao cho agent để **implement**. Đọc kèm [CLAUDE.md](../CLAUDE.md) và [architecture-plan.md](architecture-plan.md).
 Mỗi step có: **Phụ thuộc** (phải xong trước) · **Song song với** · **Bàn giao** (file/kết quả) · **Việc làm** · **Nghiệm thu** (Definition of Done).
 

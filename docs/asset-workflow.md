@@ -53,4 +53,16 @@ Repo đang dùng model thật của dự án tại:
 content/models/truyenthong.glb
 ```
 
-Slot ảnh được nhúng sẵn trong model qua các mesh `VM_Slot_*` (đi kèm material `SlotCanvas`/`CR_SlotCanvas` cho mặt phẳng treo ảnh) — viewer tự quét mesh này để lấy vị trí/kích thước, không cần khai báo `transform` tay trong content JSON. Khi cần đổi model, chỉ cần thay file và cập nhật `modelUrl`, không cần viết lại viewer.
+**Chỉ có đúng MỘT phòng: `room-truyenthong`.** File `.blend` nguồn
+(`virtual_museum_rooms.blend`) còn các collection **`Hall`, `Side`, `Control`** nhưng đó là
+**phòng cũ đã bỏ** — không export, không có trên R2, không có trong `content.sample.json`.
+Chỉ các slot `VM_Slot_TT_*` là thật; `VM_Slot_HALL_*` / `VM_Slot_SIDE_*` / `VM_Slot_CTRL_*`
+bỏ qua. (Chi tiết + bẫy material `CR_*`: xem [blender-bake-and-color.md](blender-bake-and-color.md) §0.0.)
+
+Slot ảnh được nhúng sẵn trong model qua các mesh `VM_Slot_*` (đi kèm material
+`SlotCanvas`/`CR_SlotCanvas` cho mặt phẳng treo ảnh) — viewer tự quét mesh này để lấy
+vị trí/kích thước, không cần khai báo `transform` tay trong content JSON. Khi cần đổi model,
+chỉ cần thay file và cập nhật `modelUrl`, không cần viết lại viewer.
+
+Đi kèm GLB còn **5 file `.webp`** (atlas ánh sáng + texture detail) — đây là một bộ,
+phải upload đủ cùng nhau. Xem [cloudflare.md](cloudflare.md).

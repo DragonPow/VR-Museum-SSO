@@ -1,6 +1,22 @@
 # Bản thiết kế dự án phòng truyền thống số cho lễ kỷ niệm 50 năm
 
-## Khuyến nghị chốt
+> ## ⚠️ TÀI LIỆU LỊCH SỬ — ĐÃ BỊ THAY THẾ (SUPERSEDED)
+>
+> Đây là **bản khảo sát ban đầu**, giữ lại để tham khảo lý do cân nhắc từng phương án.
+> **Kết luận trong file này KHÔNG còn đúng với dự án hiện tại.**
+>
+> | File này đề xuất | Thực tế đang chạy |
+> |---|---|
+> | Panorama 360 + **Marzipano** / Pannellum | **3D thật bằng React Three Fiber** |
+> | Dựng phòng → render ảnh 360 equirectangular | Dựng phòng trong Blender → export **GLB** + **lightmap bake** |
+> | Decap CMS hoặc admin tối giản | Admin SPA riêng + Cloudflare Worker |
+>
+> Quyết định thay thế và lý do bác panorama: xem [architecture-plan.md](architecture-plan.md) §1.
+> Trạng thái thực tế hiện tại: [cloudflare.md](cloudflare.md) và [blender-bake-and-color.md](blender-bake-and-color.md).
+>
+> **Nếu bạn (hoặc agent) đang tìm hướng triển khai — đừng đọc file này, hãy đọc `architecture-plan.md`.**
+
+## Khuyến nghị chốt (đã lỗi thời — xem cảnh báo trên)
 
 Nếu mục tiêu của anh/chị là làm một **phòng truyền thống số đẹp, chạy mượt trên web, mở được trên mobile, chi phí gần như bằng 0 hoặc rất thấp, và đủ đơn giản để giao cho agent dựng toàn bộ**, thì tôi không khuyến nghị đi theo hướng **3D real-time đầy đủ** như một gallery WebGL “đi bộ tự do” kiểu Artsteps hoặc một scene React Three Fiber lớn ngay từ đầu. Hướng phù hợp nhất cho bài toán này là **panorama-based virtual tour**: mỗi “phòng” là một ảnh 360 đã được dựng sẵn, sau đó dùng hotspot, minimap, modal thông tin và timeline để tạo trải nghiệm giống BIDV hơn là chỉ một ảnh 360 trống. Đây chính là điểm cân bằng tốt nhất giữa **độ đẹp, tốc độ tải, khả năng làm chủ, và chi phí hạ tầng**. Marzipano được mô tả là một trình xem 360 “lightweight and high-performance”, có tool xuất sẵn web app từ bộ panorama; Pannellum cũng là trình xem panorama nhẹ, miễn phí, mã nguồn mở, có tour nhiều scene, hotspot và hỗ trợ device orientation trên mobile. citeturn8search1turn13search7turn12search7turn8search0turn12search2turn12search1
 

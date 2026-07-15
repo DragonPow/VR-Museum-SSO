@@ -1,11 +1,25 @@
 # Deploy Modes
 
+## Content Source Auto Mode
+
+Apps tự chọn nguồn content theo môi trường, có thể override bằng `VITE_CONTENT_MODE=local|github|cloudflare|static`.
+
+| Mode | Khi nào tự chọn | Web/Admin đọc từ đâu |
+|---|---|---|
+| `local` | `localhost` / `127.0.0.1` | File repo qua `/content/content.json`, fallback `/content/content.sample.json` |
+| `github` | host kết thúc bằng `github.io` | File đã build trong GitHub Pages: `<BASE>/content/content.json`, fallback sample |
+| `cloudflare` | có `VITE_ASSET_BASE_URL` hoặc admin production có `VITE_API_URL` | Web đọc `<R2>/content.json`; Admin đọc Worker `/api/draft` rồi publish lên R2 |
+| `static` | static host khác, không set R2 | `<BASE>/content/content.json`, fallback sample |
+
+Local admin tự serve thư mục repo `/content`, nên không cần mở web dev server chỉ để admin thấy đúng phòng/model local.
+
+
 ## Sample Mode
 
 Muc dich: deploy demo len GitHub Pages hoac bat ky static host nao ma khong co upload/admin production.
 
 - Khong can `VITE_ASSET_BASE_URL`.
-- Web tu doc `content/content.sample.json` trong repo.
+- Web tu doc `content/content.json` trong repo, fallback `content/content.sample.json`.
 - Model mau duoc lay tu `content/models/truyenthong.glb`.
 - Neu deploy duoi sub-path, set `VITE_BASE_URL`.
 

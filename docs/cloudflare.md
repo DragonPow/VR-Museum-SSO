@@ -11,7 +11,9 @@ với repo này, nhánh production = `main`, **push là tự build + deploy**.
 - **Chạy R2 MODE**: `VITE_ASSET_BASE_URL = https://pub-45a113bbee6b43d58d9cc91bd6e1189c.r2.dev`
   → app đọc **TỪ R2** (không dùng asset trong Pages build):
   - `<R2>/content.json`
-  - `<R2>/content/models/truyenthong.glb`, `truyenthong_combined.webp`, `truyenthong_props.webp`
+  - `<R2>/content/models/truyenthong.glb`, `truyenthong_combined.webp`, `truyenthong_props.webp`,
+    `truyenthong_wall_nor.webp`, `truyenthong_floortile.webp`, `truyenthong_floor_nor.webp`
+    (→ **6 file**, không phải 3 — thiếu mấy file detail thì tường/sàn mất vân, không báo lỗi rõ ràng)
   - `<R2>/media/*`
 
 ### 2. `virtual-museum-admin` — Cloudflare Pages (admin CMS)
@@ -39,10 +41,18 @@ với repo này, nhánh production = `main`, **push là tự build + deploy**.
   đổi tên version** vì URL R2 public cache mạnh — ghi đè cùng key KHÔNG tự xoá cache.
 
 ## Kích thước file repo (để đối chiếu với R2)
-- `truyenthong.glb` = 1,084,500 B
-- `truyenthong_combined.webp` = 445,930 B
-- `truyenthong_props.webp` = 309,630 B
+> Cập nhật 2026-07-15. **Kiểm lại bằng `ls -l content/models` trước khi tin số này** — mỗi lần
+> export GLB / rebake atlas là số đổi, và danh sách này đã từng bị lệch ~10x mà không ai sửa.
+- `truyenthong.glb` = 10,637,744 B  (≈ 10.1 MB — **vượt giới hạn 25 MiB/asset của Pages? KHÔNG**, nhưng đã nặng hơn bản cũ ~1 MB rất nhiều)
+- `truyenthong_combined.webp` = 445,930 B   (atlas lightmap shell)
+- `truyenthong_props.webp` = 309,630 B      (atlas lightmap props)
+- `truyenthong_wall_nor.webp` = 1,351,346 B (normal map tường — lớp detail)
+- `truyenthong_floortile.webp` = 24,876 B   (tile Marble021, chiếu world X/Z)
+- `truyenthong_floor_nor.webp` = 1,980 B    (normal map sàn)
+
 (Nếu file trên R2 khác các số này → R2 đang giữ bản cũ/khác → upload lại.)
+
+⚠️ `truyenthong.glb.bak` trong repo **không được upload lên R2** — chỉ là bản sao lưu cục bộ.
 
 ## Local dev
 - Web `:5173` — **sample mode** (đọc `content.sample.json` + `content/models` trong repo).

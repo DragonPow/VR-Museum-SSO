@@ -1,6 +1,23 @@
 # Kế hoạch kiến trúc chi tiết — Phòng Truyền Thống Số 50 Năm
 
-Tài liệu này mở rộng từ [CLAUDE.md](../CLAUDE.md). Đề bài: [requirement.md](requirement.md). Phân tích nền: [solution.md](solution.md).
+Tài liệu này mở rộng từ [CLAUDE.md](../CLAUDE.md). Đề bài: [requirement.md](requirement.md). Phân tích nền: [solution.md](solution.md) (⚠️ **đã superseded**, chỉ đọc để tham khảo lịch sử).
+
+> ### 📌 Kiến trúc tổng thể vẫn đúng — nhưng 3 điểm dưới đây đã khác thực tế (cập nhật 2026-07-15)
+>
+> 1. **Phòng KHÔNG phải “code parametric” nữa.** §1 và §5 viết rằng agent dựng phòng bằng
+>    code (`templates/` dựng tường/sàn/trần) và coi “phải dùng Blender” là nhược điểm của
+>    panorama. Thực tế: **phòng được dựng trong Blender → export `truyenthong.glb`**, ánh
+>    sáng **bake sẵn bằng Cycles** vào atlas, web render **unlit**. `templates/` chỉ còn
+>    là fallback. → [asset-workflow.md](asset-workflow.md), [blender-bake-and-color.md](blender-bake-and-color.md).
+> 2. **Slot không khai `transform` trong JSON.** §4 nói slot có toạ độ trong content JSON;
+>    thực tế vị trí/kích thước **nằm trong GLB** (mesh `VM_Slot_TT_*`), viewer tự quét.
+>    JSON chỉ giữ `id`, `zone`, `itemId`, `visible`…
+> 3. **Mới có 1 phòng, không phải 8.** Chỉ `room-truyenthong` là thật. Các phòng `Hall` /
+>    `Side` / `Control` trong file `.blend` là **đồ cũ đã bỏ**. Mọi ước lượng “8 phòng”,
+>    portal chuyển phòng, minimap nhiều phòng … hiện chưa dùng đến.
+>
+> Phần còn lại (monorepo, R2/Pages/Worker, ngân sách perf, data model 4 tầng, slot cố định)
+> vẫn đúng.
 
 ---
 
