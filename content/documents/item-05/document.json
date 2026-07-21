@@ -1,0 +1,26 @@
+{
+  "id": "item-05",
+  "documentKey": "item-05",
+  "title": "Chào mừng 50 năm",
+  "year": 2025,
+  "periodId": "period-1975-1985",
+  "summary": "Lễ kỷ niệm 50 năm thành lập công ty.",
+  "body": "Năm 2025 đánh dấu nửa thế kỷ xây dựng và phát triển. Công ty hiện có hơn 5.000 CBNV, hoạt động tại 20 tỉnh thành với doanh thu hàng ngàn tỷ đồng mỗi năm.",
+  "tags": [
+    "kỷ niệm",
+    "50 năm"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Ban Tổ chức",
+  "priority": 5
+}

@@ -1,0 +1,26 @@
+{
+  "id": "item-04",
+  "documentKey": "item-04",
+  "title": "Kỷ niệm 20 năm thành lập",
+  "year": 1995,
+  "periodId": "period-1975-1985",
+  "summary": "Lễ kỷ niệm 20 năm thành lập với hơn 500 CBNV.",
+  "body": "Lễ kỷ niệm 20 năm thành lập được tổ chức long trọng tại Cung Văn hóa Lao động với sự tham dự của lãnh đạo Bộ, đại diện các đối tác và toàn thể cán bộ nhân viên.",
+  "tags": [
+    "kỷ niệm",
+    "20 năm"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Phòng Hành chính",
+  "priority": 4
+}

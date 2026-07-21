@@ -1,0 +1,38 @@
+{
+  "id": "demo-multi-image-page",
+  "documentKey": "demo-multi-image-page",
+  "title": "Demo một page có nhiều ảnh",
+  "year": 2026,
+  "periodId": "period-1975-1985",
+  "summary": "Một tư liệu duy nhất có nhiều ảnh trong cùng một page để kiểm tra scroll detail.",
+  "body": "Page này dùng để kiểm tra layout khi một tài liệu có 2-3 ảnh và nội dung dài hơn bình thường. Người xem sẽ scroll trong vùng ảnh/detail để xem hết các tư liệu hình ảnh đi kèm.\n\nNội dung có thể là phần mô tả bối cảnh, chú thích nghiệp vụ, trích dẫn tài liệu hoặc ghi chú biên tập. Admin có thể bổ sung thêm ảnh phụ trong màn hình sửa tư liệu.",
+  "tags": [
+    "demo",
+    "nhiều ảnh",
+    "scroll"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1",
+    "photo2",
+    "photo3"
+  ],
+  "images": [
+    {
+      "id": "photo1",
+      "caption": "Ảnh chính của tư liệu"
+    },
+    {
+      "id": "photo2",
+      "caption": "Ảnh phụ thứ hai"
+    },
+    {
+      "id": "photo3",
+      "caption": "Ảnh phụ thứ ba"
+    }
+  ],
+  "source": "Demo nhiều ảnh",
+  "priority": 22
+}

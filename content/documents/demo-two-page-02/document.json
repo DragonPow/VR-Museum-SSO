@@ -1,0 +1,26 @@
+{
+  "id": "demo-two-page-02",
+  "documentKey": "demo-two-page-02",
+  "title": "Demo tài liệu 2 trang - Trang 2",
+  "year": 2025,
+  "periodId": "period-1975-1985",
+  "summary": "Trang thứ hai trong cùng một slot.",
+  "body": "Người quản trị chỉ cần gán thêm document vào slot và sắp thứ tự. Viewer sẽ tự hiện phân trang 1 / 2.",
+  "tags": [
+    "demo",
+    "multi-page"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Demo multi-page",
+  "priority": 21
+}

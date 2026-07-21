@@ -1,0 +1,26 @@
+{
+  "id": "item-03",
+  "documentKey": "item-03",
+  "title": "Hội nghị toàn quốc 1985",
+  "year": 1985,
+  "periodId": "period-1975-1985",
+  "summary": "Hội nghị mở rộng sản xuất lần đầu tiên quy mô toàn quốc.",
+  "body": "Năm 1985, công ty tổ chức hội nghị toàn quốc lần đầu tiên với sự tham gia của hơn 200 đại biểu từ các chi nhánh trên khắp cả nước.",
+  "tags": [
+    "hội nghị",
+    "mở rộng"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Phòng Truyền thông",
+  "priority": 3
+}

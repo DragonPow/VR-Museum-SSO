@@ -1,0 +1,26 @@
+{
+  "id": "item-02",
+  "documentKey": "item-02",
+  "title": "Xưởng sản xuất đầu tiên",
+  "year": 1978,
+  "periodId": "period-1975-1985",
+  "summary": "Xưởng sản xuất đầu tiên đi vào hoạt động năm 1978.",
+  "body": "Với diện tích 500m², xưởng sản xuất đầu tiên của công ty tại Hà Nội đã đi vào hoạt động, đánh dấu bước chuyển từ thủ công sang sản xuất có quy trình.",
+  "tags": [
+    "sản xuất",
+    "xưởng"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Phòng kỹ thuật",
+  "priority": 2
+}

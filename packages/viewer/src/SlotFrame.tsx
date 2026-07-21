@@ -3,6 +3,7 @@ import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { Slot, DocumentIndexItem } from '@vm/shared'
 import { loadTexture, greyTexture } from './TextureManager.js'
+import { HERO_SLOT_ID } from './slotIds.js'
 
 interface Props {
   slot: Slot
@@ -30,7 +31,9 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   const frameColor = FRAME_COLOR[frameStyle]
   // Fixed backdrop panel (the wide hero banner): show the full-res image exactly as-is
   // — unlit, uncropped, not clickable — so it reads like a real printed panel on the wall.
-  const isBackdrop = slot.id === 'VM_Slot_TT_9000' || slot.name === 'TT_9000'
+  const isBackdrop = slot.id === HERO_SLOT_ID
+  // K9 is mounted on the entrance wall whose room-facing side is local -Z.
+  // Keep the live backdrop slightly in front of the wall to avoid z-fighting haze.
   const canvasZ = isBackdrop ? -0.035 : (frameColor === null ? 0 : FRAME_BASE + FRAME_DEPTH - 0.01)
 
   useEffect(() => {
@@ -58,15 +61,24 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     if (!url || !matRef.current) return
     loadTexture(url, (tex) => {
       if (!matRef.current) return
+      // EVERY slot texture must be tagged sRGB, not just the backdrop -- otherwise the
+      // bytes are read as linear and the photo's gamma is wrong.
+      tex.colorSpace = THREE.SRGBColorSpace
       if (isBackdrop) {
-        tex.colorSpace = THREE.SRGBColorSpace
         tex.generateMipmaps = false
         tex.minFilter = THREE.LinearFilter
         tex.magFilter = THREE.LinearFilter
-        tex.needsUpdate = true
+        tex.anisotropy = 8
       }
+      tex.needsUpdate = true
       matRef.current.map = tex
-      matRef.current.color.set('#ffffff')
+      if (isBackdrop) {
+        // Brighten the K9 image itself instead of adding a translucent overlay; this
+        // keeps the backdrop fresh without the white, cloudy glass look.
+        matRef.current.color.setRGB(1.18, 1.18, 1.18)
+      } else {
+        matRef.current.color.set('#ffffff')
+      }
       matRef.current.needsUpdate = true
       invalidate()
     })
@@ -85,6 +97,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
         position={[0, 0, canvasZ]}
+        renderOrder={isBackdrop ? 20 : 0}
         {...(documentItem && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
@@ -98,15 +111,22 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
             map={documentItem ? greyTexture() : null}
             color={documentItem ? '#ffffff' : '#d8cfbf'}
             toneMapped={false}
+            depthTest={true}
+            depthWrite={!isBackdrop}
             side={THREE.DoubleSide}
           />
         ) : (
-          <meshLambertMaterial
+          // UNLIT like the room shell. A lit material here was the bug: the baked room
+          // only has ambientLight 0.32, and three r155+ divides ambient irradiance by PI
+          // (BRDF_Lambert), so every photo rendered at 0.32/PI ~= 10% albedo and then got
+          // squashed again by the global AgX tone mapping -- while the walls/floor sit at
+          // 100% (MeshBasicMaterial + toneMapped:false). Result: photos looked pitch black
+          // next to a white wall. The hero slot was already on this path and looked right.
+          <meshBasicMaterial
             ref={matRef as never}
             map={viewerTextureUrl ? greyTexture() : null}
-            color={documentItem ? '#d8cfbf' : '#d8cfbf'}
-            emissive={hovered ? '#333300' : '#000000'}
-            emissiveIntensity={hovered ? 0.15 : 0}
+            color={viewerTextureUrl ? '#ffffff' : '#d8cfbf'}
+            toneMapped={false}
             side={THREE.DoubleSide}
           />
         )}

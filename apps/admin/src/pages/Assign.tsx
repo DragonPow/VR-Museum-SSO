@@ -210,17 +210,12 @@ export function Assign() {
   )
 }
 
-const ZONE_ORDER = ['Khu 1 — gần cửa', 'Khu 2', 'Khu 3', 'Khu 4', 'Khu 5 — cuối tường trái', 'Tường trái', 'Hốc đỏ — Cờ', 'Hốc đỏ — Bằng khen', 'Tường cuối phòng', 'Khu bên phải']
+const ZONE_ORDER = ['Khu 1', 'Khu 2', 'Khu 3', 'Khu 4', 'Khu 5', 'Khu 6', 'Khu 7', 'Khu 8', 'Khu 9']
 
+/** Slot ids look like `VM_Slot_K3_MT_02` (name: `K3_MT_02`). Zone = the K number. */
 function fallbackZone(s: Slot): string {
-  const m = /(\d+)(?:_(Flag|Cert))?/.exec(s.name || s.id)
-  if (!m) return 'Khác'
-  const num = Number(m[1])
-  if (m[2] === 'Flag') return 'Hốc đỏ — Cờ'
-  if (m[2] === 'Cert') return 'Hốc đỏ — Bằng khen'
-  if (num >= 1000 && num < 2000) return 'Tường cuối phòng'
-  if (num >= 2000) return 'Khu bên phải'
-  return 'Tường trái'
+  const m = /K(\d)_(?:CD|MT|MP|AT|AD)_\d+/.exec(s.name || s.id)
+  return m ? `Khu ${m[1]}` : 'Khác'
 }
 
 function groupSlotsByZone(slots: Slot[]): { zone: string; slots: Slot[] }[] {

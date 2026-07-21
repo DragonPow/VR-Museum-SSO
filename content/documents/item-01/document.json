@@ -1,0 +1,26 @@
+{
+  "id": "item-01",
+  "documentKey": "item-01",
+  "title": "Ngày thành lập công ty",
+  "year": 1975,
+  "periodId": "period-1975-1985",
+  "summary": "Lễ thành lập công ty ngày 30/4/1975.",
+  "body": "Ngày 30 tháng 4 năm 1975, công ty chính thức được thành lập với 12 nhân viên đầu tiên, đặt nền móng cho chặng đường 50 năm phát triển.",
+  "tags": [
+    "thành lập",
+    "lịch sử"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Lưu trữ công ty",
+  "priority": 1
+}

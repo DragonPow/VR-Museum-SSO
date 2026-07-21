@@ -5,8 +5,11 @@ import { getRoomSurfaces, getRoomDimensions } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
 import { RoomModel } from './RoomModel.js'
-import type { ExtractedSlot } from './RoomModel.js'
+import { HERO_SLOT_ID } from './slotIds.js'
+import type { ExtractedSlot, TitleAnchor } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
+import { ZoneTitle } from './ZoneTitle.js'
+import { ZONE_TITLES } from './zoneTitles.js'
 import { FloorPortal } from './FloorPortal.js'
 import { NavController } from './NavController.js'
 import type { RoomBounds } from './NavController.js'
@@ -79,6 +82,10 @@ export function RoomScene({
   const [glbBounds, setGlbBounds] = useState<RoomBounds | null>(null)
   const handleBoundsExtracted = useCallback((b: RoomBounds) => {
     setGlbBounds(b)
+  }, [])
+  const [titleAnchors, setTitleAnchors] = useState<TitleAnchor[]>([])
+  const handleTitleAnchors = useCallback((a: TitleAnchor[]) => {
+    setTitleAnchors(a)
   }, [])
   const knownSlotIds = useMemo(() => room.slots.map((s) => s.id), [room.slots])
 
@@ -196,6 +203,7 @@ export function RoomScene({
           onSlotsExtracted={handleSlotsExtracted}
           onObstaclesExtracted={handleObstaclesExtracted}
           onBoundsExtracted={handleBoundsExtracted}
+          onTitleAnchorsExtracted={handleTitleAnchors}
         />
       ) : (
         <>
@@ -210,7 +218,7 @@ export function RoomScene({
       {resolvedSlots.map((slot) => {
         const firstId = slot.documentIds?.[0]
         const document = firstId ? documents[firstId] ?? null : null
-        const variant = (slot.id === 'VM_Slot_TT_9000' || slot.name === 'TT_9000') ? 'full' : (slot.viewerVariant ?? 'wall')
+        const variant = slot.id === HERO_SLOT_ID ? 'full' : (slot.viewerVariant ?? 'wall')
         const viewerTextureUrl = resolveDocumentImageVariantUrl(document?.documentKey ?? null, document?.viewerImageId ?? null, variant, { assetBaseUrl })
 
         return (
@@ -221,6 +229,19 @@ export function RoomScene({
             viewerTextureUrl={viewerTextureUrl}
             onSelect={(slotId) => onSlotSelect(slotId, (slot.documentIds ?? []).map((id) => documents[id]).filter((item): item is DocumentIndexItem => Boolean(item)))}
             hideLabel={hideLabels}
+          />
+        )
+      })}
+
+      {titleAnchors.map((t) => {
+        const label = ZONE_TITLES[t.zoneKey]
+        if (!label) return null
+        return (
+          <ZoneTitle
+            key={t.zoneKey}
+            position={[t.position.x, t.position.y, t.position.z]}
+            rotation={[t.rotation.x, t.rotation.y, t.rotation.z]}
+            text={label}
           />
         )
       })}

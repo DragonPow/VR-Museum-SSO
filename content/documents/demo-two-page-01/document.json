@@ -1,0 +1,26 @@
+{
+  "id": "demo-two-page-01",
+  "documentKey": "demo-two-page-01",
+  "title": "Demo tài liệu 2 trang - Trang 1",
+  "year": 1995,
+  "periodId": "period-1975-1985",
+  "summary": "Trang đầu tiên của một slot có nhiều tài liệu.",
+  "body": "Slot này đang gán nhiều document cùng lúc. Mỗi document tương ứng một page trong modal detail.",
+  "tags": [
+    "demo",
+    "multi-page"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Demo multi-page",
+  "priority": 20
+}

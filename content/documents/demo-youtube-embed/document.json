@@ -1,0 +1,28 @@
+{
+  "id": "demo-youtube-embed",
+  "documentKey": "demo-youtube-embed",
+  "title": "Demo slot nhúng YouTube",
+  "year": 2024,
+  "periodId": "period-1975-1985",
+  "summary": "Slot này mở modal có iframe YouTube.",
+  "body": "Click vào khung để xem thử nội dung nhúng bằng `embedUrl`. Ảnh trên tường chỉ là preview nhẹ, iframe chỉ tải khi mở modal.",
+  "tags": [
+    "demo",
+    "youtube",
+    "iframe"
+  ],
+  "mediaType": "youtube",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "embedUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  "source": "YouTube demo",
+  "priority": 7
+}

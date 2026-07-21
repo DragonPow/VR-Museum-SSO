@@ -67,6 +67,7 @@ export function greyTexture(): THREE.Texture {
   if (!_grey) {
     const data = new Uint8Array([180, 180, 180, 255])
     _grey = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat)
+    _grey.colorSpace = THREE.SRGBColorSpace
     _grey.needsUpdate = true
   }
   return _grey

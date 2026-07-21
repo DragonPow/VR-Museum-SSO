@@ -1,0 +1,26 @@
+{
+  "id": "demo-image-local",
+  "documentKey": "demo-image-local",
+  "title": "Demo slot ảnh local",
+  "year": 1985,
+  "periodId": "period-1975-1985",
+  "summary": "Slot ảnh dùng file demo trong /content/images local.",
+  "body": "Ảnh này được lấy trực tiếp từ thư mục local `/content/images/photo-1985.png` để kiểm tra luồng treo ảnh lên slot cố định.",
+  "tags": [
+    "demo",
+    "ảnh local"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "source": "Demo local",
+  "priority": 6
+}

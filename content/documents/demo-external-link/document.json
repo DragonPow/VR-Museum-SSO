@@ -1,0 +1,28 @@
+{
+  "id": "demo-external-link",
+  "documentKey": "demo-external-link",
+  "title": "Demo slot đường dẫn ngoài",
+  "year": 2026,
+  "periodId": "period-1975-1985",
+  "summary": "Slot này hiển thị nút mở đường dẫn bất kỳ trong modal.",
+  "body": "Click vào khung để mở modal, sau đó bấm nút liên kết để kiểm tra hành vi mở trang ngoài ở tab mới.",
+  "tags": [
+    "demo",
+    "external link"
+  ],
+  "mediaType": "external",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1"
+    }
+  ],
+  "externalUrl": "https://example.com",
+  "externalLabel": "Mở link demo",
+  "source": "Demo external URL",
+  "priority": 8
+}

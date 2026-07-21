@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updatedAt": "2026-07-15T00:00:00.000Z",
+  "updatedAt": "2026-07-15T14:33:51.000Z",
   "periods": [
     {
       "id": "period-1975-1985",
@@ -60,210 +60,178 @@
       ],
       "slots": [
         {
-          "id": "VM_Slot_TT_001",
+          "id": "VM_Slot_K1_CD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_001",
+          "name": "K1_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_002",
+          "id": "VM_Slot_K1_CD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_002",
+          "name": "K1_CD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_003",
+          "id": "VM_Slot_K1_CD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_003",
+          "name": "K1_CD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_004",
+          "id": "VM_Slot_K1_CD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_004",
+          "name": "K1_CD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 2",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_005",
+          "id": "VM_Slot_K1_CD_05",
           "roomId": "room-truyenthong",
-          "name": "TT_005",
+          "name": "K1_CD_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 2",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_006",
-          "roomId": "room-truyenthong",
-          "name": "TT_006",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": [
             "demo-image-local"
           ]
         },
         {
-          "id": "VM_Slot_TT_007",
+          "id": "VM_Slot_K1_CD_06",
           "roomId": "room-truyenthong",
-          "name": "TT_007",
+          "name": "K1_CD_06",
           "type": "video",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": [
             "demo-youtube-embed"
           ]
         },
         {
-          "id": "VM_Slot_TT_008",
+          "id": "VM_Slot_K1_CD_07",
           "roomId": "room-truyenthong",
-          "name": "TT_008",
-          "type": "text",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 1 — gần cửa",
-          "documentIds": [
-            "demo-external-link"
-          ]
-        },
-        {
-          "id": "VM_Slot_TT_009",
-          "roomId": "room-truyenthong",
-          "name": "TT_009",
+          "name": "K1_CD_07",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 2",
+          "zone": "Khu 1",
           "documentIds": [
             "demo-two-page-01",
             "demo-two-page-02"
           ]
         },
         {
-          "id": "VM_Slot_TT_010",
+          "id": "VM_Slot_K1_CD_08",
           "roomId": "room-truyenthong",
-          "name": "TT_010",
+          "name": "K1_CD_08",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 2",
+          "zone": "Khu 1",
           "documentIds": [
             "demo-multi-image-page"
           ]
         },
         {
-          "id": "VM_Slot_TT_011",
+          "id": "VM_Slot_K1_MT_01",
           "roomId": "room-truyenthong",
-          "name": "TT_011",
+          "name": "K1_MT_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_012",
+          "id": "VM_Slot_K1_MT_02",
           "roomId": "room-truyenthong",
-          "name": "TT_012",
+          "name": "K1_MT_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_013",
+          "id": "VM_Slot_K1_MT_03",
           "roomId": "room-truyenthong",
-          "name": "TT_013",
+          "name": "K1_MT_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_014",
+          "id": "VM_Slot_K1_MT_04",
           "roomId": "room-truyenthong",
-          "name": "TT_014",
+          "name": "K1_MT_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_015",
+          "id": "VM_Slot_K1_MP_01",
           "roomId": "room-truyenthong",
-          "name": "TT_015",
+          "name": "K1_MP_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_016",
+          "id": "VM_Slot_K1_MP_02",
           "roomId": "room-truyenthong",
-          "name": "TT_016",
+          "name": "K1_MP_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 1 — gần cửa",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_017",
+          "id": "VM_Slot_K1_MP_03",
           "roomId": "room-truyenthong",
-          "name": "TT_017",
+          "name": "K1_MP_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 2",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_018",
+          "id": "VM_Slot_K1_MP_04",
           "roomId": "room-truyenthong",
-          "name": "TT_018",
+          "name": "K1_MP_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 2",
+          "zone": "Khu 1",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_019",
+          "id": "VM_Slot_K2_CD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_019",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 2",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_020",
-          "roomId": "room-truyenthong",
-          "name": "TT_020",
+          "name": "K2_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -271,9 +239,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_021",
+          "id": "VM_Slot_K2_CD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_021",
+          "name": "K2_CD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -281,9 +249,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_022",
+          "id": "VM_Slot_K2_CD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_022",
+          "name": "K2_CD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -291,9 +259,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_023",
+          "id": "VM_Slot_K2_CD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_023",
+          "name": "K2_CD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -301,9 +269,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_024",
+          "id": "VM_Slot_K2_CD_05",
           "roomId": "room-truyenthong",
-          "name": "TT_024",
+          "name": "K2_CD_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -311,9 +279,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_025",
+          "id": "VM_Slot_K2_CD_06",
           "roomId": "room-truyenthong",
-          "name": "TT_025",
+          "name": "K2_CD_06",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -321,29 +289,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_026",
+          "id": "VM_Slot_K2_CD_07",
           "roomId": "room-truyenthong",
-          "name": "TT_026",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 3",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_027",
-          "roomId": "room-truyenthong",
-          "name": "TT_027",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 3",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_028",
-          "roomId": "room-truyenthong",
-          "name": "TT_028",
+          "name": "K2_CD_07",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -351,9 +299,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_029",
+          "id": "VM_Slot_K2_CD_08",
           "roomId": "room-truyenthong",
-          "name": "TT_029",
+          "name": "K2_CD_08",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -361,9 +309,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_030",
+          "id": "VM_Slot_K2_MT_01",
           "roomId": "room-truyenthong",
-          "name": "TT_030",
+          "name": "K2_MT_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -371,29 +319,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_031",
+          "id": "VM_Slot_K2_MT_02",
           "roomId": "room-truyenthong",
-          "name": "TT_031",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 3",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_032",
-          "roomId": "room-truyenthong",
-          "name": "TT_032",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 3",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_033",
-          "roomId": "room-truyenthong",
-          "name": "TT_033",
+          "name": "K2_MT_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -401,9 +329,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_034",
+          "id": "VM_Slot_K2_MT_03",
           "roomId": "room-truyenthong",
-          "name": "TT_034",
+          "name": "K2_MT_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -411,9 +339,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_035",
+          "id": "VM_Slot_K2_MT_04",
           "roomId": "room-truyenthong",
-          "name": "TT_035",
+          "name": "K2_MT_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -421,9 +349,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_036",
+          "id": "VM_Slot_K2_MP_01",
           "roomId": "room-truyenthong",
-          "name": "TT_036",
+          "name": "K2_MP_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -431,9 +359,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_037",
+          "id": "VM_Slot_K2_MP_02",
           "roomId": "room-truyenthong",
-          "name": "TT_037",
+          "name": "K2_MP_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -441,9 +369,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_038",
+          "id": "VM_Slot_K2_MP_03",
           "roomId": "room-truyenthong",
-          "name": "TT_038",
+          "name": "K2_MP_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -451,9 +379,19 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_039",
+          "id": "VM_Slot_K2_MP_04",
           "roomId": "room-truyenthong",
-          "name": "TT_039",
+          "name": "K2_MP_04",
+          "type": "image",
+          "frameStyle": "classic",
+          "visible": true,
+          "zone": "Khu 2",
+          "documentIds": []
+        },
+        {
+          "id": "VM_Slot_K3_CD_01",
+          "roomId": "room-truyenthong",
+          "name": "K3_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -461,9 +399,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_040",
+          "id": "VM_Slot_K3_CD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_040",
+          "name": "K3_CD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -471,9 +409,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_041",
+          "id": "VM_Slot_K3_CD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_041",
+          "name": "K3_CD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -481,9 +419,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_042",
+          "id": "VM_Slot_K3_CD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_042",
+          "name": "K3_CD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -491,9 +429,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_043",
+          "id": "VM_Slot_K3_CD_05",
           "roomId": "room-truyenthong",
-          "name": "TT_043",
+          "name": "K3_CD_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -501,9 +439,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_044",
+          "id": "VM_Slot_K3_CD_06",
           "roomId": "room-truyenthong",
-          "name": "TT_044",
+          "name": "K3_CD_06",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -511,9 +449,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_045",
+          "id": "VM_Slot_K3_CD_07",
           "roomId": "room-truyenthong",
-          "name": "TT_045",
+          "name": "K3_CD_07",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -521,9 +459,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_046",
+          "id": "VM_Slot_K3_CD_08",
           "roomId": "room-truyenthong",
-          "name": "TT_046",
+          "name": "K3_CD_08",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -531,39 +469,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_047",
+          "id": "VM_Slot_K3_MT_01",
           "roomId": "room-truyenthong",
-          "name": "TT_047",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 4",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_048",
-          "roomId": "room-truyenthong",
-          "name": "TT_048",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 4",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_049",
-          "roomId": "room-truyenthong",
-          "name": "TT_049",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 4",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_050",
-          "roomId": "room-truyenthong",
-          "name": "TT_050",
+          "name": "K3_MT_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -571,9 +479,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_051",
+          "id": "VM_Slot_K3_MT_02",
           "roomId": "room-truyenthong",
-          "name": "TT_051",
+          "name": "K3_MT_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -581,39 +489,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_052",
+          "id": "VM_Slot_K3_MT_03",
           "roomId": "room-truyenthong",
-          "name": "TT_052",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 4",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_053",
-          "roomId": "room-truyenthong",
-          "name": "TT_053",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 4",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_054",
-          "roomId": "room-truyenthong",
-          "name": "TT_054",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 4",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_055",
-          "roomId": "room-truyenthong",
-          "name": "TT_055",
+          "name": "K3_MT_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -621,9 +499,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_056",
+          "id": "VM_Slot_K3_MT_04",
           "roomId": "room-truyenthong",
-          "name": "TT_056",
+          "name": "K3_MT_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -631,9 +509,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_057",
+          "id": "VM_Slot_K3_MP_01",
           "roomId": "room-truyenthong",
-          "name": "TT_057",
+          "name": "K3_MP_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -641,9 +519,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_058",
+          "id": "VM_Slot_K3_MP_02",
           "roomId": "room-truyenthong",
-          "name": "TT_058",
+          "name": "K3_MP_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -651,9 +529,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_059",
+          "id": "VM_Slot_K3_MP_03",
           "roomId": "room-truyenthong",
-          "name": "TT_059",
+          "name": "K3_MP_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -661,9 +539,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_060",
+          "id": "VM_Slot_K3_MP_04",
           "roomId": "room-truyenthong",
-          "name": "TT_060",
+          "name": "K3_MP_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -671,9 +549,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_061",
+          "id": "VM_Slot_K4_CD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_061",
+          "name": "K4_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -681,9 +559,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_062",
+          "id": "VM_Slot_K4_CD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_062",
+          "name": "K4_CD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -691,9 +569,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_063",
+          "id": "VM_Slot_K4_CD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_063",
+          "name": "K4_CD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -701,9 +579,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_064",
+          "id": "VM_Slot_K4_CD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_064",
+          "name": "K4_CD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -711,9 +589,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_065",
+          "id": "VM_Slot_K4_CD_05",
           "roomId": "room-truyenthong",
-          "name": "TT_065",
+          "name": "K4_CD_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -721,9 +599,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_066",
+          "id": "VM_Slot_K4_CD_06",
           "roomId": "room-truyenthong",
-          "name": "TT_066",
+          "name": "K4_CD_06",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -731,9 +609,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_067",
+          "id": "VM_Slot_K4_CD_07",
           "roomId": "room-truyenthong",
-          "name": "TT_067",
+          "name": "K4_CD_07",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -741,9 +619,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_068",
+          "id": "VM_Slot_K4_CD_08",
           "roomId": "room-truyenthong",
-          "name": "TT_068",
+          "name": "K4_CD_08",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -751,39 +629,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_069",
+          "id": "VM_Slot_K4_MT_01",
           "roomId": "room-truyenthong",
-          "name": "TT_069",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_070",
-          "roomId": "room-truyenthong",
-          "name": "TT_070",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_071",
-          "roomId": "room-truyenthong",
-          "name": "TT_071",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_072",
-          "roomId": "room-truyenthong",
-          "name": "TT_072",
+          "name": "K4_MT_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -791,9 +639,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_073",
+          "id": "VM_Slot_K4_MT_02",
           "roomId": "room-truyenthong",
-          "name": "TT_073",
+          "name": "K4_MT_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -801,39 +649,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_074",
+          "id": "VM_Slot_K4_MT_03",
           "roomId": "room-truyenthong",
-          "name": "TT_074",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_075",
-          "roomId": "room-truyenthong",
-          "name": "TT_075",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_076",
-          "roomId": "room-truyenthong",
-          "name": "TT_076",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_077",
-          "roomId": "room-truyenthong",
-          "name": "TT_077",
+          "name": "K4_MT_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -841,9 +659,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_078",
+          "id": "VM_Slot_K4_MT_04",
           "roomId": "room-truyenthong",
-          "name": "TT_078",
+          "name": "K4_MT_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -851,9 +669,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_079",
+          "id": "VM_Slot_K4_MP_01",
           "roomId": "room-truyenthong",
-          "name": "TT_079",
+          "name": "K4_MP_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -861,9 +679,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_080",
+          "id": "VM_Slot_K4_MP_02",
           "roomId": "room-truyenthong",
-          "name": "TT_080",
+          "name": "K4_MP_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -871,9 +689,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_081",
+          "id": "VM_Slot_K4_MP_03",
           "roomId": "room-truyenthong",
-          "name": "TT_081",
+          "name": "K4_MP_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -881,9 +699,9 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_082",
+          "id": "VM_Slot_K4_MP_04",
           "roomId": "room-truyenthong",
-          "name": "TT_082",
+          "name": "K4_MP_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
@@ -891,373 +709,313 @@
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_083",
+          "id": "VM_Slot_K5_CD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_083",
+          "name": "K5_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_084",
+          "id": "VM_Slot_K5_CD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_084",
+          "name": "K5_CD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_085",
+          "id": "VM_Slot_K5_CD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_085",
+          "name": "K5_CD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_086",
+          "id": "VM_Slot_K5_CD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_086",
+          "name": "K5_CD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_087",
+          "id": "VM_Slot_K5_CD_05",
           "roomId": "room-truyenthong",
-          "name": "TT_087",
+          "name": "K5_CD_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_088",
+          "id": "VM_Slot_K5_CD_06",
           "roomId": "room-truyenthong",
-          "name": "TT_088",
+          "name": "K5_CD_06",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu 5 — cuối tường trái",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1000",
+          "id": "VM_Slot_K5_CD_07",
           "roomId": "room-truyenthong",
-          "name": "TT_1000",
+          "name": "K5_CD_07",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1001",
+          "id": "VM_Slot_K5_CD_08",
           "roomId": "room-truyenthong",
-          "name": "TT_1001",
+          "name": "K5_CD_08",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1002",
+          "id": "VM_Slot_K5_CD_09",
           "roomId": "room-truyenthong",
-          "name": "TT_1002",
+          "name": "K5_CD_09",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 5",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1003",
+          "id": "VM_Slot_K6_AT_01",
           "roomId": "room-truyenthong",
-          "name": "TT_1003",
+          "name": "K6_AT_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1004",
+          "id": "VM_Slot_K6_AT_02",
           "roomId": "room-truyenthong",
-          "name": "TT_1004",
+          "name": "K6_AT_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1005",
+          "id": "VM_Slot_K6_AT_03",
           "roomId": "room-truyenthong",
-          "name": "TT_1005",
+          "name": "K6_AT_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1006",
+          "id": "VM_Slot_K6_AT_04",
           "roomId": "room-truyenthong",
-          "name": "TT_1006",
+          "name": "K6_AT_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1007",
+          "id": "VM_Slot_K6_AT_05",
           "roomId": "room-truyenthong",
-          "name": "TT_1007",
+          "name": "K6_AT_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_1008",
+          "id": "VM_Slot_K6_AD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_1008",
+          "name": "K6_AD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Tường cuối phòng",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Cert_1",
+          "id": "VM_Slot_K6_AD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Cert_1",
+          "name": "K6_AD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Bằng khen",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Cert_2",
+          "id": "VM_Slot_K6_AD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Cert_2",
+          "name": "K6_AD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Bằng khen",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Cert_3",
+          "id": "VM_Slot_K6_AD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Cert_3",
+          "name": "K6_AD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Bằng khen",
+          "zone": "Khu 6",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Cert_4",
+          "id": "VM_Slot_K7_CD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Cert_4",
+          "name": "K7_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Bằng khen",
+          "zone": "Khu 7",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Flag_1",
+          "id": "VM_Slot_K7_CD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Flag_1",
+          "name": "K7_CD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Cờ",
+          "zone": "Khu 7",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Flag_2",
+          "id": "VM_Slot_K7_CD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Flag_2",
+          "name": "K7_CD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Cờ",
+          "zone": "Khu 7",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Flag_3",
+          "id": "VM_Slot_K7_CD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Flag_3",
+          "name": "K7_CD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Cờ",
+          "zone": "Khu 7",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Flag_4",
+          "id": "VM_Slot_K7_CD_05",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Flag_4",
+          "name": "K7_CD_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Cờ",
+          "zone": "Khu 7",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_2000_Flag_5",
+          "id": "VM_Slot_K7_CD_06",
           "roomId": "room-truyenthong",
-          "name": "TT_2000_Flag_5",
+          "name": "K7_CD_06",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Hốc đỏ — Cờ",
+          "zone": "Khu 7",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_3000",
+          "id": "VM_Slot_K8_CD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_3000",
+          "name": "K8_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu bên phải",
+          "zone": "Khu 8",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_3001",
+          "id": "VM_Slot_K8_CD_02",
           "roomId": "room-truyenthong",
-          "name": "TT_3001",
+          "name": "K8_CD_02",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu bên phải",
+          "zone": "Khu 8",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_3002",
+          "id": "VM_Slot_K8_CD_03",
           "roomId": "room-truyenthong",
-          "name": "TT_3002",
+          "name": "K8_CD_03",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu bên phải",
+          "zone": "Khu 8",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_3003",
+          "id": "VM_Slot_K8_CD_04",
           "roomId": "room-truyenthong",
-          "name": "TT_3003",
+          "name": "K8_CD_04",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu bên phải",
+          "zone": "Khu 8",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_3004",
+          "id": "VM_Slot_K8_CD_05",
           "roomId": "room-truyenthong",
-          "name": "TT_3004",
+          "name": "K8_CD_05",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu bên phải",
+          "zone": "Khu 8",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_3005",
+          "id": "VM_Slot_K8_CD_06",
           "roomId": "room-truyenthong",
-          "name": "TT_3005",
+          "name": "K8_CD_06",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu bên phải",
+          "zone": "Khu 8",
           "documentIds": []
         },
         {
-          "id": "VM_Slot_TT_3006",
+          "id": "VM_Slot_K9_CD_01",
           "roomId": "room-truyenthong",
-          "name": "TT_3006",
+          "name": "K9_CD_01",
           "type": "image",
           "frameStyle": "classic",
           "visible": true,
-          "zone": "Khu bên phải",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_3007",
-          "roomId": "room-truyenthong",
-          "name": "TT_3007",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu bên phải",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_3008",
-          "roomId": "room-truyenthong",
-          "name": "TT_3008",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu bên phải",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_3009",
-          "roomId": "room-truyenthong",
-          "name": "TT_3009",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu bên phải",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_3010",
-          "roomId": "room-truyenthong",
-          "name": "TT_3010",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu bên phải",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_3011",
-          "roomId": "room-truyenthong",
-          "name": "TT_3011",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu bên phải",
-          "documentIds": []
-        },
-        {
-          "id": "VM_Slot_TT_9000",
-          "roomId": "room-truyenthong",
-          "name": "TT_9000",
-          "type": "image",
-          "frameStyle": "classic",
-          "visible": true,
-          "zone": "Khu bên phải",
+          "zone": "Khu 9",
           "documentIds": [],
           "viewerVariant": "full"
         }
