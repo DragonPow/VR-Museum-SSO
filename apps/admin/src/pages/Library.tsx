@@ -240,67 +240,105 @@ function UploadModal({ periods, onClose, onDone }: {
   onDone: (item: DocumentItem) => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
-  const [preview, setPreview] = useState<string>('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previews, setPreviews] = useState<string[]>([])
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [step, setStep] = useState<UploadStep>('form')
+  const [uploadProgress, setUploadProgress] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
 
   const [form, setForm] = useState({
     contentType: 'image' as ContentItemType,
     title: '', year: new Date().getFullYear(), periodId: periods[0]?.id ?? '',
-    summary: '', body: '', tags: '', source: '',
+    priority: 0, summary: '', body: '', tags: '', source: '',
     embedUrl: '', externalUrl: '', externalLabel: '',
   })
 
-  const handleFile = (file: File) => {
-    setSelectedFile(file)
-    const url = URL.createObjectURL(file)
-    setPreview(url)
-    if (!form.title) setForm((f) => ({ ...f, title: file.name.replace(/\.[^.]+$/, '') }))
+  const handleFiles = (files: FileList | File[]) => {
+    const fileList = Array.from(files).filter((f) => f.type.startsWith('image/'))
+    if (fileList.length === 0) return
+    setSelectedFiles((prev) => [...prev, ...fileList])
+    const urls = fileList.map((f) => URL.createObjectURL(f))
+    setPreviews((prev) => [...prev, ...urls])
+    const firstFile = fileList[0]
+    if (fileList.length === 1 && selectedFiles.length === 0 && firstFile && !form.title) {
+      setForm((f) => ({ ...f, title: firstFile.name.replace(/\.[^.]+$/, '') }))
+    }
+  }
+
+  const moveFile = (index: number, dir: -1 | 1) => {
+    const target = index + dir
+    if (target < 0 || target >= selectedFiles.length) return
+    const nextFiles = [...selectedFiles]
+    const nextPreviews = [...previews]
+    const tempFile = nextFiles[index]
+    const tempPrev = nextPreviews[index]
+    if (!tempFile || !tempPrev || !nextFiles[target] || !nextPreviews[target]) return
+    nextFiles[index] = nextFiles[target]!
+    nextPreviews[index] = nextPreviews[target]!
+    nextFiles[target] = tempFile
+    nextPreviews[target] = tempPrev
+    setSelectedFiles(nextFiles)
+    setPreviews(nextPreviews)
+  }
+
+  const removeFile = (index: number) => {
+    const nextFiles = selectedFiles.filter((_, i) => i !== index)
+    const nextPreviews = previews.filter((_, i) => i !== index)
+    setSelectedFiles(nextFiles)
+    setPreviews(nextPreviews)
   }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file?.type.startsWith('image/')) handleFile(file)
+    if (e.dataTransfer?.files?.length) {
+      handleFiles(e.dataTransfer.files)
+    }
   }
 
-  const buildCommonItem = (itemId: string) => ({
-    id: itemId,
-    title: form.title.trim(),
-    year: form.year,
-    periodId: form.periodId,
-    summary: form.summary.trim(),
-    body: form.body.trim(),
-    tags: splitTags(form.tags),
-    source: form.source.trim(),
-    documentKey: itemId,
-    thumbnailImageId: 'photo1',
-    viewerImageId: 'photo1',
-    detailImageIds: ['photo1'],
-    images: [{ id: 'photo1' }],
-    priority: 0,
-  })
-
   const handleSubmit = async () => {
-    if (!form.title.trim() || !form.periodId || !selectedFile) return
+    if (!form.title.trim() || !form.periodId || selectedFiles.length === 0) return
     if (form.contentType === 'youtube' && !form.embedUrl.trim()) return
     if (form.contentType === 'iframe' && !form.embedUrl.trim()) return
     if (form.contentType === 'external' && !form.externalUrl.trim()) return
 
     setErrorMsg('')
     try {
-      const itemId = `item-${nanoid(8)}`
-      const common = buildCommonItem(itemId)
-
       setStep('resizing')
-      setStep('uploading')
-      const rawExt = await uploadImageVariants(itemId, 'photo1', selectedFile)
+      const itemId = `item-${nanoid(8)}`
+      const uploadedImages: DocumentImage[] = []
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i]
+        if (!file) continue
+        const imgKey = i === 0 ? 'photo1' : `photo-${i + 1}`
+
+        setUploadProgress(`Đang xử lý ảnh ${i + 1}/${selectedFiles.length}...`)
+        setStep('uploading')
+
+        const rawExt = await uploadImageVariants(itemId, imgKey, file)
+        uploadedImages.push({
+          id: imgKey,
+          rawExt,
+          caption: file.name.replace(/\.[^.]+$/, ''),
+        })
+      }
 
       const item: DocumentItem = {
-        ...common,
+        id: itemId,
+        title: form.title.trim(),
+        year: form.year,
+        periodId: form.periodId,
+        priority: form.priority || 0,
+        summary: form.summary.trim(),
+        body: form.body.trim(),
+        tags: splitTags(form.tags),
+        source: form.source.trim(),
+        documentKey: itemId,
+        thumbnailImageId: 'photo1',
+        viewerImageId: 'photo1',
+        detailImageIds: uploadedImages.map((img) => img.id),
+        images: uploadedImages,
         mediaType: form.contentType,
-        images: [{ id: 'photo1', rawExt }],
         ...(form.contentType === 'youtube' ? { embedUrl: normalizeYouTubeUrl(form.embedUrl) } : {}),
         ...(form.contentType === 'iframe' ? { embedUrl: normalizeIframeUrl(form.embedUrl) } : {}),
         ...(form.contentType === 'external' ? {
@@ -319,7 +357,7 @@ function UploadModal({ periods, onClose, onDone }: {
 
   const busy = step === 'resizing' || step === 'uploading'
   const canSubmit = Boolean(
-    form.title.trim() && form.periodId && selectedFile && !busy &&
+    form.title.trim() && form.periodId && selectedFiles.length > 0 && !busy &&
     (form.contentType === 'image' ? true : form.contentType === 'youtube' || form.contentType === 'iframe' ? form.embedUrl.trim() : form.externalUrl.trim())
   )
 
@@ -327,23 +365,52 @@ function UploadModal({ periods, onClose, onDone }: {
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div style={styles.modalHeader}>
-          <span style={styles.modalTitle}>Thêm tư liệu</span>
+          <span style={styles.modalTitle}>Thêm tư liệu {selectedFiles.length > 1 ? `(${selectedFiles.length} ảnh)` : ''}</span>
           <button style={styles.closeBtn} onClick={onClose}>×</button>
         </div>
 
         <div style={styles.modalBody}>
           <div
-            style={{ ...styles.dropZone, ...(preview ? styles.dropZoneWithPreview : {}) }}
+            style={{ ...styles.dropZone, ...(previews.length > 0 ? styles.dropZoneWithPreview : {}) }}
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => fileRef.current?.click()}
           >
-            {preview ? (
-              <img src={preview} alt="preview" style={styles.previewImg} />
+            {previews.length === 1 ? (
+              <img src={previews[0]} alt="preview" style={styles.previewImg} />
+            ) : previews.length > 1 ? (
+              <div style={{ width: '100%', textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: '#c8a85a', marginBottom: '8px' }}>
+                  Ảnh #1 là ảnh chính. Dùng nút ◀ ▶ để sắp xếp thứ tự ảnh chính/ảnh phụ:
+                </div>
+                <div style={styles.multiPreviewGrid} onClick={(e) => e.stopPropagation()}>
+                  {previews.map((src, i) => (
+                    <div key={i} style={styles.multiPreviewItem}>
+                      <img src={src} alt={`preview ${i}`} style={styles.multiPreviewThumb} />
+                      <div style={i === 0 ? styles.mainPreviewBadge : styles.multiPreviewBadge}>
+                        {i === 0 ? '★ Ảnh chính' : `#${i + 1} Phụ`}
+                      </div>
+                      <div style={styles.multiPreviewControls}>
+                        {i > 0 && <button type="button" style={styles.miniBtn} onClick={() => moveFile(i, -1)}>◀</button>}
+                        {i < selectedFiles.length - 1 && <button type="button" style={styles.miniBtn} onClick={() => moveFile(i, 1)}>▶</button>}
+                        <button type="button" style={{ ...styles.miniBtn, color: '#c85a5a' }} onClick={() => removeFile(i)}>✕</button>
+                      </div>
+                    </div>
+                  ))}
+                  <div
+                    style={styles.addMoreCard}
+                    onClick={() => fileRef.current?.click()}
+                    title="Chọn thêm ảnh"
+                  >
+                    <span style={{ fontSize: '20px', color: '#c8a85a' }}>+</span>
+                    <span style={{ fontSize: '10px', color: '#9a9080' }}>Thêm ảnh</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div style={styles.dropHint}>
                 <div style={styles.dropIcon}>IMG</div>
-                <div>Chọn ảnh hiển thị trong phòng và trong detail</div>
+                <div>Chọn 1 hoặc nhiều ảnh (ảnh 1 làm ảnh chính, ảnh 2..N làm ảnh phụ)</div>
                 <div style={{ fontSize: '12px', color: '#6a5a40' }}>Bắt buộc cho ảnh, YouTube, iframe tài liệu và link ngoài</div>
               </div>
             )}
@@ -351,8 +418,9 @@ function UploadModal({ periods, onClose, onDone }: {
               ref={fileRef}
               type="file"
               accept="image/*"
+              multiple
               style={{ display: 'none' }}
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+              onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files) }}
             />
           </div>
 
@@ -398,11 +466,14 @@ function UploadModal({ periods, onClose, onDone }: {
                 </FormField>
               </>
             )}
-            <FormField label="Tiêu đề *" required>
-              <input style={styles.input} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+            <FormField label="Tiêu đề *" required style={{ gridColumn: '1 / -1' }}>
+              <input style={styles.input} placeholder="VD: Lễ kỷ niệm thành lập" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             </FormField>
             <FormField label="Năm *">
               <input style={styles.input} type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: +e.target.value }))} />
+            </FormField>
+            <FormField label="Thứ tự ưu tiên (Priority)">
+              <input style={styles.input} type="number" min="0" placeholder="0" value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: +e.target.value }))} />
             </FormField>
             <FormField label="Thời kỳ *" style={{ gridColumn: '1 / -1' }}>
               <select style={styles.input} value={form.periodId} onChange={(e) => setForm((f) => ({ ...f, periodId: e.target.value }))}>
@@ -426,7 +497,7 @@ function UploadModal({ periods, onClose, onDone }: {
           {step === 'error' && <div style={styles.errorMsg}>{errorMsg}</div>}
           {busy && (
             <div style={styles.busyMsg}>
-              {step === 'resizing' ? 'Đang xử lý ảnh...' : 'Đang tải lên...'}
+              {uploadProgress || (step === 'resizing' ? 'Đang xử lý ảnh...' : 'Đang tải lên...')}
             </div>
           )}
         </div>
@@ -455,6 +526,7 @@ function EditModal({ item, periods, onClose, onSave }: {
   const [form, setForm] = useState({
     contentType: getDocumentContentType(item),
     title: item.title, year: item.year, periodId: item.periodId,
+    priority: item.priority ?? 0,
     summary: item.summary, body: item.body,
     tags: item.tags.join(', '), source: item.source,
     embedUrl: item.embedUrl ?? '',
@@ -515,6 +587,7 @@ function EditModal({ item, periods, onClose, onSave }: {
       title: form.title.trim(),
       year: form.year,
       periodId: form.periodId,
+      priority: form.priority || 0,
       summary: form.summary.trim(),
       body: form.body.trim(),
       tags: splitTags(form.tags),
@@ -596,11 +669,14 @@ function EditModal({ item, periods, onClose, onSave }: {
                 </FormField>
               </>
             )}
-            <FormField label="Tiêu đề *" required>
+            <FormField label="Tiêu đề *" required style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             </FormField>
             <FormField label="Năm">
               <input style={styles.input} type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: +e.target.value }))} />
+            </FormField>
+            <FormField label="Thứ tự ưu tiên (Priority)">
+              <input style={styles.input} type="number" min="0" value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: +e.target.value }))} />
             </FormField>
             <FormField label="Thời kỳ" style={{ gridColumn: '1 / -1' }}>
               <select style={styles.input} value={form.periodId} onChange={(e) => setForm((f) => ({ ...f, periodId: e.target.value }))}>
@@ -676,7 +752,7 @@ function FormField({ label, required, style, children }: {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  root: { display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' },
+  root: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' },
   toolbar: {
     display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
     padding: '20px 24px', borderBottom: '1px solid #2a1e10', flexShrink: 0,
@@ -703,9 +779,10 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '6px', color: '#f0e8d8', outline: 'none',
   },
   grid: {
-    flex: 1, overflowY: 'auto', padding: '20px 24px',
+    flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 24px',
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 260px))',
+    gridAutoRows: 'minmax(340px, auto)',
     gap: '16px',
     alignContent: 'start',
   },
@@ -715,10 +792,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     background: 'rgba(255,255,255,0.04)', border: '1px solid #2a1e10',
-    borderRadius: '10px', overflow: 'hidden',
+    borderRadius: '10px',
     display: 'flex', flexDirection: 'column',
   },
-  cardThumbWrap: { position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#1a1208' },
+  cardThumbWrap: {
+    position: 'relative', width: '100%', aspectRatio: '4/3', overflow: 'hidden',
+    background: '#1a1208', flexShrink: 0,
+    borderTopLeftRadius: '9px', borderTopRightRadius: '9px',
+  },
   cardThumb: { width: '100%', height: '100%', objectFit: 'cover' },
   typeBadge: {
     position: 'absolute', top: '6px', left: '6px',
@@ -730,7 +811,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(90,200,90,0.85)', borderRadius: '10px',
     padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#fff',
   },
-  cardBody: { padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 },
+  cardBody: { padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0 },
   cardTitle: { fontSize: '13px', fontWeight: 600, color: '#f0e8d8', lineHeight: 1.3 },
   cardMeta: { fontSize: '11px', color: '#6a5a40' },
   tagRow: { display: 'flex', gap: '4px', flexWrap: 'wrap' },
@@ -739,7 +820,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(200,168,90,0.1)', border: '1px solid rgba(200,168,90,0.2)',
     borderRadius: '4px', color: '#c8a85a',
   },
-  cardActions: { display: 'flex', gap: '6px', marginTop: 'auto', paddingTop: '8px' },
+  cardActions: { display: 'flex', gap: '6px', paddingTop: '4px' },
   cardBtn: {
     flex: 1, padding: '6px', background: 'rgba(255,255,255,0.04)',
     border: '1px solid #3a2e1e', borderRadius: '5px',
@@ -776,6 +857,17 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#c8a85a',
   },
   previewImg: { width: '100%', maxHeight: '220px', objectFit: 'contain', background: '#1a1208' },
+  multiPreviewGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(75px, 1fr))',
+    gap: '8px', width: '100%', maxHeight: '160px', overflowY: 'auto', padding: '8px 12px',
+  },
+  multiPreviewItem: { position: 'relative', borderRadius: '4px', overflow: 'hidden', border: '1px solid #3a2e1e', background: '#1a1208' },
+  multiPreviewBadge: { position: 'absolute', top: '2px', left: '2px', background: 'rgba(0,0,0,0.8)', borderRadius: '3px', padding: '1px 4px', fontSize: '9px', fontWeight: 700, color: '#c8a85a', zIndex: 1 },
+  mainPreviewBadge: { position: 'absolute', top: '2px', left: '2px', background: '#c8a85a', borderRadius: '3px', padding: '1px 4px', fontSize: '9px', fontWeight: 700, color: '#000', zIndex: 1 },
+  multiPreviewControls: { position: 'absolute', bottom: '2px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '2px', background: 'rgba(0,0,0,0.6)', padding: '2px 0', zIndex: 1 },
+  miniBtn: { padding: '1px 5px', fontSize: '9px', background: '#2a1e10', border: '1px solid #5a4a30', borderRadius: '3px', color: '#f0e8d8', cursor: 'pointer', lineHeight: 1 },
+  multiPreviewThumb: { width: '100%', height: '55px', objectFit: 'cover', borderRadius: '4px', display: 'block' },
+  addMoreCard: { border: '1px dashed #5a4a30', borderRadius: '4px', height: '55px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(255,255,255,0.02)' },
   typePanel: {
     border: '1px solid #3a2e1e', borderRadius: '10px', background: 'rgba(200,168,90,0.07)',
     padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px',
