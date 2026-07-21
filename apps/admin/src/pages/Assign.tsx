@@ -5,7 +5,7 @@ import { useDraftStore } from '../store.js'
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 const thumbUrl = (document?: DocumentItem | null) =>
-  document ? resolveDocumentImageVariantUrl(document.documentKey, document.thumbnailImageId, 'thumb', { assetBaseUrl: ASSET_BASE_URL }) ?? undefined : undefined
+  document ? resolveDocumentImageVariantUrl(document.documentKey, document.thumbnailImageId, 'thumb', { assetBaseUrl: ASSET_BASE_URL, assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '' }) ?? undefined : undefined
 
 function getDocumentTypeLabel(document: DocumentItem) {
   if (document.mediaType === 'youtube') return 'YouTube'

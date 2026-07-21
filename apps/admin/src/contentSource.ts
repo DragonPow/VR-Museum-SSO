@@ -6,6 +6,7 @@ type ContentMode = 'local' | 'github' | 'cloudflare' | 'static'
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 const EXPLICIT_MODE = import.meta.env.VITE_CONTENT_MODE as ContentMode | undefined
+const ASSET_VERSION = import.meta.env.VITE_ASSET_VERSION ?? ''
 
 function detectMode(): ContentMode {
   if (EXPLICIT_MODE) return EXPLICIT_MODE
@@ -27,6 +28,7 @@ export const ADMIN_CONTENT_SOURCE = (() => {
       mode,
       apiBaseUrl: API_BASE,
       assetBaseUrl: ASSET_BASE_URL,
+      assetVersion: ASSET_VERSION,
       draftUrls: [`${API_BASE}/api/draft`],
       staticUrls: ASSET_BASE_URL ? [`${ASSET_BASE_URL}/content.json`] : ['/content/content.json'],
     }
@@ -38,6 +40,7 @@ export const ADMIN_CONTENT_SOURCE = (() => {
       mode,
       apiBaseUrl: '',
       assetBaseUrl: '',
+      assetVersion: ASSET_VERSION,
       draftUrls: [],
       staticUrls: [`${base}content/content.json`, `${base}content/content.sample.json`],
     }
@@ -47,6 +50,7 @@ export const ADMIN_CONTENT_SOURCE = (() => {
     mode,
     apiBaseUrl: mode === 'local' ? '' : API_BASE,
     assetBaseUrl: '',
+    assetVersion: ASSET_VERSION,
     // In local dev, Vite proxies /api to wrangler on :8787. Try the Worker draft first;
     // if wrangler is not running this quietly falls back to committed content files.
     draftUrls: mode === 'local' ? ['/api/draft'] : [],
@@ -69,7 +73,7 @@ async function hydrateSplitContent(content: Content, contentUrl: string): Promis
   if (content.documents.length > 0 || content.documentIndex.length === 0) return content
   const settled = await Promise.allSettled(
     content.documentIndex.map(async (document) => {
-      const res = await fetch(documentUrlFor(contentUrl, document.documentKey))
+      const res = await fetch(documentUrlFor(contentUrl, document.documentKey), { cache: 'no-store' })
       if (!res.ok) throw new Error(`${document.id}: HTTP ${res.status}`)
       return parseDocumentItem(await res.json())
     }),
@@ -82,7 +86,7 @@ async function hydrateSplitContent(content: Content, contentUrl: string): Promis
 
 async function fetchContent(url: string): Promise<Content | null> {
   try {
-    const res = await fetch(url)
+    const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) return null
     const content = parseContent(await res.json())
     const hydrated = await hydrateSplitContent(content, url)

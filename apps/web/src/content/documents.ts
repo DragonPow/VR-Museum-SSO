@@ -8,7 +8,7 @@ export async function fetchDocumentDetail(index: DocumentIndexItem): Promise<Doc
   const cached = cache.get(index.id)
   if (cached) return cached
   const item = await fetchFirstJson(documentUrlsForId(index.documentKey), (raw) => parseDocumentItem(
-    rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl }),
+    rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl, assetVersion: CONTENT_SOURCE.assetVersion }),
   )) as DocumentItem
   cache.set(index.id, item)
   return item

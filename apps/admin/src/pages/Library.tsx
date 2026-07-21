@@ -8,7 +8,7 @@ import { resolveDocumentImageVariantUrl } from '@vm/shared'
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 const assetUrl = (documentKey?: string | null, imageId?: string | null, variant: 'thumb' | 'wall' | 'full' = 'thumb') =>
-  resolveDocumentImageVariantUrl(documentKey, imageId, variant, { assetBaseUrl: ASSET_BASE_URL }) ?? undefined
+  resolveDocumentImageVariantUrl(documentKey, imageId, variant, { assetBaseUrl: ASSET_BASE_URL, assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '' }) ?? undefined
 
 type UploadStep = 'form' | 'resizing' | 'uploading' | 'done' | 'error'
 type ContentItemType = 'image' | 'youtube' | 'iframe' | 'external'
@@ -63,7 +63,7 @@ function normalizeIframeUrl(value: string) {
 }
 
 function getDocumentImageUrl(item: DocumentItem, image: DocumentImage) {
-  return resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', { assetBaseUrl: ASSET_BASE_URL }) ?? undefined
+  return resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', { assetBaseUrl: ASSET_BASE_URL, assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '' }) ?? undefined
 }
 
 async function uploadImageVariants(documentKey: string, imageId: string, file: File) {

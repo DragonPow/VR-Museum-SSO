@@ -3,6 +3,7 @@ const ABSOLUTE_URL_RE = /^(?:[a-z]+:)?\/\//i
 interface ResolveAssetUrlOptions {
   assetBaseUrl?: string | null | undefined
   appBaseUrl?: string | null | undefined
+  assetVersion?: string | null | undefined
 }
 
 export function resolveAssetUrl(
@@ -11,25 +12,25 @@ export function resolveAssetUrl(
 ): string | null {
   if (!url) return null
   if (url.startsWith('blob:') || url.startsWith('data:')) return url
-  if (ABSOLUTE_URL_RE.test(url)) return url
+  if (ABSOLUTE_URL_RE.test(url)) return appendAssetVersion(url, options.assetVersion)
 
   const assetBase = trimTrailingSlash(options.assetBaseUrl)
   const appBase = trimTrailingSlash(options.appBaseUrl)
 
   if (assetBase) {
-    return `${assetBase}/${url.replace(/^\/+/, '')}`
+    return appendAssetVersion(`${assetBase}/${url.replace(/^\/+/, '')}`, options.assetVersion)
   }
 
   if (url.startsWith('/')) {
-    if (!appBase) return url
+    if (!appBase) return appendAssetVersion(url, options.assetVersion)
     // Idempotent: a URL already carrying the app base (e.g. rebased once in the
     // content index, then again in useRoom) must not get the prefix twice —
     // otherwise it breaks when deployed under a sub-path like /VR-Museum-SSO/.
-    if (url === appBase || url.startsWith(`${appBase}/`)) return url
-    return `${appBase}${url}`
+    if (url === appBase || url.startsWith(`${appBase}/`)) return appendAssetVersion(url, options.assetVersion)
+    return appendAssetVersion(`${appBase}${url}`, options.assetVersion)
   }
 
-  return appBase ? `${appBase}/${url}` : url
+  return appendAssetVersion(appBase ? `${appBase}/${url}` : url, options.assetVersion)
 }
 
 export function resolveAssetBaseUrl(
@@ -80,6 +81,16 @@ function shouldResolveAssetString(value: string): boolean {
 
 function trimTrailingSlash(value: string | null | undefined): string {
   return (value ?? '').replace(/\/+$/, '')
+}
+
+function appendAssetVersion(url: string, version: string | null | undefined): string {
+  const safeVersion = (version ?? '').trim()
+  if (!safeVersion) return url
+  const hashIndex = url.indexOf('#')
+  if (hashIndex >= 0) {
+    return `${appendAssetVersion(url.slice(0, hashIndex), safeVersion)}${url.slice(hashIndex)}`
+  }
+  return `${url}${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(safeVersion)}`
 }
 
 

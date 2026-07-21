@@ -25,7 +25,7 @@ function indexFromContent(content: Content): ContentIndex {
 }
 
 function parseIndexPayload(raw: unknown): ContentIndex {
-  const rebased = rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl })
+  const rebased = rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl, assetVersion: CONTENT_SOURCE.assetVersion })
   try {
     return parseContentIndex(rebased)
   } catch {

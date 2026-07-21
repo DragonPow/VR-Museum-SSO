@@ -112,6 +112,7 @@ export function Tour({ content, onBack }: Props) {
           onSlotSelect={handleSlotSelect}
           onNavigate={navigateToRoom}
           assetBaseUrl={ASSET_BASE_URL}
+          assetVersion={import.meta.env.VITE_ASSET_VERSION ?? ''}
         />
       </SceneCanvas>
 

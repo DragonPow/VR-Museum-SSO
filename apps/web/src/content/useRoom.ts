@@ -41,7 +41,7 @@ export function useRoom(stub: RoomStub | undefined): RoomState {
       })
       .then((raw) => {
         const data = parseRoomData(
-          rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl }),
+          rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl, assetVersion: CONTENT_SOURCE.assetVersion }),
         )
         cache.set(cacheKey, data)
         setState({ status: 'ok', data })

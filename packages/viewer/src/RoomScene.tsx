@@ -34,6 +34,8 @@ interface Props {
   boundsOverride?: RoomBounds
   /** Optional asset host prefix, e.g. R2 public domain */
   assetBaseUrl?: string
+  /** Optional immutable deploy/content version used to bust browser/CDN asset cache. */
+  assetVersion?: string
 }
 
 export function RoomScene({
@@ -51,22 +53,23 @@ export function RoomScene({
   onPortalPlace,
   boundsOverride,
   assetBaseUrl,
+  assetVersion,
 }: Props) {
   const surfaces = getRoomSurfaces(room.template)
   const wallUrl = resolveAssetUrl(
     room.wallTextureId ? (textures[room.wallTextureId] ?? null) : null,
-    { assetBaseUrl },
+    { assetBaseUrl, assetVersion },
   )
   const floorUrl = resolveAssetUrl(
     room.floorTextureId ? (textures[room.floorTextureId] ?? null) : null,
-    { assetBaseUrl },
+    { assetBaseUrl, assetVersion },
   )
   const ceilingUrl = resolveAssetUrl(
     room.ceilingTextureId ? (textures[room.ceilingTextureId] ?? null) : null,
-    { assetBaseUrl },
+    { assetBaseUrl, assetVersion },
   )
-  const modelUrl = resolveAssetUrl(room.modelUrl, { assetBaseUrl })
-  const lightmapUrl = resolveAssetUrl(room.lightmapUrl, { assetBaseUrl })
+  const modelUrl = resolveAssetUrl(room.modelUrl, { assetBaseUrl, assetVersion })
+  const lightmapUrl = resolveAssetUrl(room.lightmapUrl, { assetBaseUrl, assetVersion })
 
   // ── GLB slot extraction ──────────────────────────────────────────────────────
   // When the room has a GLB model, VM_Slot_* meshes are the source of truth for
@@ -219,7 +222,7 @@ export function RoomScene({
         const firstId = slot.documentIds?.[0]
         const document = firstId ? documents[firstId] ?? null : null
         const variant = slot.id === HERO_SLOT_ID ? 'full' : (slot.viewerVariant ?? 'wall')
-        const viewerTextureUrl = resolveDocumentImageVariantUrl(document?.documentKey ?? null, document?.viewerImageId ?? null, variant, { assetBaseUrl })
+        const viewerTextureUrl = resolveDocumentImageVariantUrl(document?.documentKey ?? null, document?.viewerImageId ?? null, variant, { assetBaseUrl, assetVersion })
 
         return (
           <SlotFrame

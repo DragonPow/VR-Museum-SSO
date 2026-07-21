@@ -50,6 +50,7 @@ export function Preview() {
               activeViewpointId={roomProps.room.entryViewpointId}
               onSlotSelect={() => {}}
               assetBaseUrl={ASSET_BASE_URL}
+              assetVersion={import.meta.env.VITE_ASSET_VERSION ?? ''}
             />
           </SceneCanvas>
         )}

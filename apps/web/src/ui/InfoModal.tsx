@@ -79,7 +79,7 @@ export function InfoModal({ documents, onClose }: Props) {
       .map((id) => imageMap.get(id) ?? { id })
     const resolved: Array<DocumentImage & { url: string }> = []
     for (const image of configured) {
-      const url = resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', { assetBaseUrl: ASSET_BASE_URL })
+      const url = resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', { assetBaseUrl: ASSET_BASE_URL, assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '' })
       if (url) resolved.push({ ...image, url })
     }
     return resolved

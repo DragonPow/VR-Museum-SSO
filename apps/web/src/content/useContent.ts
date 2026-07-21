@@ -17,7 +17,7 @@ export function useContent(): State {
   useEffect(() => {
     if (_cache) return
     fetchFirstContentJson((raw) => parseContent(
-      rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl }),
+      rebaseAssetUrls(raw, { assetBaseUrl: CONTENT_SOURCE.assetBaseUrl, appBaseUrl: CONTENT_SOURCE.appBaseUrl, assetVersion: CONTENT_SOURCE.assetVersion }),
     ))
       .then((data) => {
         _cache = data as Content

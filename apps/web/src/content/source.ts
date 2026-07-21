@@ -3,6 +3,7 @@ type ContentMode = 'local' | 'github' | 'cloudflare' | 'static'
 const BASE = import.meta.env.BASE_URL
 const ASSET_BASE_URL = (import.meta.env['VITE_ASSET_BASE_URL'] ?? '').replace(/\/+$/, '')
 const EXPLICIT_MODE = import.meta.env['VITE_CONTENT_MODE'] as ContentMode | undefined
+const ASSET_VERSION = import.meta.env['VITE_ASSET_VERSION'] ?? ''
 
 function detectMode(): ContentMode {
   if (EXPLICIT_MODE) return EXPLICIT_MODE
@@ -27,6 +28,7 @@ export const CONTENT_SOURCE = (() => {
       mode,
       assetBaseUrl: base,
       appBaseUrl: BASE,
+      assetVersion: ASSET_VERSION,
       contentUrls: [`${base}/content.json`],
     }
   }
@@ -36,6 +38,7 @@ export const CONTENT_SOURCE = (() => {
       mode,
       assetBaseUrl: '',
       appBaseUrl: BASE,
+      assetVersion: ASSET_VERSION,
       contentUrls: [joinBase('content/content.json'), joinBase('content/content.sample.json')],
     }
   }
@@ -45,6 +48,7 @@ export const CONTENT_SOURCE = (() => {
       mode,
       assetBaseUrl: '',
       appBaseUrl: BASE,
+      assetVersion: ASSET_VERSION,
       // In local dev, prefer committed content files so stale Worker snapshots do not
       // hide the current workspace data. The Worker remains a fallback for publish tests.
       contentUrls: ['/content/content.json', '/api/content', '/content/content.sample.json'],
@@ -55,6 +59,7 @@ export const CONTENT_SOURCE = (() => {
     mode,
     assetBaseUrl: '',
     appBaseUrl: BASE,
+    assetVersion: ASSET_VERSION,
     contentUrls: [joinBase('content/content.json'), joinBase('content/content.sample.json')],
   }
 })()
@@ -65,7 +70,7 @@ export async function fetchFirstContentJson<T = unknown>(
   let lastError: unknown = null
   for (const url of CONTENT_SOURCE.contentUrls) {
     try {
-      const res = await fetch(url)
+      const res = await fetch(url, { cache: 'no-store' })
       if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`)
       const raw = await res.json()
       return accept ? accept(raw, url) : raw
@@ -92,7 +97,7 @@ export async function fetchFirstJson<T = unknown>(urls: string[], accept?: (raw:
   let lastError: unknown = null
   for (const url of urls) {
     try {
-      const res = await fetch(url)
+      const res = await fetch(url, { cache: 'no-store' })
       if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`)
       const raw = await res.json()
       return accept ? accept(raw, url) : raw

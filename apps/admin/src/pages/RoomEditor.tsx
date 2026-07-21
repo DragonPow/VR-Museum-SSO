@@ -627,6 +627,7 @@ export function RoomEditor() {
               portalPlaceMode={editMode === 'place-portal'}
               onPortalPlace={handlePortalPlace}
               assetBaseUrl={ASSET_BASE_URL}
+              assetVersion={import.meta.env.VITE_ASSET_VERSION ?? ''}
               {...(room.modelUrl ? { boundsOverride: EDIT_BOUNDS } : {})}
             />
           </SceneCanvas>
