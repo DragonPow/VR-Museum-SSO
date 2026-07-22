@@ -107,6 +107,40 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return json({ publicUrl: base ? `${base}/${key}` : `/${key}` })
   }
 
+  // DELETE /api/upload — delete single file or entire prefix folder from R2
+  if (method === 'DELETE' && pathname === '/api/upload') {
+    const key = url.searchParams.get('key')
+    const prefix = url.searchParams.get('prefix')
+
+    if (key) {
+      const isMediaAsset = key.startsWith('content/media/') || key.startsWith('content/documents/') || key.startsWith('media/') || key.startsWith('content/models/')
+      if (!isMediaAsset || key.includes('..')) return json({ error: 'Invalid key' }, 400)
+      await env.MEDIA_BUCKET.delete(key)
+      return json({ ok: true })
+    }
+
+    if (prefix) {
+      const isMediaAsset = prefix.startsWith('content/media/') || prefix.startsWith('content/documents/') || prefix.startsWith('media/') || prefix.startsWith('content/models/')
+      if (!isMediaAsset || prefix.includes('..')) return json({ error: 'Invalid prefix' }, 400)
+      let truncated = true
+      let cursor: string | undefined
+      let deletedCount = 0
+      while (truncated) {
+        const listed = await env.MEDIA_BUCKET.list(cursor ? { prefix, cursor } : { prefix })
+        if (listed.objects.length > 0) {
+          const keys = listed.objects.map((o) => o.key)
+          await env.MEDIA_BUCKET.delete(keys)
+          deletedCount += keys.length
+        }
+        truncated = listed.truncated
+        cursor = listed.truncated ? listed.cursor : undefined
+      }
+      return json({ ok: true, deletedCount })
+    }
+
+    return json({ error: 'Missing key or prefix' }, 400)
+  }
+
   // POST /api/publish — validate draft then copy to content.json
   if (method === 'POST' && pathname === '/api/publish') {
     const body = await request.text()

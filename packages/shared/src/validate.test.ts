@@ -85,6 +85,20 @@ describe('parseContent', () => {
     expect(result.rooms[0]?.slots).toHaveLength(1)
   })
 
+  it('accepts string year or omitted year in document', () => {
+    const withStringYear = {
+      ...VALID_CONTENT,
+      documents: [{ ...VALID_CONTENT.documents[0], year: '1975 - 1980' }],
+    }
+    expect(parseContent(withStringYear).documents[0]?.year).toBe('1975 - 1980')
+
+    const withoutYear = {
+      ...VALID_CONTENT,
+      documents: [{ ...VALID_CONTENT.documents[0], year: undefined }],
+    }
+    expect(parseContent(withoutYear).documents[0]?.year).toBeUndefined()
+  })
+
   it('throws ContentValidationError on missing required field', () => {
     const bad = { ...VALID_CONTENT, version: undefined }
     expect(() => parseContent(bad)).toThrow(ContentValidationError)

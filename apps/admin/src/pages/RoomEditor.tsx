@@ -288,6 +288,16 @@ export function RoomEditor() {
     setVpDialog(null)
   }
 
+  const handleMoveViewpoint = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= room.viewpoints.length) return
+    const nextViewpoints = [...room.viewpoints]
+    const temp = nextViewpoints[index]!
+    nextViewpoints[index] = nextViewpoints[targetIndex]!
+    nextViewpoints[targetIndex] = temp
+    updateRoom(room.id, { viewpoints: nextViewpoints })
+  }
+
   // ── Portal placement ──────────────────────────────────────────────────────────
   const handlePortalPlace = useCallback(
     (pos: { x: number; z: number }) => {
@@ -508,7 +518,7 @@ export function RoomEditor() {
 
             {room.viewpoints.length === 0 && <div style={styles.empty}>Chưa có điểm đứng nào.</div>}
 
-            {room.viewpoints.map((vp) => {
+            {room.viewpoints.map((vp, index) => {
               const isEntry = vp.id === room.entryViewpointId
               return (
                 <div key={vp.id} style={styles.listRow}>
@@ -525,6 +535,30 @@ export function RoomEditor() {
                     {vp.name}
                   </button>
                   <div style={styles.listActions}>
+                    <button
+                      style={{
+                        ...styles.iconBtn,
+                        opacity: index === 0 ? 0.3 : 1,
+                        cursor: index === 0 ? 'not-allowed' : 'pointer',
+                      }}
+                      title="Di chuyển lên"
+                      disabled={index === 0}
+                      onClick={() => handleMoveViewpoint(index, 'up')}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      style={{
+                        ...styles.iconBtn,
+                        opacity: index === room.viewpoints.length - 1 ? 0.3 : 1,
+                        cursor: index === room.viewpoints.length - 1 ? 'not-allowed' : 'pointer',
+                      }}
+                      title="Di chuyển xuống"
+                      disabled={index === room.viewpoints.length - 1}
+                      onClick={() => handleMoveViewpoint(index, 'down')}
+                    >
+                      ▼
+                    </button>
                     <button
                       style={styles.iconBtn}
                       title="Sửa tên/vị trí điểm đứng"

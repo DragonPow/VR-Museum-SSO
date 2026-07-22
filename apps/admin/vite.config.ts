@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { existsSync, cpSync } from 'fs'
-import { mkdir, readFile, writeFile } from 'fs/promises'
+import { mkdir, readFile, writeFile, rm } from 'fs/promises'
 import { extname, resolve } from 'path'
 
 function localContentPlugin() {
@@ -70,33 +70,91 @@ function localContentPlugin() {
       })
 
       server.middlewares.use('/__local-media', async (req: any, res: any, next: any) => {
-        if (req.method !== 'POST') return next()
-        try {
-          const rawUrl = new URL(req.url ?? '/', 'http://localhost')
-          const key = rawUrl.searchParams.get('key') ?? ''
-          if (!(key.startsWith('content/media/') || key.startsWith('content/documents/')) || key.includes('..')) {
-            res.statusCode = 400
-            res.end(JSON.stringify({ ok: false, error: 'Invalid media key' }))
-            return
+        if (req.method === 'POST') {
+          try {
+            const rawUrl = new URL(req.url ?? '/', 'http://localhost')
+            const key = rawUrl.searchParams.get('key') ?? ''
+            if (!(key.startsWith('content/media/') || key.startsWith('content/documents/') || key.startsWith('content/models/')) || key.includes('..')) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ ok: false, error: 'Invalid media key' }))
+              return
+            }
+            const chunks: Buffer[] = []
+            for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+            const relativeKey = key.replace(/^content\/+/, '')
+            const filePath = resolve(contentRoot, relativeKey)
+            if (!filePath.startsWith(contentRoot)) {
+              res.statusCode = 403
+              res.end(JSON.stringify({ ok: false, error: 'Forbidden' }))
+              return
+            }
+            await mkdir(resolve(filePath, '..'), { recursive: true })
+            await writeFile(filePath, Buffer.concat(chunks))
+            res.setHeader('Content-Type', 'application/json; charset=utf-8')
+            res.end(JSON.stringify({ ok: true, path: `/${key}` }))
+          } catch (err) {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json; charset=utf-8')
+            res.end(JSON.stringify({ ok: false, error: String(err) }))
           }
-          const chunks: Buffer[] = []
-          for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-          const relativeKey = key.replace(/^content\/+/, '')
-          const filePath = resolve(contentRoot, relativeKey)
-          if (!filePath.startsWith(contentRoot)) {
-            res.statusCode = 403
-            res.end(JSON.stringify({ ok: false, error: 'Forbidden' }))
-            return
-          }
-          await mkdir(resolve(filePath, '..'), { recursive: true })
-          await writeFile(filePath, Buffer.concat(chunks))
-          res.setHeader('Content-Type', 'application/json; charset=utf-8')
-          res.end(JSON.stringify({ ok: true, path: `/${key}` }))
-        } catch (err) {
-          res.statusCode = 500
-          res.setHeader('Content-Type', 'application/json; charset=utf-8')
-          res.end(JSON.stringify({ ok: false, error: String(err) }))
+          return
         }
+
+        if (req.method === 'DELETE') {
+          try {
+            const rawUrl = new URL(req.url ?? '/', 'http://localhost')
+            const key = rawUrl.searchParams.get('key') ?? ''
+            const prefix = rawUrl.searchParams.get('prefix') ?? ''
+
+            if (key) {
+              if (!(key.startsWith('content/media/') || key.startsWith('content/documents/') || key.startsWith('content/models/')) || key.includes('..')) {
+                res.statusCode = 400
+                res.end(JSON.stringify({ ok: false, error: 'Invalid media key' }))
+                return
+              }
+              const relativeKey = key.replace(/^content\/+/, '')
+              const filePath = resolve(contentRoot, relativeKey)
+              if (!filePath.startsWith(contentRoot)) {
+                res.statusCode = 403
+                res.end(JSON.stringify({ ok: false, error: 'Forbidden' }))
+                return
+              }
+              await rm(filePath, { force: true, recursive: true })
+              res.setHeader('Content-Type', 'application/json; charset=utf-8')
+              res.end(JSON.stringify({ ok: true }))
+              return
+            }
+
+            if (prefix) {
+              if (!(prefix.startsWith('content/media/') || prefix.startsWith('content/documents/') || prefix.startsWith('content/models/')) || prefix.includes('..')) {
+                res.statusCode = 400
+                res.end(JSON.stringify({ ok: false, error: 'Invalid media prefix' }))
+                return
+              }
+              const relativePrefix = prefix.replace(/^content\/+/, '')
+              const dirPath = resolve(contentRoot, relativePrefix)
+              if (!dirPath.startsWith(contentRoot)) {
+                res.statusCode = 403
+                res.end(JSON.stringify({ ok: false, error: 'Forbidden' }))
+                return
+              }
+              await rm(dirPath, { force: true, recursive: true })
+              res.setHeader('Content-Type', 'application/json; charset=utf-8')
+              res.end(JSON.stringify({ ok: true }))
+              return
+            }
+
+            res.statusCode = 400
+            res.end(JSON.stringify({ ok: false, error: 'Missing key or prefix' }))
+          } catch (err) {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json; charset=utf-8')
+            res.end(JSON.stringify({ ok: false, error: String(err) }))
+          }
+          return
+        }
+
+        next()
       })
 
       server.middlewares.use('/content', async (req: any, res: any, next: any) => {

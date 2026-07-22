@@ -104,6 +104,42 @@ export async function uploadModel(file: File, filename?: string): Promise<string
   return `/${key}`
 }
 
+async function mirrorLocalDelete(paramName: 'key' | 'prefix', value: string): Promise<void> {
+  if (typeof window === 'undefined') return
+  if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) return
+  await fetch(`/__local-media?${paramName}=${encodeURIComponent(value)}`, {
+    method: 'DELETE',
+  }).catch(() => undefined)
+}
+
+export async function deleteMediaByKey(key: string): Promise<void> {
+  const safeKey = key.replace(/^\/+/, '')
+  const apiAvailable = await checkApi()
+  if (apiAvailable) {
+    await apiFetch(`/api/upload?key=${encodeURIComponent(safeKey)}`, { method: 'DELETE' }).catch(() => undefined)
+  }
+  await mirrorLocalDelete('key', safeKey)
+}
+
+export async function deleteMediaByPrefix(prefix: string): Promise<void> {
+  const safePrefix = prefix.replace(/^\/+/, '')
+  const apiAvailable = await checkApi()
+  if (apiAvailable) {
+    await apiFetch(`/api/upload?prefix=${encodeURIComponent(safePrefix)}`, { method: 'DELETE' }).catch(() => undefined)
+  }
+  await mirrorLocalDelete('prefix', safePrefix)
+}
+
+export async function deleteDocumentStorage(documentKey: string): Promise<void> {
+  if (!documentKey) return
+  await deleteMediaByPrefix(`content/documents/${documentKey}/`)
+}
+
+export async function deleteImageStorage(documentKey: string, imageId: string): Promise<void> {
+  if (!documentKey || !imageId) return
+  await deleteMediaByPrefix(`content/documents/${documentKey}/images/${imageId}/`)
+}
+
 
 export async function saveLocalContentFile(content: Content): Promise<boolean> {
   if (typeof window === 'undefined') return false

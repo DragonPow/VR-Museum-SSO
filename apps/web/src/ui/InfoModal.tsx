@@ -133,7 +133,7 @@ export function InfoModal({ documents, onClose }: Props) {
               </figure>
             ))}
           </div>
-          <div style={styles.yearBadge}>{item.year}</div>
+          {item.year && <div style={styles.yearBadge}>{item.year}</div>}
         </div>
 
         {hasText && (

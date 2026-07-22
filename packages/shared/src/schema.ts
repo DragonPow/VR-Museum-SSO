@@ -108,7 +108,7 @@ export const DocumentItemSchema = z.object({
   id: NonEmptyString,
   documentKey: NonEmptyString,
   title: NonEmptyString,
-  year: z.number().int().min(1900).max(2100),
+  year: z.union([z.string(), z.number()]).optional(),
   periodId: NonEmptyString,
   summary: z.string(),
   body: z.string(),

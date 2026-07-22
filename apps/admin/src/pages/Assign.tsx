@@ -37,7 +37,7 @@ export function Assign() {
     let documents = content.documents
     if (search) documents = documents.filter((it) =>
       it.title.toLowerCase().includes(search.toLowerCase()) ||
-      String(it.year).includes(search) ||
+      (it.year != null && String(it.year).toLowerCase().includes(search.toLowerCase())) ||
       it.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())) ||
       getDocumentTypeLabel(it).toLowerCase().includes(search.toLowerCase()),
     )
@@ -191,7 +191,7 @@ export function Assign() {
                       <span style={styles.typeBadge}>{getDocumentTypeLabel(document)}</span>
                     </div>
                     <div style={styles.pickerItemTitle}>{document.title}</div>
-                    <div style={styles.pickerItemYear}>{document.year}</div>
+                    {document.year && <div style={styles.pickerItemYear}>{document.year}</div>}
                     {active && <div style={styles.pickerCheck}>{draftIds.indexOf(document.id) + 1}</div>}
                   </div>
                 )
@@ -245,7 +245,7 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
           </div>
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>
-            <div style={styles.slotItemTitle}>{first.year} · {first.title}</div>
+            <div style={styles.slotItemTitle}>{first.year ? `${first.year} · ` : ''}{first.title}</div>
             <div style={styles.slotStatus}>Đã gán {documents.length} tư liệu</div>
           </div>
         </>

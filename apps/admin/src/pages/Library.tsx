@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from 'react'
 import type { DocumentImage, DocumentItem } from '@vm/shared'
 import { useDraftStore } from '../store.js'
-import { uploadFile, checkApi } from '../api.js'
+import { uploadFile, checkApi, deleteDocumentStorage, deleteImageStorage } from '../api.js'
 import { resizeImage, blobToObjectUrl } from '../util/imageResize.js'
 import { nanoid } from '../util/nanoid.js'
 import { resolveDocumentImageVariantUrl } from '@vm/shared'
@@ -117,7 +117,7 @@ export function Library() {
     const matchSearch = !search ||
       it.title.toLowerCase().includes(query) ||
       it.tags.some((t) => t.toLowerCase().includes(query)) ||
-      String(it.year).includes(search) ||
+      (it.year != null && String(it.year).toLowerCase().includes(query)) ||
       typeLabel.includes(query)
     const matchPeriod = !periodFilter || it.periodId === periodFilter
     return matchSearch && matchPeriod
@@ -171,8 +171,9 @@ export function Library() {
               assignCount={assignCount[item.id] ?? 0}
               onEdit={() => setEditId(item.id)}
               onRemove={() => {
-                if (confirm(`Xóa "${item.title}"? Tư liệu sẽ bị bỏ gán khỏi tất cả slot.`)) {
+                if (confirm(`Xóa "${item.title}"? Tư liệu sẽ bị bỏ gán khỏi tất cả slot và xóa toàn bộ tệp lưu trữ.`)) {
                   removeDocument(item.id)
+                  void deleteDocumentStorage(item.documentKey || item.id)
                 }
               }}
             />
@@ -217,7 +218,7 @@ function ItemCard({ item, assignCount, onEdit, onRemove }: {
       </div>
       <div style={styles.cardBody}>
         <div style={styles.cardTitle}>{item.title}</div>
-        <div style={styles.cardMeta}>{item.year} · {item.source || 'Chưa rõ nguồn'}</div>
+        <div style={styles.cardMeta}>{item.year ? `${item.year} · ` : ''}{item.source || 'Chưa rõ nguồn'}</div>
         {item.tags.length > 0 && (
           <div style={styles.tagRow}>
             {item.tags.slice(0, 3).map((t) => (
@@ -248,7 +249,7 @@ function UploadModal({ periods, onClose, onDone }: {
 
   const [form, setForm] = useState({
     contentType: 'image' as ContentItemType,
-    title: '', year: new Date().getFullYear(), periodId: periods[0]?.id ?? '',
+    title: '', year: '', periodId: periods[0]?.id ?? '',
     priority: 0, summary: '', body: '', tags: '', source: '',
     embedUrl: '', externalUrl: '', externalLabel: '',
   })
@@ -326,7 +327,7 @@ function UploadModal({ periods, onClose, onDone }: {
       const item: DocumentItem = {
         id: itemId,
         title: form.title.trim(),
-        year: form.year,
+        ...(form.year.trim() ? { year: form.year.trim() } : {}),
         periodId: form.periodId,
         priority: form.priority || 0,
         summary: form.summary.trim(),
@@ -469,8 +470,8 @@ function UploadModal({ periods, onClose, onDone }: {
             <FormField label="Tiêu đề *" required style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} placeholder="VD: Lễ kỷ niệm thành lập" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             </FormField>
-            <FormField label="Năm *">
-              <input style={styles.input} type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: +e.target.value }))} />
+            <FormField label="Năm">
+              <input style={styles.input} type="text" placeholder="VD: 1975, Thập niên 90... (không bắt buộc)" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
             </FormField>
             <FormField label="Thứ tự ưu tiên (Priority)">
               <input style={styles.input} type="number" min="0" placeholder="0" value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: +e.target.value }))} />
@@ -525,7 +526,7 @@ function EditModal({ item, periods, onClose, onSave }: {
 }) {
   const [form, setForm] = useState({
     contentType: getDocumentContentType(item),
-    title: item.title, year: item.year, periodId: item.periodId,
+    title: item.title, year: item.year != null ? String(item.year) : '', periodId: item.periodId,
     priority: item.priority ?? 0,
     summary: item.summary, body: item.body,
     tags: item.tags.join(', '), source: item.source,
@@ -537,6 +538,7 @@ function EditModal({ item, periods, onClose, onSave }: {
   })
   const initialImages = item.images?.length > 0 ? item.images : [{ id: item.viewerImageId || 'photo1' }]
   const [images, setImages] = useState<DocumentImage[]>(initialImages)
+  const [removedImageIds, setRemovedImageIds] = useState<string[]>([])
   const [mediaBusy, setMediaBusy] = useState('')
   const [mediaError, setMediaError] = useState('')
   const replaceMainRef = useRef<HTMLInputElement>(null)
@@ -579,13 +581,20 @@ function EditModal({ item, periods, onClose, onSave }: {
   }
 
   const removeImage = (id: string) => {
+    if (id !== form.viewerImageId && id !== form.thumbnailImageId) {
+      setRemovedImageIds((prev) => [...prev, id])
+    }
     setImages((prev) => prev.filter((image) => image.id !== id || image.id === form.viewerImageId || image.id === form.thumbnailImageId))
   }
 
   const handleSave = () => {
+    for (const id of removedImageIds) {
+      void deleteImageStorage(item.documentKey, id)
+    }
+
     const patch: Partial<DocumentItem> = {
       title: form.title.trim(),
-      year: form.year,
+      ...(form.year.trim() ? { year: form.year.trim() } : {}),
       periodId: form.periodId,
       priority: form.priority || 0,
       summary: form.summary.trim(),
@@ -600,6 +609,10 @@ function EditModal({ item, periods, onClose, onSave }: {
 
     const clearField = (key: keyof DocumentItem) => {
       ;(patch as Record<string, unknown>)[key] = undefined
+    }
+
+    if (!form.year.trim()) {
+      clearField('year')
     }
 
     if (form.contentType === 'youtube') {
@@ -673,7 +686,7 @@ function EditModal({ item, periods, onClose, onSave }: {
               <input style={styles.input} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             </FormField>
             <FormField label="Năm">
-              <input style={styles.input} type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: +e.target.value }))} />
+              <input style={styles.input} type="text" placeholder="VD: 1975, Thập niên 90... (không bắt buộc)" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
             </FormField>
             <FormField label="Thứ tự ưu tiên (Priority)">
               <input style={styles.input} type="number" min="0" value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: +e.target.value }))} />

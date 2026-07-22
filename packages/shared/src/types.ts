@@ -118,7 +118,7 @@ export interface DocumentItem {
   id: string
   documentKey: string
   title: string
-  year: number
+  year?: string | number
   periodId: string
   summary: string
   body: string

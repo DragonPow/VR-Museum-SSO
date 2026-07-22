@@ -39,7 +39,7 @@ function normalizeLegacyDocument(item: Record<string, unknown>): DocumentItem {
     id: typeof item.id === 'string' ? item.id : `document-${Date.now()}`,
     documentKey,
     title: typeof item.title === 'string' ? item.title : 'Tư liệu chưa đặt tên',
-    year: typeof item.year === 'number' ? item.year : new Date().getFullYear(),
+    ...(typeof item.year === 'number' || (typeof item.year === 'string' && item.year.trim()) ? { year: item.year } : {}),
     periodId: typeof item.periodId === 'string' ? item.periodId : '',
     summary: typeof item.summary === 'string' ? item.summary : (typeof item.shortDesc === 'string' ? item.shortDesc : ''),
     body: typeof item.body === 'string' ? item.body : (typeof item.longDesc === 'string' ? item.longDesc : ''),
