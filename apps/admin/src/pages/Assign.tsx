@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { Slot, DocumentItem } from '@vm/shared'
 import { resolveDocumentImageVariantUrl } from '@vm/shared'
 import { useDraftStore } from '../store.js'
@@ -74,6 +74,18 @@ export function Assign() {
   const [periodFilter, setPeriodFilter] = useState('')
   const [pickerPage, setPickerPage] = useState(1)
   const ITEMS_PER_PAGE = 24
+  const [expandedZones, setExpandedZones] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    setExpandedZones({})
+  }, [selectedRoomId])
+
+  const toggleZone = (zone: string) => {
+    setExpandedZones((prev) => ({
+      ...prev,
+      [zone]: !prev[zone],
+    }))
+  }
 
   if (!content) return <div style={styles.center}>Đang tải...</div>
 
@@ -169,28 +181,66 @@ export function Assign() {
         ) : (
           <>
             <div style={styles.mainHeader}>
-              <div>
-                <h2 style={styles.roomTitle}>{selectedRoom.title}</h2>
-                <p style={styles.roomSub}>{selectedRoom.slots.filter((s) => (s.documentIds ?? []).length > 0).length} / {selectedRoom.slots.length} slot đã có tư liệu</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h2 style={styles.roomTitle}>{selectedRoom.title}</h2>
+                  <p style={styles.roomSub}>{selectedRoom.slots.filter((s) => (s.documentIds ?? []).length > 0).length} / {selectedRoom.slots.length} slot đã có tư liệu</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    style={styles.miniActionBtn}
+                    onClick={() => {
+                      const allZones = groupSlotsByZone(selectedRoom.slots).map((z) => z.zone)
+                      const nextExpanded: Record<string, boolean> = {}
+                      allZones.forEach((z) => (nextExpanded[z] = true))
+                      setExpandedZones(nextExpanded)
+                    }}
+                  >
+                    Mở tất cả các khu
+                  </button>
+                  <button style={styles.miniActionBtn} onClick={() => setExpandedZones({})}>
+                    Đóng tất cả
+                  </button>
+                </div>
               </div>
             </div>
             <div style={styles.scrollArea}>
               {selectedRoom.slots.length === 0 ? (
                 <div style={styles.center}>Phòng này chưa có slot nào.</div>
               ) : (
-                groupSlotsByZone(selectedRoom.slots).map(({ zone, slots }) => (
-                  <div key={zone} style={styles.zoneBlock}>
-                    <div style={styles.zoneHeader}>
-                      <span>{zone}</span>
-                      <span style={styles.zoneCount}>{slots.filter((s) => (s.documentIds ?? []).length > 0).length}/{slots.length}</span>
+                groupSlotsByZone(selectedRoom.slots).map(({ zone, slots }) => {
+                  const isExpanded = !!expandedZones[zone]
+                  return (
+                    <div key={zone} style={styles.zoneBlock}>
+                      <div
+                        style={{ ...styles.zoneHeader, cursor: 'pointer', userSelect: 'none' }}
+                        onClick={() => toggleZone(zone)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '10px', color: '#c8a85a', width: '12px' }}>
+                            {isExpanded ? '▼' : '▶'}
+                          </span>
+                          <span>{zone}</span>
+                        </div>
+                        <span style={styles.zoneCount}>
+                          {slots.filter((s) => (s.documentIds ?? []).length > 0).length}/{slots.length} đã gán
+                        </span>
+                      </div>
+                      {isExpanded && (
+                        <div style={styles.slotGrid}>
+                          {slots.map((slot) => (
+                            <SlotCard
+                              key={slot.id}
+                              slot={slot}
+                              documents={(slot.documentIds ?? []).map((id) => documentMap[id]).filter(Boolean) as DocumentItem[]}
+                              onClick={() => openPicker(slot)}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div style={styles.slotGrid}>
-                      {slots.map((slot) => (
-                        <SlotCard key={slot.id} slot={slot} documents={(slot.documentIds ?? []).map((id) => documentMap[id]).filter(Boolean) as DocumentItem[]} onClick={() => openPicker(slot)} />
-                      ))}
-                    </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           </>
@@ -376,6 +426,10 @@ const styles: Record<string, React.CSSProperties> = {
   modalFooter: { display: 'flex', justifyContent: 'flex-end', gap: '10px', padding: '14px 24px', borderTop: '1px solid #2a1e10', flexShrink: 0 },
   cancelBtn: { padding: '8px 14px', background: 'none', border: '1px solid #3a2e1e', borderRadius: '6px', color: '#9a9080', cursor: 'pointer' },
   submitBtn: { padding: '8px 16px', background: '#c8a85a', border: 'none', borderRadius: '6px', color: '#0a0804', fontWeight: 700, cursor: 'pointer' },
+  miniActionBtn: {
+    padding: '6px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid #3a2e1e',
+    borderRadius: '6px', color: '#9a9080', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s',
+  },
   pagination: {
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
     padding: '16px 24px', borderTop: '1px solid #1a1208', flexShrink: 0,
