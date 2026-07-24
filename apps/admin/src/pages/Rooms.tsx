@@ -44,6 +44,26 @@ export function Rooms() {
     return map
   }, [content])
 
+  const sortedPeriods = useMemo(() => {
+    if (!content) return []
+    return [...content.periods].sort((a, b) => a.order - b.order)
+  }, [content])
+
+  const handleMovePeriod = (id: string, dir: -1 | 1) => {
+    const index = sortedPeriods.findIndex((p) => p.id === id)
+    if (index === -1) return
+    const targetIndex = index + dir
+    if (targetIndex < 0 || targetIndex >= sortedPeriods.length) return
+
+    const currentPeriod = sortedPeriods[index]
+    const targetPeriod = sortedPeriods[targetIndex]
+    if (!currentPeriod || !targetPeriod) return
+
+    const tempOrder = currentPeriod.order
+    updatePeriod(currentPeriod.id, { order: targetPeriod.order })
+    updatePeriod(targetPeriod.id, { order: tempOrder })
+  }
+
   if (!content) {
     return <div style={styles.center}>Đang tải...</div>
   }
@@ -120,7 +140,7 @@ export function Rooms() {
 
   const handleAddRoom = () => {
     if (!title.trim()) return
-    const pid = (periodId || content.periods[0]?.id) ?? ''
+    const pid = (periodId || sortedPeriods[0]?.id) ?? ''
     if (!pid) return
 
     const order = Math.max(0, ...content.rooms.map((room) => room.order)) + 1
@@ -238,9 +258,11 @@ export function Rooms() {
         )}
 
         <div style={styles.list}>
-          {content.periods.map((period) => {
+          {sortedPeriods.map((period, index) => {
             const usage = periodUsage.get(period.id) ?? { rooms: 0, items: 0 }
             const locked = usage.rooms > 0 || usage.items > 0
+            const isFirst = index === 0
+            const isLast = index === sortedPeriods.length - 1
 
             return (
               <div key={period.id} style={styles.row}>
@@ -255,6 +277,30 @@ export function Rooms() {
                   </div>
                 </div>
                 <div style={styles.rowActions}>
+                  <button
+                    style={{
+                      ...styles.iconBtn,
+                      opacity: isFirst ? 0.3 : 1,
+                      cursor: isFirst ? 'not-allowed' : 'pointer',
+                    }}
+                    disabled={isFirst}
+                    onClick={() => handleMovePeriod(period.id, -1)}
+                    title="Di chuyển lên"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    style={{
+                      ...styles.iconBtn,
+                      opacity: isLast ? 0.3 : 1,
+                      cursor: isLast ? 'not-allowed' : 'pointer',
+                    }}
+                    disabled={isLast}
+                    onClick={() => handleMovePeriod(period.id, 1)}
+                    title="Di chuyển xuống"
+                  >
+                    ▼
+                  </button>
                   <button style={styles.iconBtn} onClick={() => openEditPeriod(period)}>
                     Sửa
                   </button>
@@ -325,7 +371,7 @@ export function Rooms() {
                   value={periodId}
                   onChange={(e) => setPeriodId(e.target.value)}
                 >
-                  {content.periods.map((period) => (
+                  {sortedPeriods.map((period) => (
                     <option key={period.id} value={period.id}>
                       {period.title}
                     </option>
@@ -345,7 +391,7 @@ export function Rooms() {
               <button
                 style={styles.btnPrimary}
                 onClick={handleAddRoom}
-                disabled={!title.trim() || content.periods.length === 0}
+                disabled={!title.trim() || sortedPeriods.length === 0}
               >
                 Tạo và vào editor
               </button>

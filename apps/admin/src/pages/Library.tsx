@@ -162,6 +162,10 @@ export function Library() {
     return counts
   }, [content.rooms])
 
+  const sortedPeriods = useMemo(() => {
+    return [...content.periods].sort((a, b) => a.order - b.order)
+  }, [content.periods])
+
   const filtered = content.documents.filter((it) => {
     const typeLabel = getDocumentTypeLabel(it).toLowerCase()
     const query = search.toLowerCase()
@@ -206,7 +210,7 @@ export function Library() {
           onChange={(e) => { setPeriodFilter(e.target.value); setCurrentPage(1); }}
         >
           <option value="">Tất cả thời kỳ</option>
-          {content.periods.map((p) => (
+          {sortedPeriods.map((p) => (
             <option key={p.id} value={p.id}>{p.title}</option>
           ))}
         </select>
@@ -242,7 +246,7 @@ export function Library() {
 
       {showUpload && (
         <UploadModal
-          periods={content.periods}
+          periods={sortedPeriods}
           onClose={() => setShowUpload(false)}
           onDone={(document) => { addDocument(document); setShowUpload(false) }}
         />
@@ -251,7 +255,7 @@ export function Library() {
       {editItem && (
         <EditModal
           item={editItem}
-          periods={content.periods}
+          periods={sortedPeriods}
           onClose={() => setEditId(null)}
           onSave={(patch) => { updateDocument(editItem.id, patch); setEditId(null) }}
         />

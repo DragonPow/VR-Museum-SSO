@@ -144,10 +144,14 @@ export function Assign() {
     setPeriodFilter('')
   }
 
-  const roomsByPeriod = content.periods.map((p) => ({
-    period: p,
-    rooms: content.rooms.filter((r) => r.periodId === p.id).sort((a, b) => a.order - b.order),
-  }))
+  const roomsByPeriod = useMemo(() => {
+    return [...content.periods]
+      .sort((a, b) => a.order - b.order)
+      .map((p) => ({
+        period: p,
+        rooms: content.rooms.filter((r) => r.periodId === p.id).sort((a, b) => a.order - b.order),
+      }))
+  }, [content.periods, content.rooms])
 
   return (
     <div style={styles.root}>
@@ -283,7 +287,7 @@ export function Assign() {
               <input autoFocus placeholder="Tìm theo tên, năm, tag, loại..." value={search} onChange={(e) => { setSearch(e.target.value); setPickerPage(1); }} style={styles.pickerSearch} />
               <select value={periodFilter} onChange={(e) => { setPeriodFilter(e.target.value); setPickerPage(1); }} style={styles.pickerSelect}>
                 <option value="">Tất cả thời kỳ</option>
-                {content.periods.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+                {[...content.periods].sort((a, b) => a.order - b.order).map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
               </select>
             </div>
 
