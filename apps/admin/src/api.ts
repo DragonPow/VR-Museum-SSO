@@ -21,13 +21,29 @@ export class ApiError extends Error {
   }
 }
 
-async function apiFetch(path: string, init?: RequestInit) {
-  const res = await fetch(`${BASE}${path}`, init)
-  if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText)
-    throw new ApiError(res.status, text)
+async function apiFetch(path: string, init?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
+  try {
+    const res = await fetch(`${BASE}${path}`, init)
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText)
+      const isRateLimit = res.status === 429 || res.status === 503 || (res.status === 500 && text.includes('10058'))
+      if (isRateLimit && retries > 0) {
+        console.warn(`API rate limit hit (${res.status}). Retrying in ${delay}ms... (${retries} retries left)`)
+        await new Promise((resolve) => setTimeout(resolve, delay))
+        return apiFetch(path, init, retries - 1, delay * 2)
+      }
+      throw new ApiError(res.status, text)
+    }
+    return res
+  } catch (err) {
+    if (err instanceof ApiError) throw err
+    if (retries > 0) {
+      console.warn(`Network error. Retrying in ${delay}ms... (${retries} retries left)`, err)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+      return apiFetch(path, init, retries - 1, delay * 2)
+    }
+    throw err
   }
-  return res
 }
 
 export async function getDraft(): Promise<Content> {

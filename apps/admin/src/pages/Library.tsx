@@ -322,6 +322,10 @@ function UploadModal({ periods, onClose, onDone }: {
           rawExt,
           caption: file.name.replace(/\.[^.]+$/, ''),
         })
+
+        if (i < selectedFiles.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+        }
       }
 
       const item: DocumentItem = {
@@ -563,10 +567,15 @@ function EditModal({ item, periods, onClose, onSave }: {
     setMediaBusy('Đang thêm ảnh...')
     try {
       const added: DocumentImage[] = []
-      for (const file of picked) {
+      for (let i = 0; i < picked.length; i++) {
+        const file = picked[i]!
         const key = `photo-${nanoid(8)}`
         await uploadImageVariants(item.documentKey, key, file)
         added.push({ id: key, caption: file.name.replace(/\.[^.]+$/, '') })
+
+        if (i < picked.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+        }
       }
       setImages((prev) => [...prev, ...added])
     } catch (err) {
@@ -585,6 +594,16 @@ function EditModal({ item, periods, onClose, onSave }: {
       setRemovedImageIds((prev) => [...prev, id])
     }
     setImages((prev) => prev.filter((image) => image.id !== id || image.id === form.viewerImageId || image.id === form.thumbnailImageId))
+  }
+
+  const handleMoveImage = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= images.length) return
+    const nextImages = [...images]
+    const temp = nextImages[index]!
+    nextImages[index] = nextImages[targetIndex]!
+    nextImages[targetIndex] = temp
+    setImages(nextImages)
   }
 
   const handleSave = () => {
@@ -724,13 +743,45 @@ function EditModal({ item, periods, onClose, onSave }: {
               <input ref={addImagesRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => { void handleAddDetailImages(e.target.files); e.currentTarget.value = '' }} />
             </div>
             <div style={styles.mediaGrid}>
-              {images.map((image) => (
+              {images.map((image, index) => (
                 <div key={image.id} style={styles.mediaItem}>
                   <img src={getDocumentImageUrl(item, image)} alt={image.alt ?? item.title} style={styles.mediaThumb} />
                   <div style={styles.mediaFields}>
                     <div style={styles.mediaKind}>{image.id === form.viewerImageId ? 'Ảnh viewer' : image.id === form.thumbnailImageId ? 'Ảnh thumbnail' : 'Ảnh phụ'}</div>
                     <input style={styles.input} value={image.caption ?? ''} placeholder="Caption" onChange={(e) => updateImage(image.id, { caption: e.target.value })} />
-                    <div style={{ display: 'flex', gap: '6px' }}><button style={styles.cardBtn} onClick={() => setForm((f) => ({ ...f, viewerImageId: image.id }))}>Dùng làm viewer</button><button style={styles.cardBtn} onClick={() => setForm((f) => ({ ...f, thumbnailImageId: image.id }))}>Dùng làm thumb</button><button style={{ ...styles.cardBtn, color: '#c85a5a' }} onClick={() => removeImage(image.id)}>Xóa</button></div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        style={{
+                          ...styles.cardBtn,
+                          width: '28px',
+                          flex: 'none',
+                          opacity: index === 0 ? 0.3 : 1,
+                          cursor: index === 0 ? 'not-allowed' : 'pointer',
+                        }}
+                        disabled={index === 0}
+                        onClick={() => handleMoveImage(index, 'up')}
+                        title="Di chuyển lên"
+                      >
+                        ▲
+                      </button>
+                      <button
+                        style={{
+                          ...styles.cardBtn,
+                          width: '28px',
+                          flex: 'none',
+                          opacity: index === images.length - 1 ? 0.3 : 1,
+                          cursor: index === images.length - 1 ? 'not-allowed' : 'pointer',
+                        }}
+                        disabled={index === images.length - 1}
+                        onClick={() => handleMoveImage(index, 'down')}
+                        title="Di chuyển xuống"
+                      >
+                        ▼
+                      </button>
+                      <button style={styles.cardBtn} onClick={() => setForm((f) => ({ ...f, viewerImageId: image.id }))}>Dùng làm viewer</button>
+                      <button style={styles.cardBtn} onClick={() => setForm((f) => ({ ...f, thumbnailImageId: image.id }))}>Dùng làm thumb</button>
+                      <button style={{ ...styles.cardBtn, color: '#c85a5a' }} onClick={() => removeImage(image.id)}>Xóa</button>
+                    </div>
                   </div>
                 </div>
               ))}

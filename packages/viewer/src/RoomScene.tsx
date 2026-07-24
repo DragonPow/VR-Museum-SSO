@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
+import * as THREE from 'three'
 import { resolveAssetUrl, resolveDocumentImageVariantUrl } from '@vm/shared'
 import type { Room, DocumentIndexItem, Slot, Vec3 } from '@vm/shared'
 import { getRoomSurfaces, getRoomDimensions } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
 import { RoomModel } from './RoomModel.js'
-import { HERO_SLOT_ID } from './slotIds.js'
+import { isBackdropSlotId } from './slotIds.js'
 import type { ExtractedSlot, TitleAnchor } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
 import { ZoneTitle } from './ZoneTitle.js'
@@ -14,6 +15,59 @@ import { FloorPortal } from './FloorPortal.js'
 import { NavController } from './NavController.js'
 import type { RoomBounds } from './NavController.js'
 import type { CameraState } from './NavController.js'
+
+
+const HIDDEN_ZONE_TITLE_KEYS = new Set(['K5'])
+
+
+function buildK5BackdropSlot(
+  json: Slot,
+  resolvedSlots: (Slot & { hasBlenderFrame: boolean })[],
+): (Slot & { hasBlenderFrame: boolean }) | null {
+  const k5Slots = resolvedSlots
+    .filter((slot) => /^VM_Slot_K5_CD_\d{2}$/i.test(slot.id) && slot.transform)
+    .sort((a, b) => a.id.localeCompare(b.id))
+
+  if (k5Slots.length < 2) return null
+
+  const firstSlot = k5Slots[0]
+  if (!firstSlot) return null
+  const base = firstSlot.transform!
+  const rotation = base.rotation
+  const basis = new THREE.Matrix4().makeRotationFromEuler(
+    new THREE.Euler(rotation.x, rotation.y, rotation.z),
+  )
+  const inverseBasis = basis.clone().invert()
+  const origin = new THREE.Vector3(base.position.x, base.position.y, base.position.z)
+  const locals = k5Slots.map((slot) => {
+    const p = slot.transform!.position
+    return new THREE.Vector3(p.x, p.y, p.z).sub(origin).applyMatrix4(inverseBasis)
+  })
+  const xs = locals.map((p) => p.x)
+  const ys = locals.map((p) => p.y)
+  const zs = locals.map((p) => p.z)
+  const minX = Math.min(...xs)
+  const maxX = Math.max(...xs)
+  const avgY = ys.reduce((sum, y) => sum + y, 0) / ys.length
+  const avgZ = zs.reduce((sum, z) => sum + z, 0) / zs.length
+
+  const width = 12.05
+  const height = 2.62
+  const centerLocal = new THREE.Vector3((minX + maxX) / 2, avgY + 0.24, avgZ - 0.08)
+  const centerWorld = centerLocal.clone().applyMatrix4(basis).add(origin)
+
+  return {
+    ...json,
+    viewerVariant: json.viewerVariant ?? 'full',
+    frameStyle: 'none',
+    transform: {
+      position: { x: centerWorld.x, y: centerWorld.y, z: centerWorld.z },
+      rotation: { ...rotation },
+      size: { w: width, h: height },
+    },
+    hasBlenderFrame: true,
+  }
+}
 
 interface Props {
   room: Room
@@ -168,7 +222,7 @@ export function RoomScene({
     if (glbSlots.length > 0) {
       // GLB-driven: merge extracted positions with JSON metadata
       const jsonById = new Map(room.slots.map((s) => [s.id, s]))
-      return glbSlots
+      const resolved = glbSlots
         .map((gs): Slot & { hasBlenderFrame: boolean } => {
           const json = jsonById.get(gs.id)
           return {
@@ -180,11 +234,27 @@ export function RoomScene({
             frameStyle: gs.hasBlenderFrame ? 'none' : (json?.frameStyle ?? 'classic'),
             documentIds: json?.documentIds ?? [],
             visible: json?.visible ?? true,
+            ...(json?.viewerVariant ? { viewerVariant: json.viewerVariant } : {}),
+            ...(json?.nameplate ? { nameplate: json.nameplate } : {}),
             transform: gs.transform,
             hasBlenderFrame: gs.hasBlenderFrame,
           }
         })
         .filter((s) => s.visible)
+
+      const resolvedIds = new Set(resolved.map((slot) => slot.id))
+      for (const json of room.slots) {
+        if (resolvedIds.has(json.id) || !json.visible || !isBackdropSlotId(json.id)) continue
+        if (json.id === 'VM_Slot_K5_BACKDROP_01') {
+          const backdropSlot = buildK5BackdropSlot(json, resolved)
+          if (backdropSlot) {
+            resolved.push(backdropSlot)
+            resolvedIds.add(backdropSlot.id)
+          }
+        }
+      }
+
+      return resolved
     }
 
     // Procedural room or GLB not yet extracted: use JSON transforms directly
@@ -221,7 +291,7 @@ export function RoomScene({
       {resolvedSlots.map((slot) => {
         const firstId = slot.documentIds?.[0]
         const document = firstId ? documents[firstId] ?? null : null
-        const variant = slot.id === HERO_SLOT_ID ? 'full' : (slot.viewerVariant ?? 'wall')
+        const variant = isBackdropSlotId(slot.id) ? 'full' : (slot.viewerVariant ?? 'wall')
         const viewerTextureUrl = resolveDocumentImageVariantUrl(document?.documentKey ?? null, document?.viewerImageId ?? null, variant, { assetBaseUrl, assetVersion })
 
         return (
@@ -238,7 +308,7 @@ export function RoomScene({
 
       {titleAnchors.map((t) => {
         const label = ZONE_TITLES[t.zoneKey]
-        if (!label) return null
+        if (!label || HIDDEN_ZONE_TITLE_KEYS.has(t.zoneKey)) return null
         return (
           <ZoneTitle
             key={t.zoneKey}

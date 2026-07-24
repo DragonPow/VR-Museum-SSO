@@ -282,6 +282,18 @@ function applyPolygonOffset(obj: THREE.Mesh, factor: number, units: number): voi
 }
 
 
+function normalizedMaterialName(name = ''): string {
+  return name.replace(/\.\d+$/, '')
+}
+
+function isSlotCanvasMaterialName(name = ''): boolean {
+  return normalizedMaterialName(name).includes('SlotCanvas')
+}
+
+function hiddenMaterialNamesHas(hiddenMaterialNames: Set<string>, name = ''): boolean {
+  return hiddenMaterialNames.has(name) || hiddenMaterialNames.has(normalizedMaterialName(name))
+}
+
 function makeInvisibleMaterial(name = ''): THREE.MeshBasicMaterial {
   const mat = new THREE.MeshBasicMaterial({
     transparent: true,
@@ -295,11 +307,11 @@ function makeInvisibleMaterial(name = ''): THREE.MeshBasicMaterial {
   return mat
 }
 
-function applyOriginalSlotMaterials(obj: THREE.Mesh): void {
+function applyOriginalSlotMaterials(obj: THREE.Mesh, hiddenMaterialNames = new Set<string>()): void {
   const originals = originalMaterialsFor(obj)
   const materialFor = (original: THREE.Material | undefined) => {
     const name = original?.name ?? ''
-    if (name === 'SlotCanvas' || name.endsWith('_SlotCanvas')) return makeInvisibleMaterial(name)
+    if (isSlotCanvasMaterialName(name) || hiddenMaterialNamesHas(hiddenMaterialNames, name)) return makeInvisibleMaterial(name)
     return makeOriginalUnlitMaterial(original)
   }
 
@@ -325,7 +337,7 @@ function slotCanvasVertexIndices(obj: THREE.Mesh, originals: THREE.Material[]): 
   const result: number[] = []
   for (const group of geometry.groups) {
     const matName = originals[group.materialIndex ?? 0]?.name ?? ''
-    if (matName !== 'SlotCanvas' && !matName.endsWith('_SlotCanvas')) continue
+    if (!isSlotCanvasMaterialName(matName)) continue
 
     for (let i = group.start; i < group.start + group.count; i++) {
       const vertexIndex = indexAttr ? indexAttr.getX(i) : i
@@ -602,7 +614,7 @@ export function RoomModel({
       obj.receiveShadow = false
       obj.frustumCulled = true
       const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-      const isCanvas = mats.some((m) => m?.name === 'SlotCanvas' || m?.name?.endsWith('_SlotCanvas'))
+      const isCanvas = mats.some((m) => isSlotCanvasMaterialName(m?.name ?? ''))
       const isSlot = obj.name.startsWith(VM_SLOT_PREFIX)
 
       if (!isSlot) {
@@ -923,46 +935,92 @@ export function RoomModel({
         // SlotFrame can place the live image without the pale GLB placeholder washing
         // over it.
         entry.hasFrame = true
-        applyOriginalSlotMaterials(obj)
+        const hiddenSlotMaterials = /^VM_Slot_K5_CD_\d{2}$/i.test(slotId)
+          ? new Set(['Inside', 'Gold'])
+          : undefined
+        applyOriginalSlotMaterials(obj, hiddenSlotMaterials)
 
         const posAttr = obj.geometry?.getAttribute('position')
         const nrmAttr = obj.geometry?.getAttribute('normal')
         const canvasVertexIndices = slotCanvasVertexIndices(obj, originalMaterialsFor(obj))
         if (posAttr) {
           // The slot tilt (leaning against the wall) is baked into the mesh
-          // VERTICES â€” VM_Slot nodes export with identity rotation â€” so we must
-          // derive the canvas basis from geometry, not from the node transform.
+          // vertices. First collect the actual SlotCanvas vertices in world space.
           const normalMat = new THREE.Matrix3().getNormalMatrix(obj.matrixWorld)
+          const measureIndices = canvasVertexIndices ?? Array.from({ length: posAttr.count }, (_v, i) => i)
+          const points = measureIndices.map((i) =>
+            new THREE.Vector3().fromBufferAttribute(posAttr, i).applyMatrix4(obj.matrixWorld),
+          )
 
-          // Outward normal (world space).
-          const normalIndex = canvasVertexIndices?.[0] ?? 0
-          const zAxis = nrmAttr
-            ? new THREE.Vector3(nrmAttr.getX(normalIndex), nrmAttr.getY(normalIndex), nrmAttr.getZ(normalIndex))
-              .applyMatrix3(normalMat).normalize()
-            : new THREE.Vector3(0, 0, 1)
+          const rawNormal = new THREE.Vector3()
+          if (points.length >= 3) {
+            const p0 = points[0]
+            for (let i = 2; i < points.length; i++) {
+              const pi_1 = points[i - 1]
+              const pi = points[i]
+              if (p0 && pi_1 && pi) {
+                rawNormal.crossVectors(
+                  pi_1.clone().sub(p0),
+                  pi.clone().sub(p0),
+                )
+                if (rawNormal.lengthSq() > 1e-8) {
+                  rawNormal.normalize()
+                  break
+                }
+              }
+            }
+          }
+          if (rawNormal.lengthSq() <= 1e-8 && nrmAttr) {
+            const normalIndex = canvasVertexIndices?.[0] ?? 0
+            rawNormal
+              .set(nrmAttr.getX(normalIndex), nrmAttr.getY(normalIndex), nrmAttr.getZ(normalIndex))
+              .applyMatrix3(normalMat)
+              .normalize()
+          }
 
-          // In-plane "up" = world-up projected onto the plane. For a canvas leaning
-          // back, this tilts back with it; for a flat wall picture it stays vertical.
+          // If the canvas lies on an axis-aligned wall plane, lock the normal to that
+          // world axis. This prevents tiny bevel/vertex-order artifacts from rotating
+          // live images out of the frame.
+          const xs = points.map((p) => p?.x ?? 0)
+          const ys = points.map((p) => p?.y ?? 0)
+          const zs = points.map((p) => p?.z ?? 0)
+          const ranges = [
+            Math.max(...xs) - Math.min(...xs),
+            Math.max(...ys) - Math.min(...ys),
+            Math.max(...zs) - Math.min(...zs),
+          ]
+          const minRange = Math.min(...ranges)
+          const normalAxisIndex = ranges.indexOf(minRange)
+          const axisNormals = [
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(0, 1, 0),
+            new THREE.Vector3(0, 0, 1),
+          ]
+          const selectedAxisNormal = axisNormals[normalAxisIndex]
+          const zAxis = minRange < 0.03
+            ? (selectedAxisNormal ? selectedAxisNormal.clone() : new THREE.Vector3(0, 0, 1))
+            : (rawNormal.lengthSq() > 1e-8 ? rawNormal.clone() : new THREE.Vector3(0, 0, 1))
+          if (rawNormal.lengthSq() > 1e-8 && zAxis.dot(rawNormal) < 0) zAxis.negate()
+
+          // In-plane "up" = world-up projected onto the plane. For a flat wall picture
+          // it stays vertical; for tilted canvases it follows the authored tilt.
           const worldUp = new THREE.Vector3(0, 1, 0)
           const yAxis = worldUp.clone().addScaledVector(zAxis, -worldUp.dot(zAxis))
-          if (yAxis.lengthSq() < 1e-6) yAxis.set(0, 1, 0) // fallback (horizontal plane)
+          if (yAxis.lengthSq() < 1e-6) yAxis.set(0, 0, 1)
           yAxis.normalize()
           const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis).normalize()
 
           // Measure width/height + centroid by projecting the world-space vertices
-          // onto the plane basis (correct for any tilt).
-          const v = new THREE.Vector3()
+          // onto the plane basis.
           const centroid = new THREE.Vector3()
           let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
-          const measureIndices = canvasVertexIndices ?? Array.from({ length: posAttr.count }, (_v, i) => i)
-          for (const i of measureIndices) {
-            v.fromBufferAttribute(posAttr, i).applyMatrix4(obj.matrixWorld)
+          for (const v of points) {
             centroid.add(v)
             const px = v.dot(xAxis), py = v.dot(yAxis)
             if (px < minX) minX = px; if (px > maxX) maxX = px
             if (py < minY) minY = py; if (py > maxY) maxY = py
           }
-          centroid.divideScalar(measureIndices.length)
+          centroid.divideScalar(points.length)
 
           entry.pos.copy(centroid)
           entry.w = maxX - minX

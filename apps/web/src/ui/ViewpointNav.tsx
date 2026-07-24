@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import type { Viewpoint } from '@vm/shared'
 import { brand, glassPanel } from './theme.js'
 
@@ -10,45 +11,146 @@ interface Props {
   showGyro: boolean
 }
 
+function DropdownItem({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...styles.dropdownItem,
+        background: active
+          ? 'rgba(16,80,160,0.08)'
+          : hovered
+          ? 'rgba(16,80,160,0.04)'
+          : 'transparent',
+        fontWeight: active ? 800 : 500,
+        color: active ? brand.blue : brand.text,
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
 export function ViewpointNav({ viewpoints, activeId, onSelect, gyroEnabled, onGyroToggle, showGyro }: Props) {
   const idx = viewpoints.findIndex((v) => v.id === activeId)
-  const prev = idx > 0 ? viewpoints[idx - 1] : null
-  const next = idx < viewpoints.length - 1 ? viewpoints[idx + 1] : null
+  const hasMultiple = viewpoints.length > 1
+  const prevIdx = hasMultiple ? (idx - 1 + viewpoints.length) % viewpoints.length : idx
+  const nextIdx = hasMultiple ? (idx + 1) % viewpoints.length : idx
+
+  const prev = hasMultiple ? viewpoints[prevIdx] : null
+  const next = hasMultiple ? viewpoints[nextIdx] : null
+
+  const [isOpen, setIsOpen] = useState(false)
+  const [triggerHovered, setTriggerHovered] = useState(false)
+  const [prevHovered, setPrevHovered] = useState(false)
+  const [nextHovered, setNextHovered] = useState(false)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <div style={styles.wrap}>
       <button
-        style={{ ...styles.arrowBtn, opacity: prev ? 1 : 0.3 }}
-        onClick={() => prev && onSelect(prev.id)}
-        disabled={!prev}
+        style={{
+          ...styles.arrowBtn,
+          opacity: hasMultiple ? 1 : 0.3,
+          background: hasMultiple && prevHovered ? 'rgba(16,80,160,0.15)' : 'rgba(16,80,160,0.08)',
+          transform: hasMultiple && prevHovered ? 'scale(1.05)' : 'scale(1)',
+        }}
+        onMouseEnter={() => setPrevHovered(true)}
+        onMouseLeave={() => setPrevHovered(false)}
+        onClick={() => {
+          prev && onSelect(prev.id)
+          setIsOpen(false)
+        }}
+        disabled={!hasMultiple}
         title={prev ? "Trước: " + prev.name : undefined}
       ><ChevronLeft />
       </button>
 
-      <div style={styles.dotsRow}>
-        {viewpoints.map((vp) => (
-          <button
-            key={vp.id}
+      <div ref={containerRef} style={styles.selectContainer}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          onMouseEnter={() => setTriggerHovered(true)}
+          onMouseLeave={() => setTriggerHovered(false)}
+          style={{
+            ...styles.selectTrigger,
+            background: isOpen || triggerHovered ? 'rgba(16,80,160,0.06)' : 'transparent',
+          }}
+        >
+          <span style={styles.triggerText}>
+            {viewpoints.find((v) => v.id === activeId)?.name ?? ''}
+          </span>
+          <svg
             style={{
-              ...styles.dot,
-              background: vp.id === activeId ? brand.blue : 'rgba(16,80,160,0.22)',
-              boxShadow: vp.id === activeId ? '0 0 0 4px rgba(16,80,160,0.13)' : 'none',
-              transform: vp.id === activeId ? 'scale(1.35)' : 'scale(1)',
+              ...styles.chevron,
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             }}
-            onClick={() => onSelect(vp.id)}
-            title={vp.name}
-          />
-        ))}
-      </div>
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
 
-      <div style={styles.label}>
-        {viewpoints.find((v) => v.id === activeId)?.name ?? ''}
+        {isOpen && (
+          <div style={styles.dropdownMenu}>
+            {viewpoints.map((vp) => (
+              <DropdownItem
+                key={vp.id}
+                active={vp.id === activeId}
+                onClick={() => {
+                  onSelect(vp.id)
+                  setIsOpen(false)
+                }}
+              >
+                {vp.name}
+              </DropdownItem>
+            ))}
+          </div>
+        )}
       </div>
 
       <button
-        style={{ ...styles.arrowBtn, opacity: next ? 1 : 0.3 }}
-        onClick={() => next && onSelect(next.id)}
-        disabled={!next}
+        style={{
+          ...styles.arrowBtn,
+          opacity: hasMultiple ? 1 : 0.3,
+          background: hasMultiple && nextHovered ? 'rgba(16,80,160,0.15)' : 'rgba(16,80,160,0.08)',
+          transform: hasMultiple && nextHovered ? 'scale(1.05)' : 'scale(1)',
+        }}
+        onMouseEnter={() => setNextHovered(true)}
+        onMouseLeave={() => setNextHovered(false)}
+        onClick={() => {
+          next && onSelect(next.id)
+          setIsOpen(false)
+        }}
+        disabled={!hasMultiple}
         title={next ? "Tiếp: " + next.name : undefined}
       ><ChevronRight />
       </button>
@@ -111,18 +213,71 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(16,80,160,0.08)', border: `1px solid ${brand.line}`,
     color: brand.blue, fontSize: '0', cursor: 'pointer',
     borderRadius: '8px',
-    transition: 'opacity 0.15s',
+    transition: 'all 0.2s ease',
     lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '30px', height: '30px',
   },
-  dotsRow: { display: 'flex', gap: '7px', alignItems: 'center' },
-  dot: {
-    width: '9px', height: '9px', borderRadius: '50%',
-    border: 'none', cursor: 'pointer',
-    transition: 'all 0.2s', flexShrink: 0,
+  selectContainer: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    position: 'relative',
   },
-  label: {
-    fontSize: '12px', color: brand.text, whiteSpace: 'nowrap',
-    minWidth: '80px', textAlign: 'center', fontWeight: 800,
+  selectTrigger: {
+    fontFamily: brand.fontFamily,
+    fontSize: '13px',
+    fontWeight: 800,
+    color: brand.blue,
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    cursor: 'pointer',
+    padding: '6px 12px',
+    borderRadius: '8px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    userSelect: 'none',
+    transition: 'background-color 0.2s ease',
+  },
+  triggerText: {
+    whiteSpace: 'nowrap',
+    minWidth: '80px',
+    textAlign: 'center',
+  },
+  chevron: {
+    transition: 'transform 0.2s ease',
+    flexShrink: 0,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    bottom: 'calc(100% + 12px)',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '180px',
+    maxHeight: '240px',
+    overflowY: 'auto',
+    ...glassPanel,
+    background: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: '16px',
+    padding: '6px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    zIndex: 100,
+    boxShadow: '0 10px 30px rgba(8,47,109,0.15)',
+  },
+  dropdownItem: {
+    fontFamily: brand.fontFamily,
+    fontSize: '13px',
+    border: 'none',
+    outline: 'none',
+    cursor: 'pointer',
+    padding: '8px 12px',
+    borderRadius: '10px',
+    textAlign: 'center',
+    width: '100%',
+    transition: 'all 0.15s ease',
+    whiteSpace: 'nowrap',
+    display: 'block',
   },
   gyroBtn: {
     border: '1px solid', borderRadius: '14px',

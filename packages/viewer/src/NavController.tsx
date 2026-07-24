@@ -408,7 +408,8 @@ export function NavController({
 
   // ── Frame loop ──────────────────────────────────────────────────────────────
   useFrame((_, delta) => {
-    const t = Math.min(1, 8 * delta)
+    const dt = Math.min(delta, 0.03) // limit to max 30fps step to prevent camera snaps on frame drops
+    const t = Math.min(1, 8 * dt)
 
     // ── Keyboard: velocity-based movement with smooth acceleration ──────────────
     {
@@ -446,12 +447,12 @@ export function NavController({
       const targetVZ = wantZ * MOVE_SPEED
 
       // Ease velocity toward target (start/stop feel natural, not instant)
-      const accel = Math.min(1, ACCEL_FACTOR * delta)
+      const accel = Math.min(1, ACCEL_FACTOR * dt)
       velocity.current.x += (targetVX - velocity.current.x) * accel
       velocity.current.z += (targetVZ - velocity.current.z) * accel
 
-      const dx = velocity.current.x * delta
-      const dz = velocity.current.z * delta
+      const dx = velocity.current.x * dt
+      const dz = velocity.current.z * dt
 
       if (Math.abs(dx) > 0.0001 || Math.abs(dz) > 0.0001) {
         const r = applyMove(targetPos.current, dx, dz, bounds, obstacles)
@@ -471,13 +472,13 @@ export function NavController({
       const cosY = Math.cos(yaw.current)
       const wdx = -sinY * mob.dz + cosY * mob.dx
       const wdz = -cosY * mob.dz - sinY * mob.dx
-      const accel = Math.min(1, ACCEL_FACTOR * delta)
+      const accel = Math.min(1, ACCEL_FACTOR * dt)
       velocity.current.x += (wdx * MOVE_SPEED - velocity.current.x) * accel
       velocity.current.z += (wdz * MOVE_SPEED - velocity.current.z) * accel
       const rm = applyMove(
         targetPos.current,
-        velocity.current.x * delta,
-        velocity.current.z * delta,
+        velocity.current.x * dt,
+        velocity.current.z * dt,
         bounds,
         obstacles,
       )
@@ -496,7 +497,7 @@ export function NavController({
       if (dist < 0.06) {
         walkTarget.current = null
       } else {
-        const step = Math.min(dist, WALK_SPEED * delta)
+        const step = Math.min(dist, WALK_SPEED * dt)
         const rw = applyMove(targetPos.current, (dx / dist) * step, (dz / dist) * step, bounds, obstacles)
         // Fully wedged against an obstacle → abandon the target so we don't keep
         // shoving into it (avoids jitter when the clicked point is unreachable).
@@ -523,7 +524,7 @@ export function NavController({
     // Gyro look: ease toward the latest sensor target at a frame-rate-independent
     // rate. This is what makes phone-tilt looking smooth instead of steppy/laggy.
     if (gyroEnabled && gyroTarget.current) {
-      const k = 1 - Math.exp(-GYRO_LERP * delta)
+      const k = 1 - Math.exp(-GYRO_LERP * dt)
       let gdyaw = gyroTarget.current.yaw - yaw.current
       while (gdyaw > Math.PI) gdyaw -= 2 * Math.PI
       while (gdyaw < -Math.PI) gdyaw += 2 * Math.PI
