@@ -14,6 +14,55 @@ function getDocumentTypeLabel(document: DocumentItem) {
   return 'Ảnh'
 }
 
+function Pagination({ current, total, onChange }: { current: number; total: number; onChange: (p: number) => void }) {
+  if (total <= 1) return null
+
+  const pages: (number | string)[] = []
+  const range = 2
+
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || (i >= current - range && i <= current + range)) {
+      pages.push(i)
+    } else if (pages[pages.length - 1] !== '...') {
+      pages.push('...')
+    }
+  }
+
+  return (
+    <div style={styles.pagination}>
+      <button
+        style={{ ...styles.pageBtn, ...(current === 1 ? styles.pageBtnDisabled : {}) }}
+        disabled={current === 1}
+        onClick={() => onChange(current - 1)}
+      >
+        ◀ Trước
+      </button>
+      {pages.map((p, idx) =>
+        typeof p === 'number' ? (
+          <button
+            key={idx}
+            style={{ ...styles.pageBtn, ...(current === p ? styles.pageBtnActive : {}) }}
+            onClick={() => onChange(p)}
+          >
+            {p}
+          </button>
+        ) : (
+          <span key={idx} style={styles.pageEllipsis}>
+            {p}
+          </span>
+        )
+      )}
+      <button
+        style={{ ...styles.pageBtn, ...(current === total ? styles.pageBtnDisabled : {}) }}
+        disabled={current === total}
+        onClick={() => onChange(current + 1)}
+      >
+        Sau ▶
+      </button>
+    </div>
+  )
+}
+
 export function Assign() {
   const content = useDraftStore((s) => s.content)
   const assignDocuments = useDraftStore((s) => s.assignDocuments)
@@ -23,6 +72,8 @@ export function Assign() {
   const [draftIds, setDraftIds] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [periodFilter, setPeriodFilter] = useState('')
+  const [pickerPage, setPickerPage] = useState(1)
+  const ITEMS_PER_PAGE = 24
 
   if (!content) return <div style={styles.center}>Đang tải...</div>
 
@@ -45,9 +96,15 @@ export function Assign() {
     return documents
   }, [content.documents, search, periodFilter])
 
+  const pickerTotalPages = Math.ceil(pickerDocuments.length / ITEMS_PER_PAGE)
+  const displayedPickerDocs = useMemo(() => {
+    return pickerDocuments.slice((pickerPage - 1) * ITEMS_PER_PAGE, pickerPage * ITEMS_PER_PAGE)
+  }, [pickerDocuments, pickerPage])
+
   const openPicker = (slot: Slot) => {
     setPickerSlot(slot)
     setDraftIds(slot.documentIds ?? [])
+    setPickerPage(1)
   }
 
   const toggleDocument = (documentId: string) => {
@@ -173,8 +230,8 @@ export function Assign() {
             </div>
 
             <div style={styles.pickerFilters}>
-              <input autoFocus placeholder="Tìm theo tên, năm, tag, loại..." value={search} onChange={(e) => setSearch(e.target.value)} style={styles.pickerSearch} />
-              <select value={periodFilter} onChange={(e) => setPeriodFilter(e.target.value)} style={styles.pickerSelect}>
+              <input autoFocus placeholder="Tìm theo tên, năm, tag, loại..." value={search} onChange={(e) => { setSearch(e.target.value); setPickerPage(1); }} style={styles.pickerSearch} />
+              <select value={periodFilter} onChange={(e) => { setPeriodFilter(e.target.value); setPickerPage(1); }} style={styles.pickerSelect}>
                 <option value="">Tất cả thời kỳ</option>
                 {content.periods.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
               </select>
@@ -182,7 +239,7 @@ export function Assign() {
 
             <div style={styles.pickerGrid}>
               {content.documents.length === 0 && <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>Chưa có tư liệu nào. Hãy thêm tư liệu trước.</div>}
-              {pickerDocuments.map((document) => {
+              {displayedPickerDocs.map((document) => {
                 const active = draftIds.includes(document.id)
                 return (
                   <div key={document.id} style={{ ...styles.pickerItem, ...(active ? styles.pickerItemActive : {}) }} onClick={() => toggleDocument(document.id)}>
@@ -198,6 +255,8 @@ export function Assign() {
               })}
               {pickerDocuments.length === 0 && content.documents.length > 0 && <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>Không tìm thấy tư liệu phù hợp.</div>}
             </div>
+
+            <Pagination current={pickerPage} total={pickerTotalPages} onChange={setPickerPage} />
 
             <div style={styles.modalFooter}>
               <button style={styles.cancelBtn} onClick={() => setPickerSlot(null)}>Hủy</button>
@@ -317,4 +376,21 @@ const styles: Record<string, React.CSSProperties> = {
   modalFooter: { display: 'flex', justifyContent: 'flex-end', gap: '10px', padding: '14px 24px', borderTop: '1px solid #2a1e10', flexShrink: 0 },
   cancelBtn: { padding: '8px 14px', background: 'none', border: '1px solid #3a2e1e', borderRadius: '6px', color: '#9a9080', cursor: 'pointer' },
   submitBtn: { padding: '8px 16px', background: '#c8a85a', border: 'none', borderRadius: '6px', color: '#0a0804', fontWeight: 700, cursor: 'pointer' },
+  pagination: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+    padding: '16px 24px', borderTop: '1px solid #1a1208', flexShrink: 0,
+  },
+  pageBtn: {
+    padding: '6px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid #3a2e1e',
+    borderRadius: '6px', color: '#9a9080', cursor: 'pointer', fontSize: '12px', transition: 'all 0.2s',
+  },
+  pageBtnActive: {
+    background: 'rgba(200,168,90,0.15)', border: '1px solid #c8a85a', color: '#c8a85a', fontWeight: 600,
+  },
+  pageBtnDisabled: {
+    opacity: 0.4, cursor: 'not-allowed',
+  },
+  pageEllipsis: {
+    color: '#6a5a40', padding: '0 4px', fontSize: '12px',
+  },
 }
