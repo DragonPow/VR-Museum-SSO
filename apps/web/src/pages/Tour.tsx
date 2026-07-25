@@ -42,6 +42,26 @@ export function Tour({ content, onBack }: Props) {
   const useFallback = shouldUseFallback()
   const mobileMoveRef = useRef<{ dx: number; dz: number }>({ dx: 0, dz: 0 })
 
+  // States for Gyro tooltip and pulse hint on mobile
+  const [showTooltip, setShowTooltip] = useState(isMobile)
+  const [showPulse, setShowPulse] = useState(isMobile)
+
+  // Auto-hide hints after 6 seconds
+  useEffect(() => {
+    if (!isMobile) return
+    const timer = setTimeout(() => {
+      setShowTooltip(false)
+      setShowPulse(false)
+    }, 6000)
+    return () => clearTimeout(timer)
+  }, [isMobile])
+
+  const handleGyroClick = () => {
+    toggleGyro()
+    setShowTooltip(false)
+    setShowPulse(false)
+  }
+
   // Sync content into the navigation store. Published content can change while the
   // tab stays open, so refresh the store when updatedAt changes.
   useEffect(() => {
@@ -131,13 +151,36 @@ export function Tour({ content, onBack }: Props) {
         showGyro={false}
       />
 
-      {/* Mobile: D-pad movement + gyro toggle (bottom left) */}
+      {/* Mobile: Joystick movement */}
       {isMobile && (
         <MobileControls
           moveRef={mobileMoveRef}
-          gyroEnabled={gyroEnabled}
-          onGyroToggle={toggleGyro}
         />
+      )}
+
+      {/* Mobile: Gyroscope Sensor Toggle (top right, symmetry with Home button) */}
+      {isMobile && (
+        <div style={gyroContainer}>
+          <button
+            style={{
+              ...gyroBtn,
+              ...(gyroEnabled ? gyroBtnOn : {}),
+            }}
+            onClick={handleGyroClick}
+            title={gyroEnabled ? "Tắt xoay 360°" : "Bật xoay 360°"}
+            aria-label="Cảm biến xoay"
+          >
+            <PhoneGyroIcon />
+          </button>
+          
+          {showTooltip && (
+            <div style={tooltip}>
+              Chạm để xoay nhìn quanh bằng cảm biến điện thoại
+              <div style={tooltipArrow} />
+            </div>
+          )}
+          {showPulse && <span style={pulseBadge} />}
+        </div>
       )}
 
       {/* Drag hint — fades out after 4s */}
@@ -247,4 +290,93 @@ const retryBtn: React.CSSProperties = {
   color: '#ffffff',
   borderRadius: 6,
   cursor: 'pointer',
+}
+
+function PhoneGyroIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+      <path d="M12 18h.01" />
+      <path d="M17 12h.01" />
+      <path d="M7 12h.01" />
+      <path d="M3 8c0-2 1.5-4 4-4" strokeWidth="1.5" />
+      <path d="M21 16c0 2-1.5 4-4 4" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
+const gyroContainer: React.CSSProperties = {
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  zIndex: 10,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+}
+
+const gyroBtn: React.CSSProperties = {
+  ...glassPanel,
+  width: 38,
+  height: 38,
+  borderRadius: '50%',
+  color: brand.blue,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 0,
+  transition: 'all 0.2s ease',
+  boxShadow: '0 4px 12px rgba(8,47,109,0.15)',
+}
+
+const gyroBtnOn: React.CSSProperties = {
+  background: brand.blue,
+  borderColor: brand.blueDark,
+  color: '#ffffff',
+  boxShadow: '0 4px 12px rgba(16,80,160,0.35)',
+}
+
+const pulseBadge: React.CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  width: 10,
+  height: 10,
+  borderRadius: '50%',
+  background: '#ff3b30',
+  border: '2.5px solid #ffffff',
+  pointerEvents: 'none',
+  animation: 'pulse 1.6s infinite',
+}
+
+const tooltip: React.CSSProperties = {
+  position: 'absolute',
+  top: 48,
+  right: 0,
+  width: 170,
+  background: 'rgba(16, 80, 160, 0.94)',
+  color: '#ffffff',
+  padding: '8px 12px',
+  borderRadius: '8px',
+  fontSize: '11px',
+  lineHeight: '1.35',
+  textAlign: 'center',
+  boxShadow: '0 8px 24px rgba(8,47,109,0.22)',
+  pointerEvents: 'none',
+  backdropFilter: 'blur(5px)',
+  zIndex: 12,
+  fontWeight: '600',
+  border: '1px solid rgba(255,255,255,0.15)',
+}
+
+const tooltipArrow: React.CSSProperties = {
+  position: 'absolute',
+  top: -5,
+  right: 14,
+  width: 0,
+  height: 0,
+  borderLeft: '5px solid transparent',
+  borderRight: '5px solid transparent',
+  borderBottom: '5px solid rgba(16, 80, 160, 0.94)',
 }

@@ -41,7 +41,7 @@ const EYE_HEIGHT = 1.6
 // Gyro look smoothing: eased toward the latest sensor reading via
 // 1 - exp(-GYRO_LERP * delta) so it feels identical at any frame rate.
 // Higher = snappier, lower = smoother/floatier.
-const GYRO_LERP = 18
+const GYRO_LERP = 10
 const PLAYER_RADIUS = 0.32
 // The invisible floor hit target needs to reach slightly beyond the walkable
 // clamp. Otherwise clicks near perimeter walls can hit the rendered floor/wall
@@ -212,6 +212,7 @@ export function NavController({
   const targetYaw = useRef(Math.PI)
   const targetPitch = useRef(0)
   const transitioning = useRef(false)
+  const moveYaw = useRef(Math.PI)
 
   // Velocity for smooth keyboard acceleration/deceleration
   const velocity = useRef({ x: 0, z: 0 })
@@ -246,6 +247,7 @@ export function NavController({
     pitch.current = initPitch
     targetYaw.current = initYaw
     targetPitch.current = initPitch
+    moveYaw.current = initYaw
     transitioning.current = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // intentionally empty: component unmounts/remounts on every room change
@@ -261,6 +263,8 @@ export function NavController({
     targetPos.current.copy(pos)
     targetYaw.current = y
     targetPitch.current = p
+    // Reset moveYaw to target to prevent walking in wrong direction after snap
+    moveYaw.current = y
     // Always ease the FACING to the viewpoint's saved angle — even when already standing at
     // its position. (Previously the angle was applied only when travelling to a new spot, so
     // clicking a viewpoint at/near your position moved the body but kept the old facing →
@@ -371,7 +375,8 @@ export function NavController({
 
       // Low-pass the raw sensor first — the magnetometer-derived `alpha` twitches even
       // when the phone is held still, which is what made the view jitter on tiny moves.
-      const S = 0.25
+      // S value is reduced to 0.08 for stronger filtering of high-frequency magnetometer jitter on mobile
+      const S = 0.08
       const sm = gyroSmooth.current!
       let sda = e.alpha - sm.alpha
       if (sda > 180) sda -= 360
@@ -410,6 +415,12 @@ export function NavController({
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.03) // limit to max 30fps step to prevent camera snaps on frame drops
     const t = Math.min(1, 8 * dt)
+
+    // Smooth moveYaw to match yaw.current, filtered heavily to prevent gyro jitter from messing up movement direction.
+    let dMoveYaw = yaw.current - moveYaw.current
+    while (dMoveYaw > Math.PI) dMoveYaw -= 2 * Math.PI
+    while (dMoveYaw < -Math.PI) dMoveYaw += 2 * Math.PI
+    moveYaw.current += dMoveYaw * Math.min(1, 4.5 * dt)
 
     // ── Keyboard: velocity-based movement with smooth acceleration ──────────────
     {
@@ -468,8 +479,8 @@ export function NavController({
     // ── Mobile D-pad (same accel model) ─────────────────────────────────────────
     const mob = mobileMoveRef?.current
     if (mob && (mob.dx !== 0 || mob.dz !== 0)) {
-      const sinY = Math.sin(yaw.current)
-      const cosY = Math.cos(yaw.current)
+      const sinY = Math.sin(moveYaw.current)
+      const cosY = Math.cos(moveYaw.current)
       const wdx = -sinY * mob.dz + cosY * mob.dx
       const wdz = -cosY * mob.dz - sinY * mob.dx
       const accel = Math.min(1, ACCEL_FACTOR * dt)

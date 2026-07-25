@@ -1,163 +1,179 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { brand } from './theme.js'
 
 interface Props {
   moveRef: { current: { dx: number; dz: number } }
-  gyroEnabled: boolean
-  onGyroToggle: () => void
 }
 
-type Dir = 'up' | 'down' | 'left' | 'right'
+const JOYSTICK_SIZE = 100
+const KNOB_SIZE = 42
+const MAX_RADIUS = 35 // Maximum distance the knob can move from center
 
-export function MobileControls({ moveRef, gyroEnabled, onGyroToggle }: Props) {
-  const pressed = useRef<Record<Dir, boolean>>({ up: false, down: false, left: false, right: false })
+export function MobileControls({ moveRef }: Props) {
+  const [knobPos, setKnobPos] = useState({ x: 0, y: 0 })
+  const [active, setActive] = useState(false)
+  const startRef = useRef({ x: 0, y: 0 })
 
-  function sync() {
-    moveRef.current.dz = (pressed.current.up ? 1 : 0) - (pressed.current.down ? 1 : 0)
-    moveRef.current.dx = (pressed.current.right ? 1 : 0) - (pressed.current.left ? 1 : 0)
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setActive(true)
+    startRef.current = { x: e.clientX, y: e.clientY }
+    // Wake up the R3F render loop (which runs on 'demand' mode)
+    window.dispatchEvent(new Event('vm:wake'))
   }
 
-  function makeHandlers(dir: Dir) {
-    return {
-      onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
-        e.currentTarget.setPointerCapture(e.pointerId)
-        pressed.current[dir] = true
-        sync()
-        // Boot the render loop (frameloop='demand'); NavController listens for this.
-        window.dispatchEvent(new Event('vm:wake'))
-      },
-      onPointerUp: () => { pressed.current[dir] = false; sync() },
-      onPointerCancel: () => { pressed.current[dir] = false; sync() },
-      onPointerLeave: () => { pressed.current[dir] = false; sync() },
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!active) return
+
+    const dX = e.clientX - startRef.current.x
+    const dY = e.clientY - startRef.current.y
+    const dist = Math.sqrt(dX * dX + dY * dY)
+
+    let finalX = dX
+    let finalY = dY
+
+    if (dist > MAX_RADIUS) {
+      finalX = (dX / dist) * MAX_RADIUS
+      finalY = (dY / dist) * MAX_RADIUS
+    }
+
+    setKnobPos({ x: finalX, y: finalY })
+
+    // dx = speed factor right/left (-1 to 1)
+    // dz = speed factor forward/backward (-1 to 1). Note that pulling down (positive dY) is going backward (negative dz)
+    moveRef.current.dx = finalX / MAX_RADIUS
+    moveRef.current.dz = -finalY / MAX_RADIUS
+
+    window.dispatchEvent(new Event('vm:wake'))
+  }
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    setActive(false)
+    setKnobPos({ x: 0, y: 0 })
+    moveRef.current.dx = 0
+    moveRef.current.dz = 0
+    
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch (err) {
+      // Ignore pointer capture errors
     }
   }
 
   return (
     <div style={styles.wrap}>
-      {/* Gyro toggle button */}
-      <button
+      {/* Virtual Joystick Container */}
+      <div
         style={{
-          ...styles.gyroBtn,
-          ...(gyroEnabled ? styles.gyroBtnOn : {}),
+          ...styles.joystickContainer,
+          borderColor: active ? brand.blue : brand.line,
+          background: active ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.38)',
         }}
-        onClick={onGyroToggle}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
-        <PhoneIcon />
-        <span style={{ fontSize: '10px', marginTop: '1px' }}>
-          {gyroEnabled ? 'Cảm biến BẬT' : 'Cảm biến TẮT'}
-        </span>
-      </button>
+        {/* Subtle direction indicators in background */}
+        <div style={styles.indicators}>
+          <div style={styles.arrowUp}>▲</div>
+          <div style={styles.arrowDown}>▼</div>
+          <div style={styles.arrowLeft}>◀</div>
+          <div style={styles.arrowRight}>▶</div>
+        </div>
 
-      {/* D-pad */}
-      <div style={styles.dpad}>
-        <div style={styles.row}>
-          <span style={styles.corner} />
-          <button style={styles.btn} {...makeHandlers('up')}><ChevronUp /></button>
-          <span style={styles.corner} />
-        </div>
-        <div style={styles.row}>
-          <button style={styles.btn} {...makeHandlers('left')}><ChevronLeft /></button>
-          <span style={styles.center} />
-          <button style={styles.btn} {...makeHandlers('right')}><ChevronRight /></button>
-        </div>
-        <div style={styles.row}>
-          <span style={styles.corner} />
-          <button style={styles.btn} {...makeHandlers('down')}><ChevronDown /></button>
-          <span style={styles.corner} />
-        </div>
+        {/* Outer subtle ring */}
+        <div style={styles.outerRing} />
+
+        {/* Joystick Knob */}
+        <div
+          style={{
+            ...styles.knob,
+            transform: `translate(${knobPos.x}px, ${knobPos.y}px)`,
+            transition: active ? 'none' : 'transform 0.18s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            background: active ? brand.blue : 'rgba(16, 80, 160, 0.82)',
+          }}
+        />
       </div>
+      <span style={styles.guideText}>Kéo để di chuyển</span>
     </div>
   )
 }
 
-function PhoneIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-      <rect x="7" y="2.5" width="10" height="19" rx="2" stroke="currentColor" strokeWidth="2" />
-      <path d="M11 18h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ChevronUp() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 15l6-6 6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
-function ChevronDown() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
-function ChevronLeft() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
-function ChevronRight() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg> }
-
-const BTN_SIZE = 40
-
 const styles: Record<string, React.CSSProperties> = {
   wrap: {
     position: 'absolute',
-    bottom: '64px',
-    left: '10px',
+    bottom: '48px',
+    left: '24px',
     zIndex: 15,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '6px',
-    opacity: 0.9,
     userSelect: 'none',
     touchAction: 'none',
   },
-  gyroBtn: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: BTN_SIZE * 3 + 4,  // same width as d-pad
-    minHeight: '38px',
-    background: 'rgba(255,255,255,0.88)',
-    border: `1px solid ${brand.line}`,
-    borderRadius: '12px',
-    color: brand.muted,
+  joystickContainer: {
+    width: JOYSTICK_SIZE,
+    height: JOYSTICK_SIZE,
+    borderRadius: '50%',
+    border: `1.5px solid ${brand.line}`,
+    backdropFilter: 'blur(10px)',
+    position: 'relative',
     cursor: 'pointer',
-    backdropFilter: 'blur(8px)',
-    gap: '2px',
-    whiteSpace: 'pre-line',
-    lineHeight: 1.2,
-  },
-  gyroBtnOn: {
-    background: 'rgba(16,80,160,0.12)',
-    borderColor: brand.blue,
-    color: brand.blue,
-  },
-  dpad: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  row: {
-    display: 'flex',
-    gap: '2px',
-  },
-  btn: {
-    width: BTN_SIZE,
-    height: BTN_SIZE,
-    background: 'rgba(255,255,255,0.88)',
-    border: `1px solid ${brand.line}`,
-    borderRadius: '8px',
-    color: brand.blue,
-    fontSize: 0,
-    cursor: 'pointer',
-    backdropFilter: 'blur(8px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
     touchAction: 'none',
-    flexShrink: 0,
+    boxShadow: '0 8px 32px rgba(8, 47, 109, 0.12)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  corner: {
-    width: BTN_SIZE,
-    height: BTN_SIZE,
-    flexShrink: 0,
+  outerRing: {
+    position: 'absolute',
+    inset: '10px',
+    borderRadius: '50%',
+    border: '1px dashed rgba(16, 80, 160, 0.15)',
+    pointerEvents: 'none',
   },
-  center: {
-    width: BTN_SIZE,
-    height: BTN_SIZE,
-    flexShrink: 0,
-    background: 'rgba(16,80,160,0.08)',
-    borderRadius: '8px',
-    border: `1px solid ${brand.line}`,
+  knob: {
+    width: KNOB_SIZE,
+    height: KNOB_SIZE,
+    borderRadius: '50%',
+    boxShadow: '0 4px 14px rgba(8, 47, 109, 0.26)',
+    pointerEvents: 'none',
+    zIndex: 2,
+  },
+  indicators: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+    fontSize: '8px',
+    color: 'rgba(16, 80, 160, 0.25)',
+    fontWeight: 'bold',
+  },
+  arrowUp: {
+    position: 'absolute',
+    top: '6px',
+  },
+  arrowDown: {
+    position: 'absolute',
+    bottom: '6px',
+  },
+  arrowLeft: {
+    position: 'absolute',
+    left: '6px',
+  },
+  arrowRight: {
+    position: 'absolute',
+    right: '6px',
+  },
+  guideText: {
+    fontSize: '10px',
+    color: brand.muted,
+    fontWeight: 'bold',
+    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+    pointerEvents: 'none',
   },
 }
