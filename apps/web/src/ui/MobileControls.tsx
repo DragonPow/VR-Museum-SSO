@@ -103,8 +103,8 @@ export function MobileControls({ moveRef }: Props) {
 const styles: Record<string, React.CSSProperties> = {
   wrap: {
     position: 'absolute',
-    bottom: '48px',
-    left: '24px',
+    bottom: '84px',
+    left: '20px',
     zIndex: 15,
     display: 'flex',
     flexDirection: 'column',
