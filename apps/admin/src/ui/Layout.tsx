@@ -7,6 +7,7 @@ const NAV = [
   { to: '/library',  label: 'Thư viện ảnh',      icon: '🖼' },
   { to: '/assign',   label: 'Gán ảnh vào slot',  icon: '📌' },
   { to: '/preview',  label: 'Xem trước 3D',      icon: '👁' },
+  { to: '/settings', label: 'Cấu hình ảnh',      icon: '⚙️' },
   { to: '/publish',  label: 'Xuất bản',          icon: '🚀' },
 ]
 

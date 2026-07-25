@@ -44,6 +44,13 @@ export const DEFAULT_CONTENT: Content = {
   documentIndex: [],
   documents: [],
   textures: [],
+  settings: {
+    imageRescale: {
+      thumb: 360,
+      wall: 1200,
+      full: 4096,
+    },
+  },
 }
 
 
@@ -80,7 +87,7 @@ export function contentIndexFromContent(
   content: Content,
   dataUrlForRoom: (room: Room) => string,
 ): ContentIndex {
-  return {
+  const result: ContentIndex = {
     version: content.version,
     updatedAt: content.updatedAt,
     defaultRoomId: content.rooms[0]?.id ?? '',
@@ -98,15 +105,23 @@ export function contentIndexFromContent(
     documentIndex: getContentDocumentIndex(content),
     textures: content.textures,
   }
+  if (content.settings !== undefined) {
+    result.settings = content.settings
+  }
+  return result
 }
 
 
 export function contentForPublicIndex(content: Content): Content {
-  return {
+  const result: Content = {
     ...content,
     documentIndex: getContentDocumentIndex(content),
     documents: [],
   }
+  if (content.settings !== undefined) {
+    result.settings = content.settings
+  }
+  return result
 }
 
 export function splitContentForPublish(content: Content): { content: Content; documents: Record<string, DocumentItem> } {

@@ -1,17 +1,20 @@
+import type { ImageRescaleSettings } from '@vm/shared'
+
 export interface ResizedVariants {
   thumb: Blob   // 360px wide  — library thumbnails
   wall: Blob    // 1200px wide — 3D wall texture / slot preview
   full: Blob    // up to 4096px wide — info modal + hi-res backdrop panels
 }
 
-export async function resizeImage(file: File): Promise<ResizedVariants> {
+export async function resizeImage(file: File, settings?: ImageRescaleSettings): Promise<ResizedVariants> {
+  const config = settings ?? { thumb: 360, wall: 1200, full: 4096 }
   const img = await loadImage(file)
   const [thumb, wall, full] = await Promise.all([
-    resizeTo(img, 360, 0.86),
-    resizeTo(img, 1200, 0.88),
-    // "full" keeps near-original resolution (capped at 4096) so large backdrop
+    resizeTo(img, config.thumb, 0.86),
+    resizeTo(img, config.wall, 0.88),
+    // "full" keeps near-original resolution (capped at config.full) so large backdrop
     // panels stay sharp up close and the info modal looks crisp.
-    resizeTo(img, 4096, 0.9),
+    resizeTo(img, config.full, 0.9),
   ])
   return { thumb, wall, full }
 }

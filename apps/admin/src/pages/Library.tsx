@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
-import type { DocumentImage, DocumentItem } from '@vm/shared'
+import type { DocumentImage, DocumentItem, ImageRescaleSettings } from '@vm/shared'
 import { useDraftStore } from '../store.js'
 import { uploadFile, checkApi, deleteDocumentStorage, deleteImageStorage } from '../api.js'
 import { resizeImage, blobToObjectUrl } from '../util/imageResize.js'
@@ -66,8 +66,8 @@ function getDocumentImageUrl(item: DocumentItem, image: DocumentImage) {
   return resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', { assetBaseUrl: ASSET_BASE_URL, assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '' }) ?? undefined
 }
 
-async function uploadImageVariants(documentKey: string, imageId: string, file: File) {
-  const variants = await resizeImage(file)
+async function uploadImageVariants(documentKey: string, imageId: string, file: File, settings?: ImageRescaleSettings) {
+  const variants = await resizeImage(file, settings)
   const apiAvailable = await checkApi()
   const rawExt = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '')
   if (apiAvailable) {
@@ -303,6 +303,7 @@ function UploadModal({ periods, onClose, onDone }: {
   onClose: () => void
   onDone: (item: DocumentItem) => void
 }) {
+  const content = useDraftStore((s) => s.content)
   const fileRef = useRef<HTMLInputElement>(null)
   const [previews, setPreviews] = useState<string[]>([])
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -379,7 +380,7 @@ function UploadModal({ periods, onClose, onDone }: {
         setUploadProgress(`Đang xử lý ảnh ${i + 1}/${selectedFiles.length}...`)
         setStep('uploading')
 
-        const rawExt = await uploadImageVariants(itemId, imgKey, file)
+        const rawExt = await uploadImageVariants(itemId, imgKey, file, content?.settings?.imageRescale)
         uploadedImages.push({
           id: imgKey,
           rawExt,
@@ -591,6 +592,7 @@ function EditModal({ item, periods, onClose, onSave }: {
   onClose: () => void
   onSave: (patch: Partial<DocumentItem>) => void
 }) {
+  const content = useDraftStore((s) => s.content)
   const [form, setForm] = useState({
     contentType: getDocumentContentType(item),
     title: item.title, year: item.year != null ? String(item.year) : '', periodId: item.periodId,
@@ -615,7 +617,7 @@ function EditModal({ item, periods, onClose, onSave }: {
     setMediaError('')
     setMediaBusy('Đang thay ảnh chính...')
     try {
-      await uploadImageVariants(item.documentKey, form.viewerImageId || item.viewerImageId, file)
+      await uploadImageVariants(item.documentKey, form.viewerImageId || item.viewerImageId, file, content?.settings?.imageRescale)
     } catch (err) {
       setMediaError(String(err))
     } finally {
@@ -633,7 +635,7 @@ function EditModal({ item, periods, onClose, onSave }: {
       for (let i = 0; i < picked.length; i++) {
         const file = picked[i]!
         const key = `photo-${nanoid(8)}`
-        await uploadImageVariants(item.documentKey, key, file)
+        await uploadImageVariants(item.documentKey, key, file, content?.settings?.imageRescale)
         added.push({ id: key, caption: file.name.replace(/\.[^.]+$/, '') })
 
         if (i < picked.length - 1) {

@@ -40,6 +40,11 @@ export const SlotTransformSchema = z.object({
   size: Vec2Schema,
 })
 
+export const SlotNameplateSchema = z.object({
+  primary: NonEmptyString,
+  secondary: z.string().optional(),
+})
+
 export const SlotSchema = z.object({
   id: NonEmptyString,
   roomId: NonEmptyString,
@@ -51,6 +56,7 @@ export const SlotSchema = z.object({
   visible: z.boolean(),
   zone: z.string().optional(),
   viewerVariant: z.enum(VIEWER_VARIANTS).optional(),
+  nameplate: SlotNameplateSchema.optional(),
 })
 
 export const RoomPortalSchema = z.object({
@@ -132,6 +138,16 @@ export const TextureAssetSchema = z.object({
   type: z.enum(TEXTURE_TYPES),
 })
 
+export const ImageRescaleSettingsSchema = z.object({
+  thumb: z.number().int().positive().default(360),
+  wall: z.number().int().positive().default(1200),
+  full: z.number().int().positive().default(4096),
+})
+
+export const ContentSettingsSchema = z.object({
+  imageRescale: ImageRescaleSettingsSchema.default({ thumb: 360, wall: 1200, full: 4096 }),
+}).default({ imageRescale: { thumb: 360, wall: 1200, full: 4096 } })
+
 export const ContentSchema = z.object({
   version: z.literal(CONTENT_VERSION),
   updatedAt: z.string().datetime(),
@@ -140,6 +156,7 @@ export const ContentSchema = z.object({
   documentIndex: z.array(DocumentIndexItemSchema).default([]),
   documents: z.array(DocumentItemSchema).default([]),
   textures: z.array(TextureAssetSchema),
+  settings: ContentSettingsSchema.optional(),
 })
 
 export const RoomStubSchema = z.object({
@@ -161,6 +178,7 @@ export const ContentIndexSchema = z.object({
   rooms: z.array(RoomStubSchema).min(1),
   documentIndex: z.array(DocumentIndexItemSchema).default([]),
   textures: z.array(TextureAssetSchema),
+  settings: ContentSettingsSchema.optional(),
 })
 
 export const RoomDataSchema = RoomSchema.extend({

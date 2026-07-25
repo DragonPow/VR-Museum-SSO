@@ -42,6 +42,11 @@ export interface SlotTransform {
   size: Vec2
 }
 
+export interface SlotNameplate {
+  primary: string
+  secondary?: string
+}
+
 export interface Slot {
   id: string
   roomId: string
@@ -62,6 +67,8 @@ export interface Slot {
   zone?: string
   /** Viewer texture variant for this slot; backdrop slots may use full instead of wall. */
   viewerVariant?: ViewerVariant
+  /** Optional text rendered as a 3D nameplate below this slot. */
+  nameplate?: SlotNameplate
 }
 
 export interface RoomPortal {
@@ -144,6 +151,16 @@ export interface TextureAsset {
   type: 'wall' | 'floor' | 'ceiling' | 'decoration'
 }
 
+export interface ImageRescaleSettings {
+  thumb: number
+  wall: number
+  full: number
+}
+
+export interface ContentSettings {
+  imageRescale: ImageRescaleSettings
+}
+
 /** Public snapshot: slot positions + library documents. */
 export interface Content {
   version: string
@@ -154,6 +171,7 @@ export interface Content {
   /** Admin/draft-only full documents. Public content.json omits this and lazy-loads /content/documents/{id}.json. */
   documents: DocumentItem[]
   textures: TextureAsset[]
+  settings?: ContentSettings
 }
 
 // Split-content types (lazy per-room loading)
@@ -177,6 +195,7 @@ export interface ContentIndex {
   rooms: RoomStub[]
   documentIndex: DocumentIndexItem[]
   textures: TextureAsset[]
+  settings?: ContentSettings
 }
 
 /** Per-room file loaded on demand when the user enters a room. */

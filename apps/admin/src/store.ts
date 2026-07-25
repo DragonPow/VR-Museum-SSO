@@ -60,8 +60,16 @@ function normalizeLegacyDocument(item: Record<string, unknown>): DocumentItem {
 function normalizeContentShape(content: Content): Content {
   const raw = content as Content & { items?: Array<Record<string, unknown>> }
   const documents = (raw.documents ?? (raw.items ?? [])).map((document) => normalizeLegacyDocument(document as unknown as Record<string, unknown>))
+  const settings = content.settings ?? {
+    imageRescale: {
+      thumb: 360,
+      wall: 1200,
+      full: 4096,
+    }
+  }
   return {
     ...content,
+    settings,
     documentIndex: documents.length > 0 ? documents.map(documentIndexFromDocument) : (Array.isArray(raw.documentIndex) ? raw.documentIndex as Content['documentIndex'] : []),
     documents,
     rooms: content.rooms.map((room) => ({
@@ -95,6 +103,7 @@ interface DraftStore {
   assignDocuments: (roomId: string, slotId: string, documentIds: string[]) => void
   markClean: () => void
   reset: () => void
+  updateSettings: (settings: any) => void
 
   // Room management
   addPeriod: (period: Period) => void
@@ -418,6 +427,18 @@ export const useDraftStore = create<DraftStore>()(
                       portals: (r.portals ?? []).filter((p) => p.id !== portalId),
                     },
               ),
+            },
+            dirty: true,
+          }
+        }),
+
+      updateSettings: (settings) =>
+        set((s) => {
+          if (!s.content) return s
+          return {
+            content: {
+              ...s.content,
+              settings,
             },
             dirty: true,
           }
