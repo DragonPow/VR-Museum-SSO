@@ -34,6 +34,11 @@ export function Settings() {
   const [errorCount, setErrorCount] = useState(0)
   const [successCount, setSuccessCount] = useState(0)
 
+  // Selected variants for rescaling
+  const [rescaleThumb, setRescaleThumb] = useState(false)
+  const [rescaleWall, setRescaleWall] = useState(false)
+  const [rescaleFull, setRescaleFull] = useState(false)
+
   const cancelRef = useRef(false)
   const logContainerRef = useRef<HTMLDivElement>(null)
 
@@ -118,8 +123,18 @@ export function Settings() {
       return
     }
 
+    if (!rescaleThumb && !rescaleWall && !rescaleFull) {
+      alert('Vui lòng chọn ít nhất một loại ảnh để thực hiện nén (rescale).')
+      return
+    }
+
+    const selectedVariants: string[] = []
+    if (rescaleThumb) selectedVariants.push(`Thumbnail (${thumb}px)`)
+    if (rescaleWall) selectedVariants.push(`Ảnh treo tường (${wall}px)`)
+    if (rescaleFull) selectedVariants.push(`Ảnh phóng to (${full}px)`)
+
     const confirmStart = confirm(
-      `Hệ thống sẽ tải lần lượt ${rescaleList.length} ảnh gốc từ R2 về trình duyệt, nén lại theo kích thước cấu hình hiện thời (Wall: ${wall}px, Thumb: ${thumb}px, Full: ${full}px) rồi upload đè lên R2.\n\nBạn có chắc chắn muốn bắt đầu?`
+      `Hệ thống sẽ tải lần lượt ${rescaleList.length} ảnh gốc từ R2 về trình duyệt, nén lại theo cấu hình đã chọn:\n- ${selectedVariants.join('\n- ')}\nrồi upload đè lên R2.\n\nBạn có chắc chắn muốn bắt đầu?`
     )
     if (!confirmStart) return
 
@@ -133,6 +148,7 @@ export function Settings() {
 
     addLog('Bắt đầu tiến trình Rescale hàng loạt...', 'info')
     addLog(`Tìm thấy tổng cộng ${rescaleList.length} ảnh cần xử lý.`, 'info')
+    addLog(`Cấu hình lựa chọn: ${selectedVariants.join(', ')}`, 'info')
 
     const apiAvailable = await checkApi()
     if (!apiAvailable) {
@@ -181,14 +197,24 @@ export function Settings() {
           wall: Number(wall) || 1200,
           full: Number(full) || 4096,
         }
-        const variants = await resizeImage(file, config)
+        const variants = await resizeImage(file, config, {
+          thumb: rescaleThumb,
+          wall: rescaleWall,
+          full: rescaleFull,
+        })
 
-        // 3. Upload đè lên R2
-        await Promise.all([
-          uploadFile(variants.thumb, `content/documents/${item.documentKey}/images/${item.imageId}/thumb.webp`),
-          uploadFile(variants.wall, `content/documents/${item.documentKey}/images/${item.imageId}/wall.webp`),
-          uploadFile(variants.full, `content/documents/${item.documentKey}/images/${item.imageId}/full.webp`),
-        ])
+        // 3. Upload đè lên R2 các bản WebP đã chọn
+        const uploadPromises = []
+        if (rescaleThumb && variants.thumb) {
+          uploadPromises.push(uploadFile(variants.thumb, `content/documents/${item.documentKey}/images/${item.imageId}/thumb.webp`))
+        }
+        if (rescaleWall && variants.wall) {
+          uploadPromises.push(uploadFile(variants.wall, `content/documents/${item.documentKey}/images/${item.imageId}/wall.webp`))
+        }
+        if (rescaleFull && variants.full) {
+          uploadPromises.push(uploadFile(variants.full, `content/documents/${item.documentKey}/images/${item.imageId}/full.webp`))
+        }
+        await Promise.all(uploadPromises)
 
         setSuccessCount((prev) => prev + 1)
         addLog(`✓ Thành công: Ghi đè các bản WebP cho ${item.caption}`, 'success')
@@ -245,7 +271,10 @@ export function Settings() {
                   type="number"
                   style={styles.input}
                   value={thumb}
-                  onChange={(e) => setThumb(Math.max(100, Number(e.target.value)))}
+                  onChange={(e) => {
+                    setThumb(Math.max(100, Number(e.target.value)))
+                    setRescaleThumb(true)
+                  }}
                   required
                   disabled={running || saving}
                 />
@@ -261,7 +290,10 @@ export function Settings() {
                   type="number"
                   style={styles.input}
                   value={wall}
-                  onChange={(e) => setWall(Math.max(200, Number(e.target.value)))}
+                  onChange={(e) => {
+                    setWall(Math.max(200, Number(e.target.value)))
+                    setRescaleWall(true)
+                  }}
                   required
                   disabled={running || saving}
                 />
@@ -277,7 +309,10 @@ export function Settings() {
                   type="number"
                   style={styles.input}
                   value={full}
-                  onChange={(e) => setFull(Math.max(400, Number(e.target.value)))}
+                  onChange={(e) => {
+                    setFull(Math.max(400, Number(e.target.value)))
+                    setRescaleFull(true)
+                  }}
                   required
                   disabled={running || saving}
                 />
@@ -316,8 +351,42 @@ export function Settings() {
           </div>
           <div style={styles.form}>
             <p style={{ fontSize: '13px', color: '#9a9080', lineHeight: '1.6' }}>
-              Công cụ này giúp quét tất cả ảnh gốc (raw) đã được lưu trên Cloudflare R2, nén lại theo đúng kích thước cấu hình hiện tại và cập nhật đè lên các bản <b>thumb, wall, full</b> cũ.
+              Công cụ này giúp quét tất cả ảnh gốc (raw) đã được lưu trên Cloudflare R2, nén lại theo cấu hình lựa chọn bên dưới và cập nhật đè lên các bản cũ.
             </p>
+
+            <div style={styles.checkboxGroupTitle}>Chọn loại ảnh muốn nén (rescale):</div>
+            <div style={styles.checkboxContainer}>
+              <label style={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={rescaleThumb}
+                  onChange={(e) => setRescaleThumb(e.target.checked)}
+                  disabled={running}
+                  style={styles.checkbox}
+                />
+                <span>Ảnh Thumbnail thư viện (Thumb - {thumb}px)</span>
+              </label>
+              <label style={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={rescaleWall}
+                  onChange={(e) => setRescaleWall(e.target.checked)}
+                  disabled={running}
+                  style={styles.checkbox}
+                />
+                <span>Ảnh treo trên tường 3D (Wall - {wall}px)</span>
+              </label>
+              <label style={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={rescaleFull}
+                  onChange={(e) => setRescaleFull(e.target.checked)}
+                  disabled={running}
+                  style={styles.checkbox}
+                />
+                <span>Ảnh phóng to / Modal (Full - {full}px)</span>
+              </label>
+            </div>
 
             <div style={styles.statsPanel}>
               <div style={styles.statItem}>
@@ -612,5 +681,35 @@ const styles: Record<string, React.CSSProperties> = {
   logLine: {
     wordBreak: 'break-all',
     lineHeight: '1.4',
+  },
+  checkboxGroupTitle: {
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#9a9080',
+    marginTop: '10px',
+  },
+  checkboxContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    background: '#140f0a',
+    border: '1px solid #2a1e10',
+    borderRadius: '8px',
+    padding: '12px 14px',
+  },
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    fontSize: '13px',
+    color: '#aaa',
+    cursor: 'pointer',
+    userSelect: 'none',
+  },
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    accentColor: '#c8a85a',
+    cursor: 'pointer',
   },
 }

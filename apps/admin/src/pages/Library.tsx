@@ -72,15 +72,15 @@ async function uploadImageVariants(documentKey: string, imageId: string, file: F
   const rawExt = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '')
   if (apiAvailable) {
     await Promise.all([
-      uploadFile(variants.thumb, `content/documents/${documentKey}/images/${imageId}/thumb.webp`),
-      uploadFile(variants.wall, `content/documents/${documentKey}/images/${imageId}/wall.webp`),
-      uploadFile(variants.full, `content/documents/${documentKey}/images/${imageId}/full.webp`),
+      uploadFile(variants.thumb!, `content/documents/${documentKey}/images/${imageId}/thumb.webp`),
+      uploadFile(variants.wall!, `content/documents/${documentKey}/images/${imageId}/wall.webp`),
+      uploadFile(variants.full!, `content/documents/${documentKey}/images/${imageId}/full.webp`),
       uploadFile(file, `content/documents/${documentKey}/images/${imageId}/raw.${rawExt}`),
     ])
   } else {
-    blobToObjectUrl(variants.thumb)
-    blobToObjectUrl(variants.wall)
-    blobToObjectUrl(variants.full)
+    blobToObjectUrl(variants.thumb!)
+    blobToObjectUrl(variants.wall!)
+    blobToObjectUrl(variants.full!)
     blobToObjectUrl(file)
   }
   return rawExt

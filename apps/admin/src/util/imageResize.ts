@@ -1,22 +1,35 @@
 import type { ImageRescaleSettings } from '@vm/shared'
 
 export interface ResizedVariants {
-  thumb: Blob   // 360px wide  — library thumbnails
-  wall: Blob    // 1200px wide — 3D wall texture / slot preview
-  full: Blob    // up to 4096px wide — info modal + hi-res backdrop panels
+  thumb?: Blob   // 360px wide  — library thumbnails
+  wall?: Blob    // 1200px wide — 3D wall texture / slot preview
+  full?: Blob    // up to 4096px wide — info modal + hi-res backdrop panels
 }
 
-export async function resizeImage(file: File, settings?: ImageRescaleSettings): Promise<ResizedVariants> {
+export async function resizeImage(
+  file: File,
+  settings?: ImageRescaleSettings,
+  options?: { thumb?: boolean; wall?: boolean; full?: boolean }
+): Promise<ResizedVariants> {
   const config = settings ?? { thumb: 360, wall: 1200, full: 4096 }
   const img = await loadImage(file)
+
+  const doThumb = options ? !!options.thumb : true
+  const doWall = options ? !!options.wall : true
+  const doFull = options ? !!options.full : true
+
   const [thumb, wall, full] = await Promise.all([
-    resizeTo(img, config.thumb, 0.86),
-    resizeTo(img, config.wall, 0.88),
-    // "full" keeps near-original resolution (capped at config.full) so large backdrop
-    // panels stay sharp up close and the info modal looks crisp.
-    resizeTo(img, config.full, 0.9),
+    doThumb ? resizeTo(img, config.thumb, 0.86) : Promise.resolve(null),
+    doWall ? resizeTo(img, config.wall, 0.88) : Promise.resolve(null),
+    doFull ? resizeTo(img, config.full, 0.9) : Promise.resolve(null),
   ])
-  return { thumb, wall, full }
+
+  const result: ResizedVariants = {}
+  if (thumb) result.thumb = thumb
+  if (wall) result.wall = wall
+  if (full) result.full = full
+
+  return result
 }
 
 function loadImage(file: File): Promise<HTMLImageElement> {
