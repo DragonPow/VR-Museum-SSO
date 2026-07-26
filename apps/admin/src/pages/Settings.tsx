@@ -196,6 +196,10 @@ export function Settings() {
         if (!response.ok) {
           throw new Error(`Tải raw thất bại (HTTP ${response.status})`)
         }
+        const contentType = response.headers.get('content-type') || ''
+        if (contentType.includes('text/html') || contentType.includes('application/json')) {
+          throw new Error(`Không tìm thấy file ảnh gốc (raw) trên server`)
+        }
         const blob = await response.blob()
         const file = new File([blob], `raw.${item.rawExt}`, { type: blob.type })
 
