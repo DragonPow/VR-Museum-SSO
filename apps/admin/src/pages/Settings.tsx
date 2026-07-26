@@ -18,9 +18,9 @@ export function Settings() {
   const markClean = useDraftStore((s) => s.markClean)
 
   // Settings form states
-  const [thumb, setThumb] = useState(content?.settings?.imageRescale?.thumb ?? 360)
-  const [wall, setWall] = useState(content?.settings?.imageRescale?.wall ?? 1200)
-  const [full, setFull] = useState(content?.settings?.imageRescale?.full ?? 4096)
+  const [thumb, setThumb] = useState<string | number>(content?.settings?.imageRescale?.thumb ?? 360)
+  const [wall, setWall] = useState<string | number>(content?.settings?.imageRescale?.wall ?? 1200)
+  const [full, setFull] = useState<string | number>(content?.settings?.imageRescale?.full ?? 4096)
 
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<string | null>(null)
@@ -64,11 +64,19 @@ export function Settings() {
     setSaving(true)
     setSaveStatus(null)
     try {
+      const finalThumb = Math.max(100, Number(thumb)) || 360
+      const finalWall = Math.max(200, Number(wall)) || 1200
+      const finalFull = Math.max(400, Number(full)) || 4096
+
+      setThumb(finalThumb)
+      setWall(finalWall)
+      setFull(finalFull)
+
       const nextSettings = {
         imageRescale: {
-          thumb: Number(thumb) || 360,
-          wall: Number(wall) || 1200,
-          full: Number(full) || 4096,
+          thumb: finalThumb,
+          wall: finalWall,
+          full: finalFull,
         },
       }
       updateSettings(nextSettings)
@@ -272,8 +280,12 @@ export function Settings() {
                   style={styles.input}
                   value={thumb}
                   onChange={(e) => {
-                    setThumb(Math.max(100, Number(e.target.value)))
+                    setThumb(e.target.value)
                     setRescaleThumb(true)
+                  }}
+                  onBlur={(e) => {
+                    const val = Number(e.target.value)
+                    setThumb(isNaN(val) || val <= 0 ? 100 : Math.max(100, val))
                   }}
                   required
                   disabled={running || saving}
@@ -291,8 +303,12 @@ export function Settings() {
                   style={styles.input}
                   value={wall}
                   onChange={(e) => {
-                    setWall(Math.max(200, Number(e.target.value)))
+                    setWall(e.target.value)
                     setRescaleWall(true)
+                  }}
+                  onBlur={(e) => {
+                    const val = Number(e.target.value)
+                    setWall(isNaN(val) || val <= 0 ? 200 : Math.max(200, val))
                   }}
                   required
                   disabled={running || saving}
@@ -310,8 +326,12 @@ export function Settings() {
                   style={styles.input}
                   value={full}
                   onChange={(e) => {
-                    setFull(Math.max(400, Number(e.target.value)))
+                    setFull(e.target.value)
                     setRescaleFull(true)
+                  }}
+                  onBlur={(e) => {
+                    const val = Number(e.target.value)
+                    setFull(isNaN(val) || val <= 0 ? 400 : Math.max(400, val))
                   }}
                   required
                   disabled={running || saving}
