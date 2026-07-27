@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import type { DocumentImage, DocumentItem, ImageRescaleSettings } from '@vm/shared'
 import { useDraftStore } from '../store.js'
 import { uploadFile, checkApi, deleteDocumentStorage, deleteImageStorage } from '../api.js'
@@ -12,6 +12,13 @@ const assetUrl = (documentKey?: string | null, imageId?: string | null, variant:
 
 type UploadStep = 'form' | 'resizing' | 'uploading' | 'done' | 'error'
 type ContentItemType = 'image' | 'youtube' | 'iframe' | 'external'
+
+interface PendingUploadImage {
+  id: string
+  file: File
+  previewUrl: string
+  caption: string
+}
 
 function getDocumentContentType(document: DocumentItem): ContentItemType {
   return document.mediaType
@@ -305,11 +312,23 @@ function UploadModal({ periods, onClose, onDone }: {
 }) {
   const content = useDraftStore((s) => s.content)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [previews, setPreviews] = useState<string[]>([])
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [images, setImages] = useState<PendingUploadImage[]>([])
+  const [formViewerImageId, setFormViewerImageId] = useState<string>('')
+  const [formThumbnailImageId, setFormThumbnailImageId] = useState<string>('')
   const [step, setStep] = useState<UploadStep>('form')
   const [uploadProgress, setUploadProgress] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const previewUrlsRef = useRef<string[]>([])
+
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url)
+        } catch (_) {}
+      })
+    }
+  }, [])
 
   const [form, setForm] = useState({
     contentType: 'image' as ContentItemType,
@@ -321,36 +340,72 @@ function UploadModal({ periods, onClose, onDone }: {
   const handleFiles = (files: FileList | File[]) => {
     const fileList = Array.from(files).filter((f) => f.type.startsWith('image/'))
     if (fileList.length === 0) return
-    setSelectedFiles((prev) => [...prev, ...fileList])
-    const urls = fileList.map((f) => URL.createObjectURL(f))
-    setPreviews((prev) => [...prev, ...urls])
+
+    const newImages = fileList.map((file) => {
+      const id = `photo-${nanoid(8)}`
+      const url = URL.createObjectURL(file)
+      previewUrlsRef.current.push(url)
+      return {
+        id,
+        file,
+        previewUrl: url,
+        caption: file.name.replace(/\.[^.]+$/, ''),
+      }
+    })
+
+    setImages((prev) => {
+      const updated = [...prev, ...newImages]
+      if (updated.length > 0) {
+        setFormViewerImageId((curr) => curr || updated[0]!.id)
+        setFormThumbnailImageId((curr) => curr || updated[0]!.id)
+      }
+      return updated
+    })
+
     const firstFile = fileList[0]
-    if (fileList.length === 1 && selectedFiles.length === 0 && firstFile && !form.title) {
+    if (fileList.length === 1 && images.length === 0 && firstFile && !form.title) {
       setForm((f) => ({ ...f, title: firstFile.name.replace(/\.[^.]+$/, '') }))
     }
   }
 
-  const moveFile = (index: number, dir: -1 | 1) => {
-    const target = index + dir
-    if (target < 0 || target >= selectedFiles.length) return
-    const nextFiles = [...selectedFiles]
-    const nextPreviews = [...previews]
-    const tempFile = nextFiles[index]
-    const tempPrev = nextPreviews[index]
-    if (!tempFile || !tempPrev || !nextFiles[target] || !nextPreviews[target]) return
-    nextFiles[index] = nextFiles[target]!
-    nextPreviews[index] = nextPreviews[target]!
-    nextFiles[target] = tempFile
-    nextPreviews[target] = tempPrev
-    setSelectedFiles(nextFiles)
-    setPreviews(nextPreviews)
+  const handleMoveImage = (index: number, direction: -1 | 1) => {
+    const target = index + direction
+    if (target < 0 || target >= images.length) return
+    setImages((prev) => {
+      const nextImages = [...prev]
+      const temp = nextImages[index]!
+      nextImages[index] = nextImages[target]!
+      nextImages[target] = temp
+      return nextImages
+    })
   }
 
-  const removeFile = (index: number) => {
-    const nextFiles = selectedFiles.filter((_, i) => i !== index)
-    const nextPreviews = previews.filter((_, i) => i !== index)
-    setSelectedFiles(nextFiles)
-    setPreviews(nextPreviews)
+  const removeImage = (id: string) => {
+    const target = images.find((img) => img.id === id)
+    if (target) {
+      URL.revokeObjectURL(target.previewUrl)
+      previewUrlsRef.current = previewUrlsRef.current.filter((u) => u !== target.previewUrl)
+    }
+
+    setImages((prev) => {
+      const nextImages = prev.filter((img) => img.id !== id)
+      if (nextImages.length > 0) {
+        if (formViewerImageId === id || !nextImages.some(img => img.id === formViewerImageId)) {
+          setFormViewerImageId(nextImages[0]!.id)
+        }
+        if (formThumbnailImageId === id || !nextImages.some(img => img.id === formThumbnailImageId)) {
+          setFormThumbnailImageId(nextImages[0]!.id)
+        }
+      } else {
+        setFormViewerImageId('')
+        setFormThumbnailImageId('')
+      }
+      return nextImages
+    })
+  }
+
+  const updateImageCaption = (id: string, caption: string) => {
+    setImages((prev) => prev.map((img) => img.id === id ? { ...img, caption } : img))
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -361,7 +416,7 @@ function UploadModal({ periods, onClose, onDone }: {
   }
 
   const handleSubmit = async () => {
-    if (!form.title.trim() || !form.periodId || selectedFiles.length === 0) return
+    if (!form.title.trim() || !form.periodId || images.length === 0) return
     if (form.contentType === 'youtube' && !form.embedUrl.trim()) return
     if (form.contentType === 'iframe' && !form.embedUrl.trim()) return
     if (form.contentType === 'external' && !form.externalUrl.trim()) return
@@ -372,22 +427,21 @@ function UploadModal({ periods, onClose, onDone }: {
       const itemId = `item-${nanoid(8)}`
       const uploadedImages: DocumentImage[] = []
 
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i]
-        if (!file) continue
-        const imgKey = i === 0 ? 'photo1' : `photo-${i + 1}`
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i]
+        if (!img) continue
 
-        setUploadProgress(`Đang xử lý ảnh ${i + 1}/${selectedFiles.length}...`)
+        setUploadProgress(`Đang xử lý ảnh ${i + 1}/${images.length}...`)
         setStep('uploading')
 
-        const rawExt = await uploadImageVariants(itemId, imgKey, file, content?.settings?.imageRescale)
+        const rawExt = await uploadImageVariants(itemId, img.id, img.file, content?.settings?.imageRescale)
         uploadedImages.push({
-          id: imgKey,
+          id: img.id,
           rawExt,
-          caption: file.name.replace(/\.[^.]+$/, ''),
+          caption: img.caption.trim(),
         })
 
-        if (i < selectedFiles.length - 1) {
+        if (i < images.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, 1200))
         }
       }
@@ -403,8 +457,8 @@ function UploadModal({ periods, onClose, onDone }: {
         tags: splitTags(form.tags),
         source: form.source.trim(),
         documentKey: itemId,
-        thumbnailImageId: 'photo1',
-        viewerImageId: 'photo1',
+        thumbnailImageId: formThumbnailImageId || images[0]?.id || 'photo1',
+        viewerImageId: formViewerImageId || images[0]?.id || 'photo1',
         detailImageIds: uploadedImages.map((img) => img.id),
         images: uploadedImages,
         mediaType: form.contentType,
@@ -426,72 +480,41 @@ function UploadModal({ periods, onClose, onDone }: {
 
   const busy = step === 'resizing' || step === 'uploading'
   const canSubmit = Boolean(
-    form.title.trim() && form.periodId && selectedFiles.length > 0 && !busy &&
+    form.title.trim() && form.periodId && images.length > 0 && !busy &&
     (form.contentType === 'image' ? true : form.contentType === 'youtube' || form.contentType === 'iframe' ? form.embedUrl.trim() : form.externalUrl.trim())
   )
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
+    <div style={styles.overlay}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div style={styles.modalHeader}>
-          <span style={styles.modalTitle}>Thêm tư liệu {selectedFiles.length > 1 ? `(${selectedFiles.length} ảnh)` : ''}</span>
-          <button style={styles.closeBtn} onClick={onClose}>×</button>
+          <span style={styles.modalTitle}>Thêm tư liệu {images.length > 1 ? `(${images.length} ảnh)` : ''}</span>
+          <button style={styles.closeBtn} onClick={onClose} disabled={busy}>×</button>
         </div>
 
         <div style={styles.modalBody}>
-          <div
-            style={{ ...styles.dropZone, ...(previews.length > 0 ? styles.dropZoneWithPreview : {}) }}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onClick={() => fileRef.current?.click()}
-          >
-            {previews.length === 1 ? (
-              <img src={previews[0]} alt="preview" style={styles.previewImg} />
-            ) : previews.length > 1 ? (
-              <div style={{ width: '100%', textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: '#c8a85a', marginBottom: '8px' }}>
-                  Ảnh #1 là ảnh chính. Dùng nút ◀ ▶ để sắp xếp thứ tự ảnh chính/ảnh phụ:
-                </div>
-                <div style={styles.multiPreviewGrid} onClick={(e) => e.stopPropagation()}>
-                  {previews.map((src, i) => (
-                    <div key={i} style={styles.multiPreviewItem}>
-                      <img src={src} alt={`preview ${i}`} style={styles.multiPreviewThumb} />
-                      <div style={i === 0 ? styles.mainPreviewBadge : styles.multiPreviewBadge}>
-                        {i === 0 ? '★ Ảnh chính' : `#${i + 1} Phụ`}
-                      </div>
-                      <div style={styles.multiPreviewControls}>
-                        {i > 0 && <button type="button" style={styles.miniBtn} onClick={() => moveFile(i, -1)}>◀</button>}
-                        {i < selectedFiles.length - 1 && <button type="button" style={styles.miniBtn} onClick={() => moveFile(i, 1)}>▶</button>}
-                        <button type="button" style={{ ...styles.miniBtn, color: '#c85a5a' }} onClick={() => removeFile(i)}>✕</button>
-                      </div>
-                    </div>
-                  ))}
-                  <div
-                    style={styles.addMoreCard}
-                    onClick={() => fileRef.current?.click()}
-                    title="Chọn thêm ảnh"
-                  >
-                    <span style={{ fontSize: '20px', color: '#c8a85a' }}>+</span>
-                    <span style={{ fontSize: '10px', color: '#9a9080' }}>Thêm ảnh</span>
-                  </div>
-                </div>
-              </div>
-            ) : (
+          {images.length === 0 && (
+            <div
+              style={styles.dropZone}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              onClick={() => fileRef.current?.click()}
+            >
               <div style={styles.dropHint}>
                 <div style={styles.dropIcon}>IMG</div>
                 <div>Chọn 1 hoặc nhiều ảnh (ảnh 1 làm ảnh chính, ảnh 2..N làm ảnh phụ)</div>
                 <div style={{ fontSize: '12px', color: '#6a5a40' }}>Bắt buộc cho ảnh, YouTube, iframe tài liệu và link ngoài</div>
               </div>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              multiple
-              style={{ display: 'none' }}
-              onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files) }}
-            />
-          </div>
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files); e.target.value = '' }}
+          />
 
           {form.contentType !== 'image' && (
             <div style={styles.typePanel}>
@@ -562,6 +585,74 @@ function UploadModal({ periods, onClose, onDone }: {
               <input style={styles.input} value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
             </FormField>
           </div>
+
+          {images.length > 0 && (
+            <div style={styles.mediaPanel}>
+              <div style={styles.mediaHeader}>
+                <div>
+                  <div style={styles.mediaTitle}>Ảnh trong tư liệu ({images.length} ảnh)</div>
+                  <div style={styles.mediaSub}>Ảnh chính dùng cho thumb/tường; ảnh phụ hiển thị thêm trong detail của cùng page.</div>
+                </div>
+                <div style={styles.mediaActions}>
+                  <button type="button" style={styles.cardBtn} onClick={() => fileRef.current?.click()} disabled={busy}>Thêm ảnh</button>
+                </div>
+              </div>
+              <div style={styles.mediaGrid}>
+                {images.map((img, index) => (
+                  <div key={img.id} style={styles.mediaItem}>
+                    <img src={img.previewUrl} alt={`preview ${index}`} style={styles.mediaThumb} />
+                    <div style={styles.mediaFields}>
+                      <div style={styles.mediaKind}>
+                        {img.id === formViewerImageId ? 'Ảnh viewer' : img.id === formThumbnailImageId ? 'Ảnh thumbnail' : 'Ảnh phụ'}
+                      </div>
+                      <input
+                        style={styles.input}
+                        value={img.caption}
+                        placeholder="Caption"
+                        onChange={(e) => updateImageCaption(img.id, e.target.value)}
+                        disabled={busy}
+                      />
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button
+                          type="button"
+                          style={{
+                            ...styles.cardBtn,
+                            width: '28px',
+                            flex: 'none',
+                            opacity: index === 0 ? 0.3 : 1,
+                            cursor: index === 0 ? 'not-allowed' : 'pointer',
+                          }}
+                          disabled={index === 0 || busy}
+                          onClick={() => handleMoveImage(index, -1)}
+                          title="Di chuyển lên"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          style={{
+                            ...styles.cardBtn,
+                            width: '28px',
+                            flex: 'none',
+                            opacity: index === images.length - 1 ? 0.3 : 1,
+                            cursor: index === images.length - 1 ? 'not-allowed' : 'pointer',
+                          }}
+                          disabled={index === images.length - 1 || busy}
+                          onClick={() => handleMoveImage(index, 1)}
+                          title="Di chuyển xuống"
+                        >
+                          ▼
+                        </button>
+                        <button type="button" style={styles.cardBtn} onClick={() => setFormViewerImageId(img.id)} disabled={busy}>Dùng làm viewer</button>
+                        <button type="button" style={styles.cardBtn} onClick={() => setFormThumbnailImageId(img.id)} disabled={busy}>Dùng làm thumb</button>
+                        <button type="button" style={{ ...styles.cardBtn, color: '#c85a5a' }} onClick={() => removeImage(img.id)} disabled={busy}>Xóa</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {step === 'error' && <div style={styles.errorMsg}>{errorMsg}</div>}
           {busy && (
@@ -730,8 +821,8 @@ function EditModal({ item, periods, onClose, onSave }: {
   )
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div style={styles.overlay}>
+      <div style={styles.modal}>
         <div style={styles.modalHeader}>
           <span style={styles.modalTitle}>Sửa thông tin</span>
           <button style={styles.closeBtn} onClick={onClose}>×</button>

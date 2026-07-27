@@ -74,8 +74,8 @@ function Dialog({
   children: React.ReactNode
 }) {
   return (
-    <div style={dlgStyles.overlay} onClick={onClose}>
-      <div style={dlgStyles.box} onClick={(e) => e.stopPropagation()}>
+    <div style={dlgStyles.overlay}>
+      <div style={dlgStyles.box}>
         <div style={dlgStyles.header}>
           <span style={dlgStyles.title}>{title}</span>
           <button style={dlgStyles.closeBtn} onClick={onClose}>
