@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useDraftStore } from '../store.js'
 import { loadStaticContent } from '../contentSource.js'
 import { publish, saveDraft, deleteDraft, checkApi, ApiError, saveLocalContentFile } from '../api.js'
@@ -20,14 +20,6 @@ export function Publish() {
   const [apiAvailable, setApiAvailable] = useState<boolean | null>(null)
   const [verifyInfo, setVerifyInfo] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
-
-  useEffect(() => {
-    const initCheck = async () => {
-      const ok = await checkApi()
-      setApiAvailable(ok)
-    }
-    initCheck()
-  }, [])
 
   if (!content) return <div style={styles.center}>Đang tải...</div>
 
@@ -162,7 +154,7 @@ export function Publish() {
         <div style={{ ...styles.apiRow, flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ fontSize: '13px', color: '#9a9080' }}>
-              {apiAvailable === null && 'Đang tự động kiểm tra kết nối...'}
+              {apiAvailable === null && 'Chưa kiểm tra kết nối Worker API'}
               {apiAvailable === true && <span style={{ color: '#5ac85a' }}>✓ Kết nối thành công — sẵn sàng xuất bản lên R2</span>}
               {apiAvailable === false && <span style={{ color: '#c85a5a' }}>✗ Không kết nối được Worker API — chỉ có thể xuất file JSON</span>}
             </div>
