@@ -368,7 +368,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
       {isContainMode && hasImage && !isNearlyMatch && (
         <mesh position={[0, 0, canvasZ]}>
           <planeGeometry args={[size.w, size.h]} />
-          <meshBasicMaterial color="#ffffff" toneMapped={false} />
+          <meshBasicMaterial color="#ffffff" toneMapped={false} side={THREE.DoubleSide} />
         </mesh>
       )}
 
