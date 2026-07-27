@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DEFAULT_CONTENT, documentIndexFromDocument } from '@vm/shared'
 import { loadDraftContent, loadStaticContent } from './contentSource.js'
-import type { Content, DocumentItem, Period, Room, Viewpoint, RoomPortal } from '@vm/shared'
+import type { Content, DocumentItem, Period, Room, Viewpoint, RoomPortal, SlotNameplate } from '@vm/shared'
 
 
 function documentKeyFromLegacyItem(item: Record<string, unknown>): string {
@@ -100,7 +100,7 @@ interface DraftStore {
   addDocument: (document: DocumentItem) => void
   updateDocument: (id: string, patch: Partial<DocumentItem>) => void
   removeDocument: (id: string) => void
-  assignDocuments: (roomId: string, slotId: string, documentIds: string[]) => void
+  assignDocuments: (roomId: string, slotId: string, documentIds: string[], nameplate?: SlotNameplate) => void
   markClean: () => void
   reset: () => void
   updateSettings: (settings: any) => void
@@ -204,7 +204,7 @@ export const useDraftStore = create<DraftStore>()(
           }
         }),
 
-      assignDocuments: (roomId, slotId, documentIds) =>
+      assignDocuments: (roomId, slotId, documentIds, nameplate) =>
         set((s) => {
           if (!s.content) return s
           return {
@@ -215,7 +215,16 @@ export const useDraftStore = create<DraftStore>()(
                   ? r
                   : {
                       ...r,
-                      slots: r.slots.map((sl) => (sl.id !== slotId ? sl : { ...sl, documentIds })),
+                      slots: r.slots.map((sl) => {
+                        if (sl.id !== slotId) return sl
+                        const nextSlot = { ...sl, documentIds }
+                        if (nameplate) {
+                          nextSlot.nameplate = nameplate
+                        } else {
+                          delete nextSlot.nameplate
+                        }
+                        return nextSlot
+                      }),
                     },
               ),
             },

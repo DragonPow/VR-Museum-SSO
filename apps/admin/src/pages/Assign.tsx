@@ -76,6 +76,11 @@ export function Assign() {
   const ITEMS_PER_PAGE = 24
   const [expandedZones, setExpandedZones] = useState<Record<string, boolean>>({})
 
+  // Nameplate states
+  const [nameplateEnabled, setNameplateEnabled] = useState(false)
+  const [nameplatePrimary, setNameplatePrimary] = useState('')
+  const [nameplateSecondary, setNameplateSecondary] = useState('')
+
   useEffect(() => {
     setExpandedZones({})
   }, [selectedRoomId])
@@ -116,11 +121,29 @@ export function Assign() {
   const openPicker = (slot: Slot) => {
     setPickerSlot(slot)
     setDraftIds(slot.documentIds ?? [])
+    // Auto-enable nameplate if slot has one, or it's a K5 Slot
+    const hasNameplate = !!slot.nameplate
+    const isK5 = /^VM_Slot_K5_CD_\d{2}$/i.test(slot.name || slot.id)
+    setNameplateEnabled(hasNameplate || isK5)
+    setNameplatePrimary(slot.nameplate?.primary ?? '')
+    setNameplateSecondary(slot.nameplate?.secondary ?? '')
     setPickerPage(1)
   }
 
   const toggleDocument = (documentId: string) => {
-    setDraftIds((ids) => ids.includes(documentId) ? ids.filter((id) => id !== documentId) : [...ids, documentId])
+    setDraftIds((ids) => {
+      const nextIds = ids.includes(documentId) ? ids.filter((id) => id !== documentId) : [...ids, documentId]
+      // Autofill nameplate fields if empty and we just selected a document
+      const firstId = nextIds[0]
+      if (firstId) {
+        const firstDoc = documentMap[firstId]
+        if (firstDoc) {
+          setNameplatePrimary((prev) => prev.trim() === '' ? firstDoc.title : prev)
+          setNameplateSecondary((prev) => prev.trim() === '' ? (firstDoc.year != null ? String(firstDoc.year) : '') : prev)
+        }
+      }
+      return nextIds
+    })
   }
 
   const moveDraft = (documentId: string, dir: -1 | 1) => {
@@ -132,13 +155,32 @@ export function Assign() {
       const [item] = next.splice(index, 1)
       if (!item) return ids
       next.splice(nextIndex, 0, item)
+      // Re-sync nameplate with the new first item if empty
+      const firstId = next[0]
+      if (firstId) {
+        const firstDoc = documentMap[firstId]
+        if (firstDoc) {
+          setNameplatePrimary((prev) => prev.trim() === '' ? firstDoc.title : prev)
+          setNameplateSecondary((prev) => prev.trim() === '' ? (firstDoc.year != null ? String(firstDoc.year) : '') : prev)
+        }
+      }
       return next
     })
   }
 
   const saveAssign = () => {
     if (!selectedRoom || !pickerSlot) return
-    assignDocuments(selectedRoom.id, pickerSlot.id, draftIds)
+    let nameplate: { primary: string; secondary?: string } | undefined = undefined
+    if (nameplateEnabled) {
+      nameplate = {
+        primary: nameplatePrimary.trim() || pickerSlot.name,
+      }
+      const sec = nameplateSecondary.trim()
+      if (sec) {
+        nameplate.secondary = sec
+      }
+    }
+    assignDocuments(selectedRoom.id, pickerSlot.id, draftIds, nameplate)
     setPickerSlot(null)
     setSearch('')
     setPeriodFilter('')
@@ -283,6 +325,58 @@ export function Assign() {
               <button style={styles.unassignBtn} onClick={() => setDraftIds([])}>Bỏ hết</button>
             </div>
 
+            {/* Cấu hình Nameplate */}
+            <div style={styles.nameplateSection}>
+              <div style={styles.nameplateHeader}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none', color: '#c8a85a', fontWeight: 600, fontSize: '13px' }}>
+                  <input type="checkbox" checked={nameplateEnabled} onChange={(e) => setNameplateEnabled(e.target.checked)} />
+                  Hiển thị bảng tên (Nameplate) dưới slot này
+                </label>
+                {nameplateEnabled && (
+                  <button
+                    style={styles.nameplateSyncBtn}
+                    onClick={() => {
+                      if (draftIds.length > 0) {
+                        const firstId = draftIds[0]
+                        if (firstId) {
+                          const doc = documentMap[firstId]
+                          if (doc) {
+                            setNameplatePrimary(doc.title)
+                            setNameplateSecondary(doc.year != null ? String(doc.year) : '')
+                          }
+                        }
+                      }
+                    }}
+                    title="Đồng bộ lại theo thông tin tư liệu đầu tiên được chọn"
+                  >
+                    🔄 Đồng bộ theo tư liệu
+                  </button>
+                )}
+              </div>
+              {nameplateEnabled && (
+                <div style={styles.nameplateInputs}>
+                  <div style={styles.inputGroup}>
+                    <span style={styles.inputLabel}>Dòng chữ chính (Primary):</span>
+                    <input
+                      style={styles.textInput}
+                      value={nameplatePrimary}
+                      onChange={(e) => setNameplatePrimary(e.target.value)}
+                      placeholder="Ví dụ: Lê Đặng Xuân Tân"
+                    />
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <span style={styles.inputLabel}>Dòng chữ phụ (Secondary - tùy chọn):</span>
+                    <input
+                      style={styles.textInput}
+                      value={nameplateSecondary}
+                      onChange={(e) => setNameplateSecondary(e.target.value)}
+                      placeholder="Ví dụ: 2018 - 2023"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div style={styles.pickerFilters}>
               <input autoFocus placeholder="Tìm theo tên, năm, tag, loại..." value={search} onChange={(e) => { setSearch(e.target.value); setPickerPage(1); }} style={styles.pickerSearch} />
               <select value={periodFilter} onChange={(e) => { setPeriodFilter(e.target.value); setPickerPage(1); }} style={styles.pickerSelect}>
@@ -323,11 +417,11 @@ export function Assign() {
   )
 }
 
-const ZONE_ORDER = ['Khu 1', 'Khu 2', 'Khu 3', 'Khu 4', 'Khu 5', 'Khu 6', 'Khu 7', 'Khu 8', 'Khu 9']
+const ZONE_ORDER = ['Khu 1', 'Khu 2', 'Khu 3', 'Khu 4', 'Khu 5', 'Khu 6', 'Khu 7', 'Khu 8', 'Khu 9', 'Khu 10', 'Khu 11']
 
-/** Slot ids look like `VM_Slot_K3_MT_02` (name: `K3_MT_02`). Zone = the K number. */
+/** Slot ids look like `VM_Slot_K10_AP_02` (name: `K10_AP_02`). Zone = the K number. */
 function fallbackZone(s: Slot): string {
-  const m = /K(\d)_(?:CD|MT|MP|AT|AD)_\d+/.exec(s.name || s.id)
+  const m = /K(\d+)_(?:CD|MT|MP|AT|AD|AP|BN|FT)_\d+/.exec(s.name || s.id)
   return m ? `Khu ${m[1]}` : 'Khác'
 }
 
@@ -359,6 +453,11 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>
             <div style={styles.slotItemTitle}>{first.year ? `${first.year} · ` : ''}{first.title}</div>
+            {slot.nameplate && (
+              <div style={styles.slotNameplateBadge}>
+                📛 Bảng tên: {slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}
+              </div>
+            )}
             <div style={styles.slotStatus}>Đã gán {documents.length} tư liệu</div>
           </div>
         </>
@@ -367,6 +466,11 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
           <div style={styles.slotEmpty}><span style={styles.slotEmptyIcon}>+</span></div>
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>
+            {slot.nameplate && (
+              <div style={styles.slotNameplateBadge}>
+                📛 Bảng tên: {slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}
+              </div>
+            )}
             <div style={styles.slotEmptyLabel}>Trống - click để gán</div>
           </div>
         </>
@@ -450,5 +554,62 @@ const styles: Record<string, React.CSSProperties> = {
   },
   pageEllipsis: {
     color: '#6a5a40', padding: '0 4px', fontSize: '12px',
+  },
+  nameplateSection: {
+    padding: '12px 24px',
+    borderBottom: '1px solid #2a1e10',
+    background: 'rgba(0, 0, 0, 0.2)',
+    flexShrink: 0,
+  },
+  nameplateHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+  },
+  nameplateSyncBtn: {
+    background: 'none',
+    color: '#c8a85a',
+    fontSize: '11px',
+    cursor: 'pointer',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    border: '1px solid rgba(200, 168, 90, 0.3)',
+  },
+  nameplateInputs: {
+    display: 'flex',
+    gap: '16px',
+    marginTop: '8px',
+  },
+  inputGroup: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  inputLabel: {
+    fontSize: '11px',
+    color: '#9a9080',
+  },
+  textInput: {
+    padding: '6px 10px',
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid #3a2e1e',
+    borderRadius: '4px',
+    color: '#f0e8d8',
+    fontSize: '12px',
+    outline: 'none',
+  },
+  slotNameplateBadge: {
+    fontSize: '10px',
+    color: '#c8a85a',
+    marginTop: '3px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    background: 'rgba(200, 168, 90, 0.08)',
+    padding: '2px 4px',
+    borderRadius: '3px',
+    border: '1px solid rgba(200, 168, 90, 0.15)',
   },
 }

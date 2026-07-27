@@ -11,6 +11,32 @@ export const VM_SLOT_PREFIX = 'VM_Slot_'
  *  Hidden at runtime and re-rendered as crisp code text — see ZoneTitle / zoneTitles. */
 export const TITLE_PILL_PREFIX = 'TT_TitlePill_'
 
+const VM_SLOT_ID_RE = /^VM_Slot_K\d+_[A-Z0-9]+_\d{2}/i
+
+function canonicalSlotId(name: string): string | null {
+  return name.match(VM_SLOT_ID_RE)?.[0] ?? null
+}
+
+function slotNodeName(obj: THREE.Object3D): string | null {
+  for (let cur: THREE.Object3D | null = obj.parent; cur != null; cur = cur.parent) {
+    if (cur.name.startsWith(VM_SLOT_PREFIX)) return cur.name
+  }
+  return obj.name.startsWith(VM_SLOT_PREFIX) ? obj.name : null
+}
+
+function titlePillZoneKey(name: string): string | null {
+  const baked = name.match(/^TT_TitlePill_K(\d+)/i)
+  return baked ? `K${baked[1]}` : null
+}
+
+function isTitleTextMesh(name: string): boolean {
+  return /^TT_TitlePill_Text_K(?:[1-4]|7|8)(?:\b|[_.])/i.test(name)
+}
+
+function isBlenderAuthoredZoneTitleText(name: string): boolean {
+  return /^TT_TitlePill_Text_K(?:10|11)(?:\b|[_.])/i.test(name)
+}
+
 /** Architecture meshes the visitor must not walk through. Matched by substring so
  *  three.js' `_1`/`_2` duplicate-name suffixes still hit. */
 const COLLIDER_NAME_HINTS = ['CenterBlock', 'Display_Case', 'VM_Display', 'Niche_Plinth', 'Hero_Cabinet', 'TT_Right_Alcove']
@@ -232,6 +258,100 @@ function applyOriginalUnlitMaterial(obj: THREE.Mesh): void {
     : makeOriginalUnlitMaterial(originals[0])
 }
 
+let k5NameplateTexture: THREE.CanvasTexture | null = null
+
+function getK5NameplateTexture(): THREE.Texture | null {
+  if (k5NameplateTexture) return k5NameplateTexture
+  if (typeof document === 'undefined') return null
+
+  const canvas = document.createElement('canvas')
+  canvas.width = 1024
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+
+  const face = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+  face.addColorStop(0, '#fff0a8')
+  face.addColorStop(0.18, '#f4d26a')
+  face.addColorStop(0.52, '#d7aa35')
+  face.addColorStop(0.78, '#f0cc64')
+  face.addColorStop(1, '#fff2b8')
+  ctx.fillStyle = face
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  const softSheen = ctx.createLinearGradient(0, 0, 0, canvas.height)
+  softSheen.addColorStop(0, 'rgba(255,255,255,0.34)')
+  softSheen.addColorStop(0.34, 'rgba(255,255,255,0.05)')
+  softSheen.addColorStop(0.72, 'rgba(86,56,10,0.10)')
+  softSheen.addColorStop(1, 'rgba(255,255,255,0.16)')
+  ctx.fillStyle = softSheen
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  ctx.globalAlpha = 0.16
+  ctx.strokeStyle = '#fff7c8'
+  ctx.lineWidth = 2
+  for (let y = 12; y < canvas.height; y += 8) {
+    ctx.beginPath()
+    ctx.moveTo(32, y + 0.5)
+    ctx.lineTo(canvas.width - 32, y + 0.5)
+    ctx.stroke()
+  }
+  ctx.globalAlpha = 1
+
+  ctx.lineJoin = 'round'
+  ctx.lineCap = 'round'
+  ctx.strokeStyle = 'rgba(86, 61, 18, 0.46)'
+  ctx.lineWidth = 5
+  ctx.strokeRect(74, 54, 876, 148)
+  ctx.strokeStyle = 'rgba(255, 249, 210, 0.74)'
+  ctx.lineWidth = 4
+  ctx.beginPath()
+  ctx.moveTo(54, 28)
+  ctx.lineTo(970, 28)
+  ctx.moveTo(54, 228)
+  ctx.lineTo(970, 228)
+  ctx.stroke()
+
+  k5NameplateTexture = new THREE.CanvasTexture(canvas)
+  k5NameplateTexture.colorSpace = THREE.SRGBColorSpace
+  k5NameplateTexture.minFilter = THREE.LinearFilter
+  k5NameplateTexture.magFilter = THREE.LinearFilter
+  k5NameplateTexture.anisotropy = 8
+  k5NameplateTexture.needsUpdate = true
+  return k5NameplateTexture
+}
+
+function applyK5NameplateFaceMaterial(obj: THREE.Mesh): void {
+  const originals = originalMaterialsFor(obj)
+  const original = originals[0] as (THREE.Material & {
+    opacity?: number
+    transparent?: boolean
+  }) | undefined
+  const texture = getK5NameplateTexture()
+  const result = new THREE.MeshBasicMaterial({
+    color: texture ? '#ffffff' : '#f2cf68',
+    map: texture,
+    side: THREE.DoubleSide,
+    transparent: original?.transparent === true,
+    opacity: original?.opacity ?? 1,
+    depthWrite: true,
+    toneMapped: false,
+  })
+  result.name = original?.name ?? ''
+  obj.material = result
+}
+
+function applyK5NameplateBodyMaterial(obj: THREE.Mesh): void {
+  const result = new THREE.MeshBasicMaterial({
+    color: '#d8ad45',
+    side: THREE.DoubleSide,
+    depthWrite: true,
+    toneMapped: false,
+  })
+  result.name = 'TT_K5_Nameplate_Gold_Body_Web'
+  obj.material = result
+}
+
 
 const HONOR_DARK_WOOD_COLOR = new THREE.Color('#6b2c17')
 const HONOR_RED_COLOR = new THREE.Color('#9f241b')
@@ -352,6 +472,7 @@ export interface ExtractedSlot {
   id: string
   transform: SlotTransform
   hasBlenderFrame: boolean
+  mirrorTextureX?: boolean
 }
 
 /** Anchor for a code-rendered zone title, extracted from the baked pill mesh. */
@@ -387,6 +508,9 @@ interface Props {
  * Resolve it back to the JSON slot id (`VM_Slot_K8_CD_01`) by longest-prefix match.
  */
 function resolveSlotId(meshName: string, knownIds: string[]): string | null {
+  const canonical = canonicalSlotId(meshName)
+  if (canonical) return canonical
+
   let best: string | null = null
   for (const id of knownIds) {
     if (meshName === id || meshName.startsWith(id + '_')) {
@@ -442,6 +566,12 @@ export function RoomModel({
       tex.flipY = false // glTF convention
       tex.channel = 1 // read TEXCOORD_1 (the baked atlas UV set)
       tex.colorSpace = THREE.SRGBColorSpace
+
+      tex.wrapS = THREE.ClampToEdgeWrapping
+      tex.wrapT = THREE.ClampToEdgeWrapping
+      tex.generateMipmaps = false
+      tex.minFilter = THREE.LinearFilter
+      tex.magFilter = THREE.LinearFilter
       tex.needsUpdate = true
       setBakedAtlas(tex)
       invalidate()
@@ -473,6 +603,12 @@ export function RoomModel({
         tex.flipY = false
         tex.channel = 1
         tex.colorSpace = THREE.SRGBColorSpace
+
+        tex.wrapS = THREE.ClampToEdgeWrapping
+        tex.wrapT = THREE.ClampToEdgeWrapping
+        tex.generateMipmaps = false
+        tex.minFilter = THREE.LinearFilter
+        tex.magFilter = THREE.LinearFilter
         tex.needsUpdate = true
         setPropsAtlas(tex)
         invalidate()
@@ -593,6 +729,9 @@ export function RoomModel({
     const slotMap = new Map<string, {
       pos: THREE.Vector3
       w: number; h: number
+      xAxis: THREE.Vector3 | null
+      yAxis: THREE.Vector3 | null
+      zAxis: THREE.Vector3 | null
       euler: THREE.Euler | null
       hasFrame: boolean
     }>()
@@ -615,7 +754,8 @@ export function RoomModel({
       obj.frustumCulled = true
       const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
       const isCanvas = mats.some((m) => isSlotCanvasMaterialName(m?.name ?? ''))
-      const isSlot = obj.name.startsWith(VM_SLOT_PREFIX)
+      const slotName = slotNodeName(obj)
+      const isSlot = slotName != null
 
       if (!isSlot) {
         if (isCanvas) { obj.visible = false; return }
@@ -624,11 +764,11 @@ export function RoomModel({
         // GLB. Hide them and re-render each title in code (crisp <Text> + auto-sizing
         // pill) so titles are editable without a Blender re-export. From the pill
         // BACKGROUND mesh, extract its centre + wall-facing basis as the code anchor.
-        if (obj.name.startsWith(TITLE_PILL_PREFIX)) {
+        const zoneKey = titlePillZoneKey(obj.name)
+        if (zoneKey || isTitleTextMesh(obj.name)) {
           obj.visible = false
-          const m = obj.name.startsWith(TITLE_PILL_PREFIX + 'Text') ? null : obj.name.match(/_K(\d+)/)
           const posAttr = (obj as THREE.Mesh).geometry?.getAttribute('position')
-          if (m && posAttr) {
+          if (zoneKey && posAttr) {
             const nrmAttr = (obj as THREE.Mesh).geometry?.getAttribute('normal')
             const normalMat = new THREE.Matrix3().getNormalMatrix(obj.matrixWorld)
             const zAxis = nrmAttr
@@ -653,7 +793,7 @@ export function RoomModel({
             // Facing is finalised AFTER the traverse, once the room-shell bounds are
             // known: the pill mesh normal is unreliable (some point into the wall).
             titleRaw.push({
-              zoneKey: 'K' + m[1],
+              zoneKey,
               centroid: centroid.clone(),
               xAxis: xAxis.clone(),
               yAxis: yAxis.clone(),
@@ -794,6 +934,28 @@ export function RoomModel({
           applyPolygonOffset(obj, 1, 1)
           return
         }
+        if (obj.name.startsWith('TT_K5_Director_Panel_') || obj.name.startsWith('TT_K10_') || obj.name.startsWith('TT_K11_') || isBlenderAuthoredZoneTitleText(obj.name)) {
+          applyOriginalUnlitMaterial(obj)
+          return
+        }
+        if (obj.name.startsWith('TT_K5_Nameplate')) {
+          const isNameplateBody = obj.name.includes('_Body')
+          const isNameplateFace = obj.name.includes('_Face')
+          if (!isNameplateBody && !isNameplateFace) {
+            obj.visible = false
+            return
+          }
+          obj.castShadow = isNameplateBody
+          obj.receiveShadow = false
+          if (isNameplateFace) {
+            obj.visible = false
+            return
+          } else {
+            applyK5NameplateBodyMaterial(obj)
+            applyPolygonOffset(obj, -1, -1)
+          }
+          return
+        }
 
         // Architecture meshes carrying a 2nd UV set (uv1 = TEXCOORD_1) get the baked
         // Combined atlas as an unlit material â€” pixel-identical to the Blender render.
@@ -923,9 +1085,9 @@ export function RoomModel({
 
       // Map the (possibly suffixed) mesh name back to the JSON slot id so that the
       // frame + canvas primitives of the same node land in one entry.
-      const slotId = resolveSlotId(obj.name, knownIds) ?? obj.name
+      const slotId = resolveSlotId(slotName ?? obj.name, knownIds) ?? slotName ?? obj.name
       if (!slotMap.has(slotId)) {
-        slotMap.set(slotId, { pos: new THREE.Vector3(), w: 1, h: 0.8, euler: null, hasFrame: false })
+        slotMap.set(slotId, { pos: new THREE.Vector3(), w: 1, h: 0.8, xAxis: null, yAxis: null, zAxis: null, euler: null, hasFrame: false })
       }
       const entry = slotMap.get(slotId)!
 
@@ -1025,6 +1187,9 @@ export function RoomModel({
           entry.pos.copy(centroid)
           entry.w = maxX - minX
           entry.h = maxY - minY
+          entry.xAxis = xAxis.clone()
+          entry.yAxis = yAxis.clone()
+          entry.zAxis = zAxis.clone()
           const m = new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis)
           entry.euler = new THREE.Euler().setFromRotationMatrix(m)
         }
@@ -1042,14 +1207,31 @@ export function RoomModel({
     // mesh, so keep K6 stable until the glass is fixed at export/Blender level.
 
     const extracted: ExtractedSlot[] = []
+    const haveCenter = isFinite(archMinX) && isFinite(archMinZ)
+    const cx = haveCenter ? (archMinX + archMaxX) / 2 : 0
+    const cz = haveCenter ? (archMinZ + archMaxZ) / 2 : 0
     for (const [id, entry] of slotMap) {
       if (entry.euler === null) continue  // canvas not found for this slot
+      let euler = entry.euler
+      let mirrorTextureX = false
+      if (entry.xAxis && entry.yAxis && entry.zAxis) {
+        let xAxis = entry.xAxis
+        let zAxis = entry.zAxis
+        if (haveCenter && zAxis.x * (entry.pos.x - cx) + zAxis.z * (entry.pos.z - cz) > 0) {
+          xAxis = xAxis.clone().negate()
+          zAxis = zAxis.clone().negate()
+          mirrorTextureX = true
+        }
+        const basis = new THREE.Matrix4().makeBasis(xAxis, entry.yAxis, zAxis)
+        euler = new THREE.Euler().setFromRotationMatrix(basis)
+      }
       extracted.push({
         id,
         hasBlenderFrame: entry.hasFrame,
+        ...(mirrorTextureX ? { mirrorTextureX } : {}),
         transform: {
           position: { x: entry.pos.x, y: entry.pos.y, z: entry.pos.z },
-          rotation: { x: entry.euler.x, y: entry.euler.y, z: entry.euler.z },
+          rotation: { x: euler.x, y: euler.y, z: euler.z },
           size: { w: entry.w, h: entry.h },
         },
       })
@@ -1062,9 +1244,6 @@ export function RoomModel({
     // away from the centre, turn it 180° about up (negate X and Z) — that flips the
     // facing WITHOUT mirroring the text.
     {
-      const haveCenter = isFinite(archMinX) && isFinite(archMinZ)
-      const cx = haveCenter ? (archMinX + archMaxX) / 2 : 0
-      const cz = haveCenter ? (archMinZ + archMaxZ) / 2 : 0
       for (const t of titleRaw) {
         let xAxis = t.xAxis
         let zAxis = t.zAxis

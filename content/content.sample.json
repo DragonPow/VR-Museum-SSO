@@ -799,6 +799,162 @@
           "documentIds": []
         },
         {
+          "id": "VM_Slot_K10_FT_01",
+          "roomId": "room-truyenthong",
+          "name": "K10_FT_01",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-multi-image-page"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_01",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_01",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-image-local"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_02",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_02",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-two-page-01"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_03",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_03",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-two-page-02"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_04",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_04",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-multi-image-page"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_05",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_05",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_06",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_06",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_07",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_07",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_08",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_08",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K11_BN_01",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_01",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-image-local"
+          ],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_02",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_02",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-two-page-01"
+          ],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_03",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_03",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-two-page-02"
+          ],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_04",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_04",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_05",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_05",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
           "id": "VM_Slot_K6_AT_01",
           "roomId": "room-truyenthong",
           "name": "K6_AT_01",

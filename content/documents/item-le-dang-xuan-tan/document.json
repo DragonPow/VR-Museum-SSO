@@ -1,0 +1,27 @@
+{
+  "id": "item-le-dang-xuan-tan",
+  "documentKey": "item-le-dang-xuan-tan",
+  "title": "Lê Đặng Xuân Tân",
+  "year": "2018 - 2023",
+  "periodId": "period-1975-1985",
+  "summary": "Ảnh demo lãnh đạo khu 5.",
+  "body": "",
+  "tags": [
+    "khu-5",
+    "lanh-dao"
+  ],
+  "mediaType": "image",
+  "thumbnailImageId": "photo1",
+  "viewerImageId": "photo1",
+  "detailImageIds": [
+    "photo1"
+  ],
+  "images": [
+    {
+      "id": "photo1",
+      "rawExt": "png"
+    }
+  ],
+  "source": "",
+  "priority": 0
+}

@@ -1,11 +1,11 @@
 {
   "version": "1",
-  "updatedAt": "2026-07-21T12:39:17.867Z",
+  "updatedAt": "2026-07-25T09:20:39.849508Z",
   "periods": [
     {
       "id": "period-1975-1985",
       "slug": "1976-2026",
-      "title": "1976–2026 — Những ngày đầu",
+      "title": "1976-2026 - Những ngày đầu",
       "yearStart": 1976,
       "yearEnd": 2026,
       "order": 1,
@@ -722,9 +722,15 @@
           "name": "K5_CD_01",
           "type": "image",
           "frameStyle": "classic",
-          "documentIds": [],
+          "documentIds": [
+            "item-le-dang-xuan-tan"
+          ],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "Lê Đặng Xuân Tân",
+            "secondary": "2018 - 2023"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_02",
@@ -734,7 +740,11 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "TRẦN VĂN B",
+            "secondary": "1990 - 1996"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_03",
@@ -744,7 +754,11 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "LÊ THỊ C",
+            "secondary": "1996 - 2002"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_04",
@@ -754,7 +768,11 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "PHẠM VĂN D",
+            "secondary": "2002 - 2007"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_05",
@@ -764,7 +782,11 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "HOÀNG VĂN E",
+            "secondary": "2007 - 2012"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_06",
@@ -774,7 +796,11 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "VÕ VĂN F",
+            "secondary": "2012 - 2016"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_07",
@@ -784,7 +810,11 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "ĐOÀN VĂN G",
+            "secondary": "2016 - 2020"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_08",
@@ -794,7 +824,11 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "BÙI VĂN H",
+            "secondary": "2020 - 2024"
+          }
         },
         {
           "id": "VM_Slot_K5_CD_09",
@@ -804,7 +838,180 @@
           "frameStyle": "classic",
           "documentIds": [],
           "visible": true,
-          "zone": "Khu 5"
+          "zone": "Khu 5",
+          "nameplate": {
+            "primary": "NGUYỄN VĂN I",
+            "secondary": "2024 - NAY"
+          }
+        },
+        {
+          "id": "VM_Slot_K5_BACKDROP_01",
+          "roomId": "room-truyenthong",
+          "name": "K5_BACKDROP_01",
+          "type": "image",
+          "frameStyle": "none",
+          "documentIds": [
+            "item-GQ5cdD57"
+          ],
+          "visible": false,
+          "zone": "Khu 5",
+          "viewerVariant": "full"
+        },
+        {
+          "id": "VM_Slot_K10_FT_01",
+          "roomId": "room-truyenthong",
+          "name": "K10_FT_01",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "demo-multi-image-page"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_01",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_01",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "item-01"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_02",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_02",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "item-02"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_03",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_03",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "item-03"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_04",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_04",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "item-04"
+          ],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_05",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_05",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_06",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_06",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_07",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_07",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K10_AP_08",
+          "roomId": "room-truyenthong",
+          "name": "K10_AP_08",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 10"
+        },
+        {
+          "id": "VM_Slot_K11_BN_01",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_01",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "item-05"
+          ],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_02",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_02",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "item-mKQcJteY"
+          ],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_03",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_03",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [
+            "item-GQ5cdD57"
+          ],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_04",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_04",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 11"
+        },
+        {
+          "id": "VM_Slot_K11_BN_05",
+          "roomId": "room-truyenthong",
+          "name": "K11_BN_05",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 11"
         },
         {
           "id": "VM_Slot_K6_AT_01",
@@ -1065,6 +1272,18 @@
     {
       "id": "item-mKQcJteY",
       "documentKey": "item-mKQcJteY",
+      "mediaType": "image",
+      "viewerImageId": "photo1"
+    },
+    {
+      "id": "item-GQ5cdD57",
+      "documentKey": "item-GQ5cdD57",
+      "mediaType": "image",
+      "viewerImageId": "photo1"
+    },
+    {
+      "id": "item-le-dang-xuan-tan",
+      "documentKey": "item-le-dang-xuan-tan",
       "mediaType": "image",
       "viewerImageId": "photo1"
     }

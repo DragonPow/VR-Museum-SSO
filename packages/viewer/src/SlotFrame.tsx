@@ -1,12 +1,13 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
+import { Text } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { Slot, DocumentIndexItem } from '@vm/shared'
 import { loadTexture, greyTexture } from './TextureManager.js'
-import { HERO_SLOT_ID } from './slotIds.js'
+import { HERO_SLOT_ID, isBackdropSlotId } from './slotIds.js'
 
 interface Props {
-  slot: Slot
+  slot: Slot & { hasBlenderFrame?: boolean; mirrorTextureX?: boolean }
   documentItem: DocumentIndexItem | null
   viewerTextureUrl: string | null
   onSelect: (slotId: string) => void
@@ -17,6 +18,13 @@ const FRAME_THICKNESS = 0.04
 const FRAME_DEPTH     = 0.05   // how far the frame protrudes from the wall
 const FRAME_BASE      = 0.01   // gap between wall surface and back of frame (prevents z-fighting)
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
+const NAMEPLATE_PRIMARY_COLOR = '#1f2a33'
+const NAMEPLATE_SECONDARY_COLOR = '#2f3a42'
+const ACRYLIC_FACE_COLOR = '#edf5f7'
+const ACRYLIC_PLATE_COLOR = '#f7fbfc'
+const ACRYLIC_EDGE_COLOR = '#c7d0d4'
+const ACRYLIC_PIN_COLOR = '#b8b1a4'
+
 export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
   const matRef  = useRef<THREE.MeshLambertMaterial | THREE.MeshBasicMaterial>(null)
@@ -31,10 +39,15 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   const frameColor = FRAME_COLOR[frameStyle]
   // Fixed backdrop panel (the wide hero banner): show the full-res image exactly as-is
   // — unlit, uncropped, not clickable — so it reads like a real printed panel on the wall.
-  const isBackdrop = slot.id === HERO_SLOT_ID
+  const isBackdrop = isBackdropSlotId(slot.id)
+  const isK5Portrait = /^VM_Slot_K5_CD_\d{2}$/i.test(slot.id)
+  const mirrorTextureX = slot.mirrorTextureX === true
+  const hasImage = Boolean(viewerTextureUrl)
+  const hasBlenderFrame = slot.hasBlenderFrame || frameColor === null
   // K9 is mounted on the entrance wall whose room-facing side is local -Z.
-  // Keep the live backdrop slightly in front of the wall to avoid z-fighting haze.
-  const canvasZ = isBackdrop ? -0.035 : (frameColor === null ? 0 : FRAME_BASE + FRAME_DEPTH - 0.01)
+  // GLB-authored frames already provide the canvas plane; keep live content nearly
+  // coplanar instead of applying the procedural-frame offset.
+  const canvasZ = slot.id === HERO_SLOT_ID ? -0.035 : (hasBlenderFrame ? 0.003 : FRAME_BASE + FRAME_DEPTH - 0.01)
 
   useEffect(() => {
     document.body.style.cursor = hovered ? 'pointer' : 'auto'
@@ -45,11 +58,14 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   useEffect(() => {
     if (matRef.current) {
       matRef.current.map = null
-      matRef.current.color.set('#d8cfbf')
+      matRef.current.color.set(isK5Portrait ? ACRYLIC_FACE_COLOR : '#d8cfbf')
+      matRef.current.transparent = isK5Portrait && !hasImage
+      matRef.current.opacity = isK5Portrait && !hasImage ? 0.34 : 1
+      matRef.current.depthWrite = !(isK5Portrait && !hasImage)
       matRef.current.needsUpdate = true
       invalidate()
     }
-  }, [documentItem?.id, invalidate])
+  }, [documentItem?.id, hasImage, isK5Portrait, invalidate])
 
   // Load texture as soon as item is available.
   // Using useEffect instead of useFrame so textures load even in frameloop='demand'
@@ -61,28 +77,164 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     if (!url || !matRef.current) return
     loadTexture(url, (tex) => {
       if (!matRef.current) return
+      const displayTex = mirrorTextureX ? tex.clone() : tex
       // EVERY slot texture must be tagged sRGB, not just the backdrop -- otherwise the
       // bytes are read as linear and the photo's gamma is wrong.
-      tex.colorSpace = THREE.SRGBColorSpace
-      if (isBackdrop) {
-        tex.generateMipmaps = false
-        tex.minFilter = THREE.LinearFilter
-        tex.magFilter = THREE.LinearFilter
-        tex.anisotropy = 8
+      displayTex.colorSpace = THREE.SRGBColorSpace
+      if (mirrorTextureX) {
+        displayTex.wrapS = THREE.RepeatWrapping
+        displayTex.repeat.x = -1
+        displayTex.offset.x = 1
       }
-      tex.needsUpdate = true
-      matRef.current.map = tex
       if (isBackdrop) {
-        // Brighten the K9 image itself instead of adding a translucent overlay; this
-        // keeps the backdrop fresh without the white, cloudy glass look.
-        matRef.current.color.setRGB(1.18, 1.18, 1.18)
+        displayTex.generateMipmaps = false
+        displayTex.minFilter = THREE.LinearFilter
+        displayTex.magFilter = THREE.LinearFilter
+        displayTex.anisotropy = 8
+        // Keep backdrop artwork orientation exactly as authored in content.
+      }
+      displayTex.needsUpdate = true
+      matRef.current.map = displayTex
+      if (isBackdrop) {
+        // Brighten the printed backdrop image itself instead of adding a translucent overlay.
+        matRef.current.color.setRGB(1.12, 1.12, 1.12)
       } else {
         matRef.current.color.set('#ffffff')
+        matRef.current.transparent = false
+        matRef.current.opacity = 1
+        matRef.current.depthWrite = true
       }
       matRef.current.needsUpdate = true
       invalidate()
     })
-  }, [viewerTextureUrl, isBackdrop, invalidate])
+  }, [viewerTextureUrl, isBackdrop, mirrorTextureX, invalidate])
+
+  useEffect(() => () => {
+    const map = matRef.current?.map
+    if (map && mirrorTextureX) map.dispose()
+  }, [viewerTextureUrl, mirrorTextureX])
+
+  const nameplateWidth = Math.max(size.w * 1.14, 0.46)
+  const nameplateHeight = 0.16
+  const nameplatePinX = nameplateWidth / 2 - 0.045
+  const nameplateTextZ = isK5Portrait ? -0.008 : (hasBlenderFrame ? 0.014 : 0.072)
+  const k5NameplateFaceTexture = useMemo(() => {
+    if (!isK5Portrait) return null
+    const canvas = document.createElement('canvas')
+    canvas.width = 1024
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    const face = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+    face.addColorStop(0, '#fff0a8')
+    face.addColorStop(0.18, '#f4d26a')
+    face.addColorStop(0.52, '#d7aa35')
+    face.addColorStop(0.78, '#f0cc64')
+    face.addColorStop(1, '#fff2b8')
+    ctx.fillStyle = face
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    const softSheen = ctx.createLinearGradient(0, 0, 0, canvas.height)
+    softSheen.addColorStop(0, 'rgba(255,255,255,0.34)')
+    softSheen.addColorStop(0.34, 'rgba(255,255,255,0.05)')
+    softSheen.addColorStop(0.72, 'rgba(86,56,10,0.10)')
+    softSheen.addColorStop(1, 'rgba(255,255,255,0.16)')
+    ctx.fillStyle = softSheen
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    ctx.globalAlpha = 0.07
+    ctx.strokeStyle = '#fff7c8'
+    ctx.lineWidth = 2
+    for (let y = 14; y < canvas.height; y += 16) {
+      ctx.beginPath()
+      ctx.moveTo(32, y + 0.5)
+      ctx.lineTo(canvas.width - 32, y + 0.5)
+      ctx.stroke()
+    }
+    ctx.globalAlpha = 1
+
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    ctx.strokeStyle = 'rgba(86, 61, 18, 0.46)'
+    ctx.lineWidth = 5
+    ctx.strokeRect(74, 54, 876, 148)
+    ctx.strokeStyle = 'rgba(255, 249, 210, 0.74)'
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(54, 28)
+    ctx.lineTo(970, 28)
+    ctx.moveTo(54, 228)
+    ctx.lineTo(970, 228)
+    ctx.stroke()
+
+    const tex = new THREE.CanvasTexture(canvas)
+    tex.colorSpace = THREE.SRGBColorSpace
+    tex.minFilter = THREE.LinearFilter
+    tex.magFilter = THREE.LinearFilter
+    tex.anisotropy = 8
+    tex.needsUpdate = true
+    return tex
+  }, [isK5Portrait])
+
+  const k5NameplateLabelTexture = useMemo(() => {
+    if (!isK5Portrait || !slot.nameplate) return null
+    const canvas = document.createElement('canvas')
+    canvas.width = 1024
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.lineJoin = 'round'
+    ctx.shadowColor = 'transparent'
+    ctx.shadowBlur = 0
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+    ctx.font = '650 58px Arial, sans-serif'
+    ctx.strokeStyle = 'rgba(255, 246, 199, 0.26)'
+    ctx.lineWidth = 0.8
+    ctx.strokeText(slot.nameplate.primary, 512, 102)
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.12)'
+    ctx.shadowBlur = 0.45
+    ctx.shadowOffsetX = 0.35
+    ctx.shadowOffsetY = 0.5
+    ctx.fillStyle = '#3d3017'
+    ctx.fillText(slot.nameplate.primary, 512, 112)
+
+    if (slot.nameplate.secondary) {
+      ctx.shadowColor = 'transparent'
+      ctx.shadowBlur = 0
+      ctx.shadowOffsetX = 0
+      ctx.shadowOffsetY = 0
+      ctx.font = '650 36px Arial, sans-serif'
+      ctx.strokeText(slot.nameplate.secondary, 512, 174)
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.10)'
+      ctx.shadowBlur = 0.45
+      ctx.shadowOffsetX = 0.3
+      ctx.shadowOffsetY = 0.45
+      ctx.fillStyle = '#4a3819'
+      ctx.fillText(slot.nameplate.secondary, 512, 166)
+    }
+
+    const tex = new THREE.CanvasTexture(canvas)
+    tex.colorSpace = THREE.SRGBColorSpace
+    tex.minFilter = THREE.LinearFilter
+    tex.magFilter = THREE.LinearFilter
+    tex.anisotropy = 8
+    tex.needsUpdate = true
+    return tex
+  }, [isK5Portrait, slot.nameplate?.primary, slot.nameplate?.secondary])
+
+  useEffect(() => () => {
+    k5NameplateFaceTexture?.dispose()
+  }, [k5NameplateFaceTexture])
+
+  useEffect(() => () => {
+    k5NameplateLabelTexture?.dispose()
+  }, [k5NameplateLabelTexture])
 
   // Guard after all hooks — slot has no transform yet (GLB not extracted)
   if (!transform) return null
@@ -125,12 +277,112 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           <meshBasicMaterial
             ref={matRef as never}
             map={viewerTextureUrl ? greyTexture() : null}
-            color={viewerTextureUrl ? '#ffffff' : '#d8cfbf'}
+            color={viewerTextureUrl ? '#ffffff' : (isK5Portrait ? ACRYLIC_FACE_COLOR : '#d8cfbf')}
+            transparent={isK5Portrait && !viewerTextureUrl}
+            opacity={isK5Portrait && !viewerTextureUrl ? 0.34 : 1}
+            depthWrite={!(isK5Portrait && !viewerTextureUrl)}
             toneMapped={false}
             side={THREE.DoubleSide}
           />
         )}
       </mesh>
+
+      {slot.nameplate && !isBackdrop && (
+        <group position={[0, -size.h / 2 - 0.235, nameplateTextZ]}>
+          {!isK5Portrait && (
+            <>
+              <mesh renderOrder={9}>
+                <planeGeometry args={[nameplateWidth, nameplateHeight]} />
+                <meshBasicMaterial
+                  color={ACRYLIC_PLATE_COLOR}
+                  transparent
+                  opacity={0.58}
+                  depthWrite={false}
+                  toneMapped={false}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+              <mesh position={[0, nameplateHeight / 2, 0.004]} renderOrder={10}>
+                <planeGeometry args={[nameplateWidth, 0.008]} />
+                <meshBasicMaterial color={ACRYLIC_EDGE_COLOR} transparent opacity={0.82} depthWrite={false} toneMapped={false} />
+              </mesh>
+              <mesh position={[0, -nameplateHeight / 2, 0.004]} renderOrder={10}>
+                <planeGeometry args={[nameplateWidth, 0.008]} />
+                <meshBasicMaterial color={ACRYLIC_EDGE_COLOR} transparent opacity={0.72} depthWrite={false} toneMapped={false} />
+              </mesh>
+              <mesh position={[-nameplatePinX, 0, 0.009]} renderOrder={11}>
+                <circleGeometry args={[0.018, 24]} />
+                <meshBasicMaterial color={ACRYLIC_PIN_COLOR} transparent opacity={0.9} depthWrite={false} toneMapped={false} />
+              </mesh>
+              <mesh position={[nameplatePinX, 0, 0.009]} renderOrder={11}>
+                <circleGeometry args={[0.018, 24]} />
+                <meshBasicMaterial color={ACRYLIC_PIN_COLOR} transparent opacity={0.9} depthWrite={false} toneMapped={false} />
+              </mesh>
+            </>
+          )}
+          {isK5Portrait && k5NameplateFaceTexture && (
+            <mesh position={[0, -0.004, 0.011]} renderOrder={88}>
+              <planeGeometry args={[nameplateWidth * 0.98, nameplateHeight * 1.04]} />
+              <meshBasicMaterial
+                map={k5NameplateFaceTexture}
+                depthTest={true}
+                depthWrite={false}
+                polygonOffset
+                polygonOffsetFactor={-1}
+                polygonOffsetUnits={-1}
+                toneMapped={false}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+          {isK5Portrait && k5NameplateLabelTexture ? (
+            <mesh position={[0, 0, 0.016]} renderOrder={90}>
+              <planeGeometry args={[nameplateWidth * 0.70, nameplateHeight * 0.54]} />
+              <meshBasicMaterial
+                map={k5NameplateLabelTexture}
+                transparent
+                depthTest={true}
+                depthWrite={false}
+                toneMapped={false}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          ) : (
+            <>
+              <Text
+                position={[0, 0.03, 0.014]}
+                fontSize={0.032}
+                maxWidth={Math.max(size.w * 0.86, 0.34)}
+                textAlign="center"
+                anchorX="center"
+                anchorY="middle"
+                color={NAMEPLATE_PRIMARY_COLOR}
+                renderOrder={12}
+                material-toneMapped={false}
+                material-depthWrite={false}
+              >
+                {slot.nameplate.primary}
+              </Text>
+              {slot.nameplate.secondary && (
+                <Text
+                  position={[0, -0.034, 0.014]}
+                  fontSize={0.03}
+                  maxWidth={Math.max(size.w * 0.86, 0.34)}
+                  textAlign="center"
+                  anchorX="center"
+                  anchorY="middle"
+                  color={NAMEPLATE_SECONDARY_COLOR}
+                  renderOrder={12}
+                  material-toneMapped={false}
+                  material-depthWrite={false}
+                >
+                  {slot.nameplate.secondary}
+                </Text>
+              )}
+            </>
+          )}
+        </group>
+      )}
 
       {/* Hover glow — behind frame base */}
       {hovered && (
