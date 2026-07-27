@@ -364,11 +364,11 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
 
   return (
     <group ref={groupRef} position={pos} rotation={rot}>
-      {/* White backing plane to fill the rest of the square slot if the image is fit/letterboxed */}
+      {/* Warm gallery off-white backing plane to fill the rest of the square slot if the image is fit/letterboxed */}
       {isContainMode && hasImage && !isNearlyMatch && (
         <mesh position={[0, 0, canvasZ]}>
           <planeGeometry args={[size.w, size.h]} />
-          <meshBasicMaterial color="#ffffff" toneMapped={false} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#f6f3eb" toneMapped={false} side={THREE.DoubleSide} />
         </mesh>
       )}
 
@@ -376,7 +376,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           'none' = Blender frame present: sit at canvas face depth (~2 cm).
           Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
-        position={[0, 0, isContainMode && hasImage && !isNearlyMatch ? canvasZ + 0.0015 : canvasZ]}
+        position={[0, 0, canvasZ]}
         renderOrder={isBackdrop ? 20 : 0}
         {...(documentItem && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
@@ -411,6 +411,9 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
             depthWrite={!(isK5Portrait && !viewerTextureUrl)}
             toneMapped={false}
             side={THREE.DoubleSide}
+            polygonOffset={true}
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
           />
         )}
       </mesh>
