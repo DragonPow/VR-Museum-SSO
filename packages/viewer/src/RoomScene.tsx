@@ -185,6 +185,7 @@ export function RoomScene({
             visible: json?.visible ?? true,
             ...(json?.viewerVariant ? { viewerVariant: json.viewerVariant } : {}),
             ...(json?.nameplate ? { nameplate: json.nameplate } : {}),
+            ...(json?.fitMode ? { fitMode: json.fitMode } : {}),
             transform: gs.transform,
             hasBlenderFrame: gs.hasBlenderFrame,
             ...(gs.mirrorTextureX ? { mirrorTextureX: true } : {}),
