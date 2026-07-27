@@ -30,6 +30,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   const matRef  = useRef<THREE.MeshLambertMaterial | THREE.MeshBasicMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
   const { invalidate } = useThree()
+  const [imageAspect, setImageAspect] = useState<number | null>(null)
   const { transform, frameStyle } = slot
   // Use safe defaults so hooks below always receive valid values.
   // The null guard before JSX (after all hooks) prevents any rendering.
@@ -56,6 +57,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
 
   // Clear texture immediately when item changes
   useEffect(() => {
+    setImageAspect(null)
     if (matRef.current) {
       matRef.current.map = null
       matRef.current.color.set(isK5Portrait ? ACRYLIC_FACE_COLOR : '#d8cfbf')
@@ -77,24 +79,36 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     if (!url || !matRef.current) return
     loadTexture(url, (tex) => {
       if (!matRef.current) return
-      const displayTex = mirrorTextureX ? tex.clone() : tex
-      // EVERY slot texture must be tagged sRGB, not just the backdrop -- otherwise the
-      // bytes are read as linear and the photo's gamma is wrong.
-      displayTex.colorSpace = THREE.SRGBColorSpace
-      if (mirrorTextureX) {
-        displayTex.wrapS = THREE.RepeatWrapping
-        displayTex.repeat.x = -1
-        displayTex.offset.x = 1
+
+      // Set imageAspect from the loaded image
+      if (tex.image && tex.image.width && tex.image.height) {
+        setImageAspect(tex.image.width / tex.image.height)
       }
+
+      // Configure texture parameters (using the shared cached texture directly)
+      tex.colorSpace = THREE.SRGBColorSpace
+
+      if (mirrorTextureX) {
+        tex.wrapS = THREE.RepeatWrapping
+        tex.repeat.x = -1
+        tex.offset.x = 1
+      } else {
+        // Reset repeat and offset in case it was modified by other slots
+        tex.repeat.set(1, 1)
+        tex.offset.set(0, 0)
+      }
+
       if (isBackdrop) {
-        displayTex.generateMipmaps = false
-        displayTex.minFilter = THREE.LinearFilter
-        displayTex.magFilter = THREE.LinearFilter
-        displayTex.anisotropy = 8
+        tex.generateMipmaps = false
+        tex.minFilter = THREE.LinearFilter
+        tex.magFilter = THREE.LinearFilter
+        tex.anisotropy = 8
         // Keep backdrop artwork orientation exactly as authored in content.
       }
-      displayTex.needsUpdate = true
-      matRef.current.map = displayTex
+
+      tex.needsUpdate = true
+      matRef.current.map = tex
+
       if (isBackdrop) {
         // Brighten the printed backdrop image itself instead of adding a translucent overlay.
         matRef.current.color.setRGB(1.12, 1.12, 1.12)
@@ -108,11 +122,6 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
       invalidate()
     })
   }, [viewerTextureUrl, isBackdrop, mirrorTextureX, invalidate])
-
-  useEffect(() => () => {
-    const map = matRef.current?.map
-    if (map && mirrorTextureX) map.dispose()
-  }, [viewerTextureUrl, mirrorTextureX])
 
   const nameplateWidth = Math.max(size.w * 1.14, 0.46)
   const nameplateHeight = 0.16
@@ -289,11 +298,39 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   // Guard after all hooks — slot has no transform yet (GLB not extracted)
   if (!transform) return null
 
+  const planeAspect = size.w / size.h
+  let renderW = size.w
+  let renderH = size.h
+  let isNearlyMatch = false
+
+  if (imageAspect && !isBackdrop) {
+    const aspectDiff = Math.abs(imageAspect - planeAspect) / planeAspect
+    if (aspectDiff < 0.12) {
+      isNearlyMatch = true
+    } else {
+      if (imageAspect > planeAspect) {
+        // Image is wider than slot: shrink height
+        renderH = size.w / imageAspect
+      } else {
+        // Image is taller than slot: shrink width
+        renderW = size.h * imageAspect
+      }
+    }
+  }
+
   const pos = [position.x, position.y, position.z] as [number, number, number]
   const rot = [rotation.x, rotation.y, rotation.z] as [number, number, number]
 
   return (
     <group ref={groupRef} position={pos} rotation={rot}>
+      {/* White backing plane to fill the rest of the square slot if the image is fit/letterboxed */}
+      {!isBackdrop && hasImage && !isNearlyMatch && (
+        <mesh position={[0, 0, canvasZ - 0.001]}>
+          <planeGeometry args={[size.w, size.h]} />
+          <meshBasicMaterial color="#ffffff" toneMapped={false} />
+        </mesh>
+      )}
+
       {/* Canvas — position depends on whether Blender supplies the frame.
           'none' = Blender frame present: sit at canvas face depth (~2 cm).
           Otherwise: recessed 1 cm behind our R3F frame face. */}
@@ -306,7 +343,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           onClick:       (e) => { e.stopPropagation(); onSelect(slot.id) },
         } : {})}
       >
-        <planeGeometry args={[size.w, size.h]} />
+        <planeGeometry args={[renderW, renderH]} />
         {isBackdrop ? (
           <meshBasicMaterial
             ref={matRef as never}
