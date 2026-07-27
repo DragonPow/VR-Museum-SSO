@@ -366,7 +366,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     <group ref={groupRef} position={pos} rotation={rot}>
       {/* White backing plane to fill the rest of the square slot if the image is fit/letterboxed */}
       {isContainMode && hasImage && !isNearlyMatch && (
-        <mesh position={[0, 0, canvasZ - 0.001]}>
+        <mesh position={[0, 0, canvasZ]}>
           <planeGeometry args={[size.w, size.h]} />
           <meshBasicMaterial color="#ffffff" toneMapped={false} />
         </mesh>
@@ -376,7 +376,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           'none' = Blender frame present: sit at canvas face depth (~2 cm).
           Otherwise: recessed 1 cm behind our R3F frame face. */}
       <mesh
-        position={[0, 0, canvasZ]}
+        position={[0, 0, isContainMode && hasImage && !isNearlyMatch ? canvasZ + 0.0015 : canvasZ]}
         renderOrder={isBackdrop ? 20 : 0}
         {...(documentItem && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
