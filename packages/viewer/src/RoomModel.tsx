@@ -169,7 +169,7 @@ function makeWallMaterial(
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   const hasBump = !!normalTex
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uLift = { value: 0.3 }
+    shader.uniforms.uLift = { value: 0.4 } // 1.0 = tường/trần màu kem phẳng (bỏ hẳn biến thiên atlas: hết seam/bleed/vệt). Hạ về ~0.85 nếu muốn giữ chút bóng bake.
     shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.955, 0.875) }
     const commonLines = ['#include <common>', 'uniform float uLift;', 'uniform vec3 uCream;']
     const mapLines = [
