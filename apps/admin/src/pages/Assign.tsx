@@ -95,6 +95,7 @@ export function Assign() {
   const [nameplateRole, setNameplateRole] = useState('')
   const [nameplatePrimary, setNameplatePrimary] = useState('')
   const [nameplateSecondary, setNameplateSecondary] = useState('')
+  const [fitMode, setFitMode] = useState<'cover' | 'contain'>('cover')
 
   useEffect(() => {
     setExpandedZones({})
@@ -143,6 +144,7 @@ export function Assign() {
     setNameplateRole(slot.nameplate?.role ?? '')
     setNameplatePrimary(slot.nameplate?.primary ?? '')
     setNameplateSecondary(slot.nameplate?.secondary ?? '')
+    setFitMode(slot.fitMode ?? 'cover')
     setPickerPage(1)
   }
 
@@ -204,7 +206,7 @@ export function Assign() {
         nameplate.role = rol
       }
     }
-    assignDocuments(selectedRoom.id, pickerSlot.id, draftIds, nameplate)
+    assignDocuments(selectedRoom.id, pickerSlot.id, draftIds, nameplate, fitMode)
     setPickerSlot(null)
     setSearch('')
     setPeriodFilter('')
@@ -410,6 +412,21 @@ export function Assign() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Cấu hình chế độ hiển thị Fit Mode */}
+            <div style={styles.fitModeSection}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', color: '#c8a85a', fontWeight: 600, fontSize: '13px' }}>
+                <span>Chế độ hiển thị ảnh:</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', userSelect: 'none', color: '#f0e8d8', fontWeight: 400 }}>
+                  <input type="radio" name="fitMode" checked={fitMode === 'cover'} onChange={() => setFitMode('cover')} />
+                  Cắt lấp đầy khung (Cover)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', userSelect: 'none', color: '#f0e8d8', fontWeight: 400 }}>
+                  <input type="radio" name="fitMode" checked={fitMode === 'contain'} onChange={() => setFitMode('contain')} />
+                  Hiển thị trọn vẹn + Bo viền trắng (Contain)
+                </label>
+              </div>
             </div>
 
             <div style={styles.pickerFilters}>
@@ -646,5 +663,11 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 4px',
     borderRadius: '3px',
     border: '1px solid rgba(200, 168, 90, 0.15)',
+  },
+  fitModeSection: {
+    padding: '12px 24px',
+    borderBottom: '1px solid #2a1e10',
+    background: 'rgba(0, 0, 0, 0.2)',
+    flexShrink: 0,
   },
 }

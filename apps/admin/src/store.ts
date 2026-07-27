@@ -100,7 +100,7 @@ interface DraftStore {
   addDocument: (document: DocumentItem) => void
   updateDocument: (id: string, patch: Partial<DocumentItem>) => void
   removeDocument: (id: string) => void
-  assignDocuments: (roomId: string, slotId: string, documentIds: string[], nameplate?: SlotNameplate) => void
+  assignDocuments: (roomId: string, slotId: string, documentIds: string[], nameplate?: SlotNameplate, fitMode?: 'cover' | 'contain') => void
   markClean: () => void
   reset: () => void
   updateSettings: (settings: any) => void
@@ -204,7 +204,7 @@ export const useDraftStore = create<DraftStore>()(
           }
         }),
 
-      assignDocuments: (roomId, slotId, documentIds, nameplate) =>
+      assignDocuments: (roomId, slotId, documentIds, nameplate, fitMode) =>
         set((s) => {
           if (!s.content) return s
           return {
@@ -222,6 +222,11 @@ export const useDraftStore = create<DraftStore>()(
                           nextSlot.nameplate = nameplate
                         } else {
                           delete nextSlot.nameplate
+                        }
+                        if (fitMode) {
+                          nextSlot.fitMode = fitMode
+                        } else {
+                          delete nextSlot.fitMode
                         }
                         return nextSlot
                       }),

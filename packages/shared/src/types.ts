@@ -70,6 +70,8 @@ export interface Slot {
   viewerVariant?: ViewerVariant
   /** Optional text rendered as a 3D nameplate below this slot. */
   nameplate?: SlotNameplate
+  /** Optional layout fitting mode: 'cover' (default) or 'contain'. */
+  fitMode?: 'cover' | 'contain'
 }
 
 export interface RoomPortal {

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-const MAX_CACHED = 40
+const MAX_CACHED = 120
 const cache = new Map<string, THREE.Texture>()
 const lruOrder: string[] = []
 

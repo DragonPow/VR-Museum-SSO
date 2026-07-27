@@ -58,6 +58,7 @@ export const SlotSchema = z.object({
   zone: z.string().optional(),
   viewerVariant: z.enum(VIEWER_VARIANTS).optional(),
   nameplate: SlotNameplateSchema.optional(),
+  fitMode: z.enum(['cover', 'contain']).optional(),
 })
 
 export const RoomPortalSchema = z.object({
