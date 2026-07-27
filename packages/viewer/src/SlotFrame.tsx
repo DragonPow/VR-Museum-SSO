@@ -97,11 +97,10 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
         setImageAspect(displayTex.image.width / displayTex.image.height)
       }
 
-      if (mirrorTextureX) {
-        displayTex.wrapS = THREE.RepeatWrapping
-        displayTex.repeat.x = -1
-        displayTex.offset.x = 1
-      }
+      let repeatX = 1
+      let repeatY = 1
+      let offsetX = 0
+      let offsetY = 0
 
       if (isBackdrop) {
         displayTex.generateMipmaps = false
@@ -117,14 +116,24 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
 
           if (imageAspectVal > planeAspect) {
             // Image is wider than slot: crop left/right
-            displayTex.repeat.set(planeAspect / imageAspectVal, 1)
-            displayTex.offset.set((1 - planeAspect / imageAspectVal) / 2, 0)
+            repeatX = planeAspect / imageAspectVal
+            offsetX = (1 - planeAspect / imageAspectVal) / 2
           } else {
             // Image is taller than slot: crop top/bottom
-            displayTex.repeat.set(1, imageAspectVal / planeAspect)
-            displayTex.offset.set(0, (1 - imageAspectVal / planeAspect) / 2)
+            repeatY = imageAspectVal / planeAspect
+            offsetY = (1 - imageAspectVal / planeAspect) / 2
           }
         }
+      }
+
+      // Apply mirroring if requested by slot config (without letting it be overwritten by Cover/Crop)
+      if (mirrorTextureX) {
+        displayTex.wrapS = THREE.RepeatWrapping
+        displayTex.repeat.set(-repeatX, repeatY)
+        displayTex.offset.set(offsetX + repeatX, offsetY)
+      } else {
+        displayTex.repeat.set(repeatX, repeatY)
+        displayTex.offset.set(offsetX, offsetY)
       }
 
       displayTex.needsUpdate = true
