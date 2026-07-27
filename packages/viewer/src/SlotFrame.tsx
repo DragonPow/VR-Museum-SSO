@@ -193,30 +193,80 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     ctx.shadowBlur = 0
     ctx.shadowOffsetX = 0
     ctx.shadowOffsetY = 0
-    ctx.font = '650 58px Arial, sans-serif'
-    ctx.strokeStyle = 'rgba(255, 246, 199, 0.26)'
-    ctx.lineWidth = 0.8
-    ctx.strokeText(slot.nameplate.primary, 512, 102)
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.12)'
-    ctx.shadowBlur = 0.45
-    ctx.shadowOffsetX = 0.35
-    ctx.shadowOffsetY = 0.5
-    ctx.fillStyle = '#3d3017'
-    ctx.fillText(slot.nameplate.primary, 512, 112)
+        const role = slot.nameplate.role ? slot.nameplate.role.trim().toUpperCase() : ''
+    const name = slot.nameplate.primary ? slot.nameplate.primary.trim().toUpperCase() : ''
+    const secondaryText = slot.nameplate.secondary ? slot.nameplate.secondary.trim() : ''
 
-    if (slot.nameplate.secondary) {
-      ctx.shadowColor = 'transparent'
-      ctx.shadowBlur = 0
-      ctx.shadowOffsetX = 0
-      ctx.shadowOffsetY = 0
-      ctx.font = '650 36px Arial, sans-serif'
-      ctx.strokeText(slot.nameplate.secondary, 512, 174)
+    if (role) {
+      // 3-line layout: Role, Name, Year
+      // Row 1: Role
+      ctx.font = '650 36px system-ui, -apple-system, sans-serif'
+      ctx.strokeStyle = 'rgba(255, 246, 199, 0.26)'
+      ctx.lineWidth = 0.8
+      ctx.strokeText(role, 512, 65)
       ctx.shadowColor = 'rgba(0, 0, 0, 0.10)'
       ctx.shadowBlur = 0.45
       ctx.shadowOffsetX = 0.3
       ctx.shadowOffsetY = 0.45
       ctx.fillStyle = '#4a3819'
-      ctx.fillText(slot.nameplate.secondary, 512, 166)
+      ctx.fillText(role, 512, 65)
+
+      // Row 2: Name
+      ctx.font = '700 66px system-ui, -apple-system, sans-serif'
+      ctx.strokeStyle = 'rgba(255, 246, 199, 0.26)'
+      ctx.lineWidth = 0.8
+      ctx.strokeText(name, 512, 132)
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.12)'
+      ctx.shadowBlur = 0.45
+      ctx.shadowOffsetX = 0.35
+      ctx.shadowOffsetY = 0.5
+      ctx.fillStyle = '#3d3017'
+      ctx.fillText(name, 512, 132)
+
+      // Row 3: Year
+      if (secondaryText) {
+        ctx.shadowColor = 'transparent'
+        ctx.shadowBlur = 0
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 0
+        ctx.font = '650 46px system-ui, -apple-system, sans-serif'
+        ctx.strokeText(secondaryText, 512, 195)
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.10)'
+        ctx.shadowBlur = 0.45
+        ctx.shadowOffsetX = 0.3
+        ctx.shadowOffsetY = 0.45
+        ctx.fillStyle = '#4a3819'
+        ctx.fillText(secondaryText, 512, 195)
+      }
+    } else {
+      // Fallback 2-line layout: Name, Year
+      // Row 1: Name
+      ctx.font = '700 66px system-ui, -apple-system, sans-serif'
+      ctx.strokeStyle = 'rgba(255, 246, 199, 0.26)'
+      ctx.lineWidth = 0.8
+      ctx.strokeText(name, 512, 102)
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.12)'
+      ctx.shadowBlur = 0.45
+      ctx.shadowOffsetX = 0.35
+      ctx.shadowOffsetY = 0.5
+      ctx.fillStyle = '#3d3017'
+      ctx.fillText(name, 512, 102)
+
+      // Row 2: Year
+      if (secondaryText) {
+        ctx.shadowColor = 'transparent'
+        ctx.shadowBlur = 0
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 0
+        ctx.font = '650 46px system-ui, -apple-system, sans-serif'
+        ctx.strokeText(secondaryText, 512, 156)
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.10)'
+        ctx.shadowBlur = 0.45
+        ctx.shadowOffsetX = 0.3
+        ctx.shadowOffsetY = 0.45
+        ctx.fillStyle = '#4a3819'
+        ctx.fillText(secondaryText, 512, 156)
+      }
     }
 
     const tex = new THREE.CanvasTexture(canvas)
@@ -226,7 +276,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     tex.anisotropy = 8
     tex.needsUpdate = true
     return tex
-  }, [isK5Portrait, slot.nameplate?.primary, slot.nameplate?.secondary])
+  }, [isK5Portrait, slot.nameplate?.primary, slot.nameplate?.secondary, slot.nameplate?.role])
 
   useEffect(() => () => {
     k5NameplateFaceTexture?.dispose()
@@ -336,8 +386,8 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
             </mesh>
           )}
           {isK5Portrait && k5NameplateLabelTexture ? (
-            <mesh position={[0, 0, 0.016]} renderOrder={90}>
-              <planeGeometry args={[nameplateWidth * 0.70, nameplateHeight * 0.54]} />
+            <mesh position={[0, -0.002, 0.016]} renderOrder={90}>
+              <planeGeometry args={[nameplateWidth * 0.82, nameplateHeight * 0.70]} />
               <meshBasicMaterial
                 map={k5NameplateLabelTexture}
                 transparent

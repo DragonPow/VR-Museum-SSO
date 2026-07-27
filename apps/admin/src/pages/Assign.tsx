@@ -63,6 +63,20 @@ function Pagination({ current, total, onChange }: { current: number; total: numb
   )
 }
 
+function parseDocumentTitleForNameplate(title: string): { role: string; name: string } {
+  // Regex to extract common leadership roles from the start of the title
+  const roleRegex = /^(giám đốc|phó giám đốc|quyền giám đốc|phụ trách|quyền gđ|gđ|pgđ)\s+/i
+  const match = roleRegex.exec(title)
+  if (match) {
+    // Keep exact casing from user input, just capitalize first letter for neatness if needed,
+    // but returning exact substring matched is safest
+    const role = (match[1] ?? '').trim()
+    const name = title.substring(match[0].length).trim()
+    return { role, name }
+  }
+  return { role: '', name: title }
+}
+
 export function Assign() {
   const content = useDraftStore((s) => s.content)
   const assignDocuments = useDraftStore((s) => s.assignDocuments)
@@ -78,6 +92,7 @@ export function Assign() {
 
   // Nameplate states
   const [nameplateEnabled, setNameplateEnabled] = useState(false)
+  const [nameplateRole, setNameplateRole] = useState('')
   const [nameplatePrimary, setNameplatePrimary] = useState('')
   const [nameplateSecondary, setNameplateSecondary] = useState('')
 
@@ -125,6 +140,7 @@ export function Assign() {
     const hasNameplate = !!slot.nameplate
     const isK5 = /^VM_Slot_K5_CD_\d{2}$/i.test(slot.name || slot.id)
     setNameplateEnabled(hasNameplate || isK5)
+    setNameplateRole(slot.nameplate?.role ?? '')
     setNameplatePrimary(slot.nameplate?.primary ?? '')
     setNameplateSecondary(slot.nameplate?.secondary ?? '')
     setPickerPage(1)
@@ -138,7 +154,9 @@ export function Assign() {
       if (firstId) {
         const firstDoc = documentMap[firstId]
         if (firstDoc) {
-          setNameplatePrimary((prev) => prev.trim() === '' ? firstDoc.title : prev)
+          const { role, name } = parseDocumentTitleForNameplate(firstDoc.title)
+          setNameplateRole((prev) => prev.trim() === '' ? role : prev)
+          setNameplatePrimary((prev) => prev.trim() === '' ? name : prev)
           setNameplateSecondary((prev) => prev.trim() === '' ? (firstDoc.year != null ? String(firstDoc.year) : '') : prev)
         }
       }
@@ -160,7 +178,9 @@ export function Assign() {
       if (firstId) {
         const firstDoc = documentMap[firstId]
         if (firstDoc) {
-          setNameplatePrimary((prev) => prev.trim() === '' ? firstDoc.title : prev)
+          const { role, name } = parseDocumentTitleForNameplate(firstDoc.title)
+          setNameplateRole((prev) => prev.trim() === '' ? role : prev)
+          setNameplatePrimary((prev) => prev.trim() === '' ? name : prev)
           setNameplateSecondary((prev) => prev.trim() === '' ? (firstDoc.year != null ? String(firstDoc.year) : '') : prev)
         }
       }
@@ -170,7 +190,7 @@ export function Assign() {
 
   const saveAssign = () => {
     if (!selectedRoom || !pickerSlot) return
-    let nameplate: { primary: string; secondary?: string } | undefined = undefined
+    let nameplate: { primary: string; secondary?: string; role?: string } | undefined = undefined
     if (nameplateEnabled) {
       nameplate = {
         primary: nameplatePrimary.trim() || pickerSlot.name,
@@ -178,6 +198,10 @@ export function Assign() {
       const sec = nameplateSecondary.trim()
       if (sec) {
         nameplate.secondary = sec
+      }
+      const rol = nameplateRole.trim()
+      if (rol) {
+        nameplate.role = rol
       }
     }
     assignDocuments(selectedRoom.id, pickerSlot.id, draftIds, nameplate)
@@ -341,7 +365,9 @@ export function Assign() {
                         if (firstId) {
                           const doc = documentMap[firstId]
                           if (doc) {
-                            setNameplatePrimary(doc.title)
+                            const { role, name } = parseDocumentTitleForNameplate(doc.title)
+                            setNameplateRole(role)
+                            setNameplatePrimary(name)
                             setNameplateSecondary(doc.year != null ? String(doc.year) : '')
                           }
                         }
@@ -355,8 +381,17 @@ export function Assign() {
               </div>
               {nameplateEnabled && (
                 <div style={styles.nameplateInputs}>
-                  <div style={styles.inputGroup}>
-                    <span style={styles.inputLabel}>Dòng chữ chính (Primary):</span>
+                  <div style={{ ...styles.inputGroup, flex: '0 0 160px' }}>
+                    <span style={styles.inputLabel}>Vị trí (Giám đốc/Phó Giám đốc):</span>
+                    <input
+                      style={styles.textInput}
+                      value={nameplateRole}
+                      onChange={(e) => setNameplateRole(e.target.value)}
+                      placeholder="Ví dụ: Giám đốc"
+                    />
+                  </div>
+                  <div style={{ ...styles.inputGroup, flex: 2 }}>
+                    <span style={styles.inputLabel}>Dòng chữ chính (Tên):</span>
                     <input
                       style={styles.textInput}
                       value={nameplatePrimary}
@@ -364,8 +399,8 @@ export function Assign() {
                       placeholder="Ví dụ: Lê Đặng Xuân Tân"
                     />
                   </div>
-                  <div style={styles.inputGroup}>
-                    <span style={styles.inputLabel}>Dòng chữ phụ (Secondary - tùy chọn):</span>
+                  <div style={{ ...styles.inputGroup, flex: 1 }}>
+                    <span style={styles.inputLabel}>Dòng chữ phụ (Năm):</span>
                     <input
                       style={styles.textInput}
                       value={nameplateSecondary}
@@ -455,7 +490,7 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
             <div style={styles.slotItemTitle}>{first.year ? `${first.year} · ` : ''}{first.title}</div>
             {slot.nameplate && (
               <div style={styles.slotNameplateBadge}>
-                📛 Bảng tên: {slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}
+                📛 Bảng tên: {slot.nameplate.role ? `[${slot.nameplate.role}] ` : ''}{slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}
               </div>
             )}
             <div style={styles.slotStatus}>Đã gán {documents.length} tư liệu</div>
@@ -468,7 +503,7 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
             <div style={styles.slotName}>{slot.name}</div>
             {slot.nameplate && (
               <div style={styles.slotNameplateBadge}>
-                📛 Bảng tên: {slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}
+                📛 Bảng tên: {slot.nameplate.role ? `[${slot.nameplate.role}] ` : ''}{slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}
               </div>
             )}
             <div style={styles.slotEmptyLabel}>Trống - click để gán</div>

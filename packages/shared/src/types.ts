@@ -45,6 +45,7 @@ export interface SlotTransform {
 export interface SlotNameplate {
   primary: string
   secondary?: string
+  role?: string
 }
 
 export interface Slot {

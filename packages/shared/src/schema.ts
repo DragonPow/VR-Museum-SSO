@@ -43,6 +43,7 @@ export const SlotTransformSchema = z.object({
 export const SlotNameplateSchema = z.object({
   primary: NonEmptyString,
   secondary: z.string().optional(),
+  role: z.string().optional(),
 })
 
 export const SlotSchema = z.object({
