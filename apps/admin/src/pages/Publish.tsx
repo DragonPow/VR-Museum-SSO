@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDraftStore } from '../store.js'
 import { loadStaticContent } from '../contentSource.js'
 import { publish, saveDraft, deleteDraft, checkApi, ApiError, saveLocalContentFile } from '../api.js'
@@ -19,6 +19,15 @@ export function Publish() {
   const [errorMsg, setErrorMsg] = useState('')
   const [apiAvailable, setApiAvailable] = useState<boolean | null>(null)
   const [verifyInfo, setVerifyInfo] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    const initCheck = async () => {
+      const ok = await checkApi()
+      setApiAvailable(ok)
+    }
+    initCheck()
+  }, [])
 
   if (!content) return <div style={styles.center}>Đang tải...</div>
 
@@ -26,6 +35,7 @@ export function Publish() {
 
   const handleCheckApi = async () => {
     setStep('checking')
+    setSuccessMsg(null)
     const ok = await checkApi()
     setApiAvailable(ok)
     setStep('idle')
@@ -34,6 +44,7 @@ export function Publish() {
   const handlePublish = async () => {
     setStep('saving')
     setErrorMsg('')
+    setSuccessMsg(null)
     try {
       assertNoBrokenDocumentRefs(content)
       const snapshot: Content = { ...content, updatedAt: new Date().toISOString() }
@@ -59,6 +70,7 @@ export function Publish() {
   }
 
   const handleExport = () => {
+    setSuccessMsg(null)
     try {
       assertNoBrokenDocumentRefs(content)
     } catch (err) {
@@ -79,11 +91,20 @@ export function Publish() {
 
   const handleSaveDraft = async () => {
     setStep('saving')
+    setErrorMsg('')
+    setSuccessMsg(null)
     try {
-      assertNoBrokenDocumentRefs(content)
       await saveDraft(content)
       markClean()
       setStep('idle')
+      
+      const broken = findBrokenDocumentRefs(content)
+      if (broken.length > 0) {
+        setSuccessMsg(`Đã lưu bản draft thành công lên Worker API! (Lưu ý: phát hiện ${broken.length} slot bị lỗi liên kết tư liệu)`)
+        console.warn('Lưu draft thành công nhưng phát hiện các slot bị lỗi liên kết tư liệu:', broken)
+      } else {
+        setSuccessMsg('Đã lưu bản draft thành công lên Worker API!')
+      }
     } catch (err) {
       setStep('error')
       setErrorMsg(String(err))
@@ -94,6 +115,7 @@ export function Publish() {
     if (!confirm('Xóa bản draft hiện tại và tải lại content mới nhất? Các thay đổi chưa xuất bản sẽ mất.')) return
     setStep('saving')
     setErrorMsg('')
+    setSuccessMsg(null)
     try {
       await deleteDraft().catch(() => undefined)
       resetDraftStore()
@@ -140,7 +162,7 @@ export function Publish() {
         <div style={{ ...styles.apiRow, flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ fontSize: '13px', color: '#9a9080' }}>
-              {apiAvailable === null && 'Chưa kiểm tra kết nối'}
+              {apiAvailable === null && 'Đang tự động kiểm tra kết nối...'}
               {apiAvailable === true && <span style={{ color: '#5ac85a' }}>✓ Kết nối thành công — sẵn sàng xuất bản lên R2</span>}
               {apiAvailable === false && <span style={{ color: '#c85a5a' }}>✗ Không kết nối được Worker API — chỉ có thể xuất file JSON</span>}
             </div>
@@ -199,6 +221,11 @@ export function Publish() {
       </div>
 
       {/* Status messages */}
+      {successMsg && (
+        <div style={styles.successBox}>
+          ✓ {successMsg}
+        </div>
+      )}
       {step === 'done' && (
         <div style={styles.successBox}>
           ✓ Xuất bản thành công!
