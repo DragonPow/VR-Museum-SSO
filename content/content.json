@@ -1106,6 +1106,26 @@
           "zone": "Khu 6"
         },
         {
+          "id": "VM_Slot_K6_AD_05",
+          "roomId": "room-truyenthong",
+          "name": "K6_AD_05",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 6"
+        },
+        {
+          "id": "VM_Slot_K6_AD_06",
+          "roomId": "room-truyenthong",
+          "name": "K6_AD_06",
+          "type": "image",
+          "frameStyle": "classic",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 6"
+        },
+        {
           "id": "VM_Slot_K7_CD_01",
           "roomId": "room-truyenthong",
           "name": "K7_CD_01",
