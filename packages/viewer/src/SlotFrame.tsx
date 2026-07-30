@@ -7,7 +7,14 @@ import { loadTexture, greyTexture } from './TextureManager.js'
 import { HERO_SLOT_ID, isBackdropSlotId } from './slotIds.js'
 
 interface Props {
-  slot: Slot & { hasBlenderFrame?: boolean; mirrorTextureX?: boolean }
+  slot: Slot & {
+    hasBlenderFrame?: boolean
+    mirrorTextureX?: boolean
+    nameplateTransform?: {
+      position: { x: number; y: number; z: number }
+      size: { w: number; h: number }
+    }
+  }
   documentItem: DocumentIndexItem | null
   viewerTextureUrl: string | null
   onSelect: (slotId: string) => void
@@ -163,69 +170,15 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     }
   }, [viewerTextureUrl])
 
-  const nameplateWidth = Math.max(size.w * 1.14, 0.46)
-  const nameplateHeight = 0.16
+  const glbNameplate = slot.nameplateTransform
+  const nameplateWidth = glbNameplate?.size.w ?? Math.max(size.w * 1.14, 0.46)
+  const nameplateHeight = glbNameplate?.size.h ?? 0.16
+  const nameplateYOffset = isK5Portrait ? 0.289 : 0.235
   const nameplatePinX = nameplateWidth / 2 - 0.045
   const nameplateTextZ = isK5Portrait ? -0.008 : (hasBlenderFrame ? 0.014 : 0.072)
-  const k5NameplateFaceTexture = useMemo(() => {
-    if (!isK5Portrait) return null
-    const canvas = document.createElement('canvas')
-    canvas.width = 1024
-    canvas.height = 256
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return null
-
-    const face = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
-    face.addColorStop(0, '#fff0a8')
-    face.addColorStop(0.18, '#f4d26a')
-    face.addColorStop(0.52, '#d7aa35')
-    face.addColorStop(0.78, '#f0cc64')
-    face.addColorStop(1, '#fff2b8')
-    ctx.fillStyle = face
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    const softSheen = ctx.createLinearGradient(0, 0, 0, canvas.height)
-    softSheen.addColorStop(0, 'rgba(255,255,255,0.34)')
-    softSheen.addColorStop(0.34, 'rgba(255,255,255,0.05)')
-    softSheen.addColorStop(0.72, 'rgba(86,56,10,0.10)')
-    softSheen.addColorStop(1, 'rgba(255,255,255,0.16)')
-    ctx.fillStyle = softSheen
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    ctx.globalAlpha = 0.07
-    ctx.strokeStyle = '#fff7c8'
-    ctx.lineWidth = 2
-    for (let y = 14; y < canvas.height; y += 16) {
-      ctx.beginPath()
-      ctx.moveTo(32, y + 0.5)
-      ctx.lineTo(canvas.width - 32, y + 0.5)
-      ctx.stroke()
-    }
-    ctx.globalAlpha = 1
-
-    ctx.lineJoin = 'round'
-    ctx.lineCap = 'round'
-    ctx.strokeStyle = 'rgba(86, 61, 18, 0.46)'
-    ctx.lineWidth = 5
-    ctx.strokeRect(74, 54, 876, 148)
-    ctx.strokeStyle = 'rgba(255, 249, 210, 0.74)'
-    ctx.lineWidth = 4
-    ctx.beginPath()
-    ctx.moveTo(54, 28)
-    ctx.lineTo(970, 28)
-    ctx.moveTo(54, 228)
-    ctx.lineTo(970, 228)
-    ctx.stroke()
-
-    const tex = new THREE.CanvasTexture(canvas)
-    tex.colorSpace = THREE.SRGBColorSpace
-    tex.minFilter = THREE.LinearFilter
-    tex.magFilter = THREE.LinearFilter
-    tex.anisotropy = 8
-    tex.needsUpdate = true
-    return tex
-  }, [isK5Portrait])
-
+  const nameplateGroupPosition: [number, number, number] = glbNameplate
+    ? [glbNameplate.position.x, glbNameplate.position.y, glbNameplate.position.z + 0.006]
+    : [0, -size.h / 2 - nameplateYOffset, nameplateTextZ]
   const k5NameplateLabelTexture = useMemo(() => {
     if (!isK5Portrait || !slot.nameplate) return null
     const canvas = document.createElement('canvas')
@@ -328,10 +281,6 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   }, [isK5Portrait, slot.nameplate?.primary, slot.nameplate?.secondary, slot.nameplate?.role])
 
   useEffect(() => () => {
-    k5NameplateFaceTexture?.dispose()
-  }, [k5NameplateFaceTexture])
-
-  useEffect(() => () => {
     k5NameplateLabelTexture?.dispose()
   }, [k5NameplateLabelTexture])
 
@@ -382,7 +331,11 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
           onClick:       (e) => { e.stopPropagation(); onSelect(slot.id) },
-        } : {})}
+        } : {
+          onPointerOver: (e) => e.stopPropagation(),
+          onPointerOut:  (e) => e.stopPropagation(),
+          onClick:       (e) => e.stopPropagation(),
+        })}
       >
         <planeGeometry args={[renderW, renderH]} />
         {isBackdrop ? (
@@ -419,7 +372,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
       </mesh>
 
       {slot.nameplate && !isBackdrop && (
-        <group position={[0, -size.h / 2 - 0.235, nameplateTextZ]}>
+        <group position={nameplateGroupPosition}>
           {!isK5Portrait && (
             <>
               <mesh renderOrder={9}>
@@ -451,24 +404,9 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
               </mesh>
             </>
           )}
-          {isK5Portrait && k5NameplateFaceTexture && (
-            <mesh position={[0, -0.004, 0.011]} renderOrder={88}>
-              <planeGeometry args={[nameplateWidth * 0.98, nameplateHeight * 1.04]} />
-              <meshBasicMaterial
-                map={k5NameplateFaceTexture}
-                depthTest={true}
-                depthWrite={false}
-                polygonOffset
-                polygonOffsetFactor={-1}
-                polygonOffsetUnits={-1}
-                toneMapped={false}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-          )}
           {isK5Portrait && k5NameplateLabelTexture ? (
-            <mesh position={[0, -0.002, 0.016]} renderOrder={90}>
-              <planeGeometry args={[nameplateWidth * 0.82, nameplateHeight * 0.70]} />
+            <mesh renderOrder={90}>
+              <planeGeometry args={[nameplateWidth * 0.92, nameplateHeight * 0.78]} />
               <meshBasicMaterial
                 map={k5NameplateLabelTexture}
                 transparent

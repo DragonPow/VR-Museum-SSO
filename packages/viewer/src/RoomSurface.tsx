@@ -37,6 +37,11 @@ export function RoomSurface({ config, textureUrl, color = '#d4c9b8' }: Props) {
       position={config.position}
       rotation={config.rotation as unknown as THREE.Euler}
       receiveShadow={false}
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerUp={(e) => e.stopPropagation()}
+      onPointerOver={(e) => e.stopPropagation()}
+      onPointerOut={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     >
       <planeGeometry args={config.size} />
       <meshLambertMaterial

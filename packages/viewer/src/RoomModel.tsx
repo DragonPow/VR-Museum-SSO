@@ -7,8 +7,8 @@ import type { RoomBounds } from './NavController.js'
 
 export const VM_SLOT_PREFIX = 'VM_Slot_'
 
-/** Zone-title pill meshes baked into the GLB (`TT_TitlePill_K*` + `TT_TitlePill_Text_K*`).
- *  Hidden at runtime and re-rendered as crisp code text — see ZoneTitle / zoneTitles. */
+/** Zone-title pill meshes baked into the GLB (TT_TitlePill_K* + TT_TitlePill_Text_K*).
+ *  Rendered from Blender-authored GLB geometry/materials for a consistent plaque look. */
 export const TITLE_PILL_PREFIX = 'TT_TitlePill_'
 
 const VM_SLOT_ID_RE = /^VM_Slot_K\d+_[A-Z0-9]+_\d{2}/i
@@ -24,17 +24,12 @@ function slotNodeName(obj: THREE.Object3D): string | null {
   return obj.name.startsWith(VM_SLOT_PREFIX) ? obj.name : null
 }
 
-function titlePillZoneKey(name: string): string | null {
-  const baked = name.match(/^TT_TitlePill_K(\d+)/i)
-  return baked ? `K${baked[1]}` : null
+function isGlbZoneTitleMesh(name: string): boolean {
+  return /^TT_TitlePill_(?:Text_)?K(?:[1-4]|7|8)(?:\b|[_.])/i.test(name)
 }
 
-function isTitleTextMesh(name: string): boolean {
-  return /^TT_TitlePill_Text_K(?:[1-4]|7|8)(?:\b|[_.])/i.test(name)
-}
-
-function isBlenderAuthoredZoneTitleText(name: string): boolean {
-  return /^TT_TitlePill_Text_K(?:10|11)(?:\b|[_.])/i.test(name)
+function isHiddenZoneTitleMesh(name: string): boolean {
+  return /^TT_TitlePill_(?:Text_)?K5(?:\b|[_.])/i.test(name)
 }
 
 /** Architecture meshes the visitor must not walk through. Matched by substring so
@@ -258,101 +253,6 @@ function applyOriginalUnlitMaterial(obj: THREE.Mesh): void {
     : makeOriginalUnlitMaterial(originals[0])
 }
 
-let k5NameplateTexture: THREE.CanvasTexture | null = null
-
-function getK5NameplateTexture(): THREE.Texture | null {
-  if (k5NameplateTexture) return k5NameplateTexture
-  if (typeof document === 'undefined') return null
-
-  const canvas = document.createElement('canvas')
-  canvas.width = 1024
-  canvas.height = 256
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return null
-
-  const face = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
-  face.addColorStop(0, '#fff0a8')
-  face.addColorStop(0.18, '#f4d26a')
-  face.addColorStop(0.52, '#d7aa35')
-  face.addColorStop(0.78, '#f0cc64')
-  face.addColorStop(1, '#fff2b8')
-  ctx.fillStyle = face
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  const softSheen = ctx.createLinearGradient(0, 0, 0, canvas.height)
-  softSheen.addColorStop(0, 'rgba(255,255,255,0.34)')
-  softSheen.addColorStop(0.34, 'rgba(255,255,255,0.05)')
-  softSheen.addColorStop(0.72, 'rgba(86,56,10,0.10)')
-  softSheen.addColorStop(1, 'rgba(255,255,255,0.16)')
-  ctx.fillStyle = softSheen
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  ctx.globalAlpha = 0.16
-  ctx.strokeStyle = '#fff7c8'
-  ctx.lineWidth = 2
-  for (let y = 12; y < canvas.height; y += 8) {
-    ctx.beginPath()
-    ctx.moveTo(32, y + 0.5)
-    ctx.lineTo(canvas.width - 32, y + 0.5)
-    ctx.stroke()
-  }
-  ctx.globalAlpha = 1
-
-  ctx.lineJoin = 'round'
-  ctx.lineCap = 'round'
-  ctx.strokeStyle = 'rgba(86, 61, 18, 0.46)'
-  ctx.lineWidth = 5
-  ctx.strokeRect(74, 54, 876, 148)
-  ctx.strokeStyle = 'rgba(255, 249, 210, 0.74)'
-  ctx.lineWidth = 4
-  ctx.beginPath()
-  ctx.moveTo(54, 28)
-  ctx.lineTo(970, 28)
-  ctx.moveTo(54, 228)
-  ctx.lineTo(970, 228)
-  ctx.stroke()
-
-  k5NameplateTexture = new THREE.CanvasTexture(canvas)
-  k5NameplateTexture.colorSpace = THREE.SRGBColorSpace
-  k5NameplateTexture.minFilter = THREE.LinearFilter
-  k5NameplateTexture.magFilter = THREE.LinearFilter
-  k5NameplateTexture.anisotropy = 8
-  k5NameplateTexture.needsUpdate = true
-  return k5NameplateTexture
-}
-
-function applyK5NameplateFaceMaterial(obj: THREE.Mesh): void {
-  const originals = originalMaterialsFor(obj)
-  const original = originals[0] as (THREE.Material & {
-    opacity?: number
-    transparent?: boolean
-  }) | undefined
-  const texture = getK5NameplateTexture()
-  const result = new THREE.MeshBasicMaterial({
-    color: texture ? '#ffffff' : '#f2cf68',
-    map: texture,
-    side: THREE.DoubleSide,
-    transparent: original?.transparent === true,
-    opacity: original?.opacity ?? 1,
-    depthWrite: true,
-    toneMapped: false,
-  })
-  result.name = original?.name ?? ''
-  obj.material = result
-}
-
-function applyK5NameplateBodyMaterial(obj: THREE.Mesh): void {
-  const result = new THREE.MeshBasicMaterial({
-    color: '#d8ad45',
-    side: THREE.DoubleSide,
-    depthWrite: true,
-    toneMapped: false,
-  })
-  result.name = 'TT_K5_Nameplate_Gold_Body_Web'
-  obj.material = result
-}
-
-
 const HONOR_DARK_WOOD_COLOR = new THREE.Color('#6b2c17')
 const HONOR_RED_COLOR = new THREE.Color('#9f241b')
 
@@ -413,6 +313,10 @@ function isSlotCanvasMaterialName(name = ''): boolean {
 function hiddenMaterialNamesHas(hiddenMaterialNames: Set<string>, name = ''): boolean {
   return hiddenMaterialNames.has(name) || hiddenMaterialNames.has(normalizedMaterialName(name))
 }
+function k5NameplateSlotId(name: string): string | null {
+  const match = name.match(/^TT_K5_Nameplate_(\d{2})_Face/i)
+  return match?.[1] ? `VM_Slot_K5_CD_${match[1]}` : null
+}
 
 function makeInvisibleMaterial(name = ''): THREE.MeshBasicMaterial {
   const mat = new THREE.MeshBasicMaterial({
@@ -433,6 +337,40 @@ function applyOriginalSlotMaterials(obj: THREE.Mesh, hiddenMaterialNames = new S
     const name = original?.name ?? ''
     if (isSlotCanvasMaterialName(name) || hiddenMaterialNamesHas(hiddenMaterialNames, name)) return makeInvisibleMaterial(name)
     return makeOriginalUnlitMaterial(original)
+  }
+
+  obj.material = Array.isArray(obj.material)
+    ? obj.material.map((_mat, index) => materialFor(originals[index] ?? originals[0]))
+    : materialFor(originals[0])
+}
+
+function makeOriginalLitMaterial(original: THREE.Material | undefined): THREE.Material {
+  const result = original?.clone() ?? new THREE.MeshStandardMaterial({
+    color: '#e67814',
+    metalness: 0.18,
+    roughness: 0.36,
+  })
+  result.side = THREE.DoubleSide
+  result.depthWrite = true
+  if ('toneMapped' in result) {
+    ;(result as THREE.Material & { toneMapped?: boolean }).toneMapped = true
+  }
+  result.needsUpdate = true
+  return result
+}
+
+function applyOriginalLitMaterial(obj: THREE.Mesh): void {
+  const originals = originalMaterialsFor(obj)
+  obj.material = Array.isArray(obj.material)
+    ? obj.material.map((_mat, index) => makeOriginalLitMaterial(originals[index] ?? originals[0]))
+    : makeOriginalLitMaterial(originals[0])
+}
+function applyLitOriginalSlotMaterials(obj: THREE.Mesh, hiddenMaterialNames = new Set<string>()): void {
+  const originals = originalMaterialsFor(obj)
+  const materialFor = (original: THREE.Material | undefined) => {
+    const name = original?.name ?? ''
+    if (isSlotCanvasMaterialName(name) || hiddenMaterialNamesHas(hiddenMaterialNames, name)) return makeInvisibleMaterial(name)
+    return makeOriginalLitMaterial(original)
   }
 
   obj.material = Array.isArray(obj.material)
@@ -473,23 +411,18 @@ export interface ExtractedSlot {
   transform: SlotTransform
   hasBlenderFrame: boolean
   mirrorTextureX?: boolean
+  nameplateTransform?: {
+    position: { x: number; y: number; z: number }
+    size: { w: number; h: number }
+  }
 }
 
-/** Anchor for a code-rendered zone title, extracted from the baked pill mesh. */
-export interface TitleAnchor {
-  zoneKey: string
-  position: { x: number; y: number; z: number }
-  rotation: { x: number; y: number; z: number }
-  pillWidth: number
-}
 
 interface Props {
   url: string
   offset?: [number, number, number]
   onSlotsExtracted?: (slots: ExtractedSlot[]) => void
-  /** Zone-title pill anchors (position + wall-facing orientation) extracted from
-   *  the GLB so titles can be re-rendered as crisp code text. */
-  onTitleAnchorsExtracted?: (anchors: TitleAnchor[]) => void
+
   /** Collision rectangles (XZ footprints) extracted from solid architecture meshes. */
   onObstaclesExtracted?: (obstacles: RoomBounds[]) => void
   /** Inner walkable rectangle derived from the room shell (perimeter walls). */
@@ -526,7 +459,6 @@ export function RoomModel({
   onSlotsExtracted,
   onObstaclesExtracted,
   onBoundsExtracted,
-  onTitleAnchorsExtracted,
   knownSlotIds,
   lightmapUrl,
 }: Props) {
@@ -540,8 +472,6 @@ export function RoomModel({
   obstacleCbRef.current = onObstaclesExtracted
   const boundsCbRef = useRef(onBoundsExtracted)
   boundsCbRef.current = onBoundsExtracted
-  const titleCbRef = useRef(onTitleAnchorsExtracted)
-  titleCbRef.current = onTitleAnchorsExtracted
 
   const knownKey = (knownSlotIds ?? []).join('|')
   const knownIds = useMemo(() => knownSlotIds ?? [], [knownKey]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -735,16 +665,9 @@ export function RoomModel({
       euler: THREE.Euler | null
       hasFrame: boolean
     }>()
+    const nameplateFacePoints = new Map<string, THREE.Vector3[]>()
     const obstacles: RoomBounds[] = []
-    const titleAnchors: TitleAnchor[] = []
-    const titleRaw: Array<{
-      zoneKey: string
-      centroid: THREE.Vector3
-      xAxis: THREE.Vector3
-      yAxis: THREE.Vector3
-      zAxis: THREE.Vector3
-      pillWidth: number
-    }> = []
+
     // Accumulate the room-shell footprint (perimeter walls) to derive walkable bounds.
     let archMinX = Infinity, archMaxX = -Infinity, archMinZ = Infinity, archMaxZ = -Infinity
     scene.traverse((obj) => {
@@ -760,47 +683,12 @@ export function RoomModel({
       if (!isSlot) {
         if (isCanvas) { obj.visible = false; return }
 
-        // Zone-title pills (TT_TitlePill_K*, TT_TitlePill_Text_K*) are baked into the
-        // GLB. Hide them and re-render each title in code (crisp <Text> + auto-sizing
-        // pill) so titles are editable without a Blender re-export. From the pill
-        // BACKGROUND mesh, extract its centre + wall-facing basis as the code anchor.
-        const zoneKey = titlePillZoneKey(obj.name)
-        if (zoneKey || isTitleTextMesh(obj.name)) {
+        if (isHiddenZoneTitleMesh(obj.name)) {
           obj.visible = false
-          const posAttr = (obj as THREE.Mesh).geometry?.getAttribute('position')
-          if (zoneKey && posAttr) {
-            const nrmAttr = (obj as THREE.Mesh).geometry?.getAttribute('normal')
-            const normalMat = new THREE.Matrix3().getNormalMatrix(obj.matrixWorld)
-            const zAxis = nrmAttr
-              ? new THREE.Vector3(nrmAttr.getX(0), nrmAttr.getY(0), nrmAttr.getZ(0)).applyMatrix3(normalMat).normalize()
-              : new THREE.Vector3(0, 0, 1)
-            const worldUp = new THREE.Vector3(0, 1, 0)
-            const yAxis = worldUp.clone().addScaledVector(zAxis, -worldUp.dot(zAxis))
-            if (yAxis.lengthSq() < 1e-6) yAxis.set(0, 1, 0)
-            yAxis.normalize()
-            const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis).normalize()
-            const v = new THREE.Vector3()
-            const centroid = new THREE.Vector3()
-            let minPx = Infinity, maxPx = -Infinity
-            for (let i = 0; i < posAttr.count; i++) {
-              v.fromBufferAttribute(posAttr, i).applyMatrix4(obj.matrixWorld)
-              centroid.add(v)
-              const px = v.dot(xAxis)
-              if (px < minPx) minPx = px
-              if (px > maxPx) maxPx = px
-            }
-            centroid.divideScalar(posAttr.count)
-            // Facing is finalised AFTER the traverse, once the room-shell bounds are
-            // known: the pill mesh normal is unreliable (some point into the wall).
-            titleRaw.push({
-              zoneKey,
-              centroid: centroid.clone(),
-              xAxis: xAxis.clone(),
-              yAxis: yAxis.clone(),
-              zAxis: zAxis.clone(),
-              pillWidth: maxPx - minPx,
-            })
-          }
+          return
+        }
+        if (isGlbZoneTitleMesh(obj.name)) {
+          applyOriginalUnlitMaterial(obj)
           return
         }
         // Blue dado (skirting): render as a flat UNLIT colour so it matches the baked
@@ -934,7 +822,7 @@ export function RoomModel({
           applyPolygonOffset(obj, 1, 1)
           return
         }
-        if (obj.name.startsWith('TT_K5_Director_Panel_') || obj.name.startsWith('TT_K10_') || obj.name.startsWith('TT_K11_') || isBlenderAuthoredZoneTitleText(obj.name)) {
+        if (obj.name.startsWith('TT_K5_Director_Panel_') || obj.name.startsWith('TT_K10_') || obj.name.startsWith('TT_K11_')) {
           applyOriginalUnlitMaterial(obj)
           return
         }
@@ -945,15 +833,22 @@ export function RoomModel({
             obj.visible = false
             return
           }
+          if (isNameplateFace) {
+            const slotId = k5NameplateSlotId(obj.name)
+            const posAttr = obj.geometry.getAttribute('position')
+            if (slotId && posAttr) {
+              const points: THREE.Vector3[] = []
+              const point = new THREE.Vector3()
+              for (let i = 0; i < posAttr.count; i++) {
+                points.push(point.fromBufferAttribute(posAttr, i).applyMatrix4(obj.matrixWorld).clone())
+              }
+              nameplateFacePoints.set(slotId, points)
+            }
+          }
           obj.castShadow = isNameplateBody
           obj.receiveShadow = false
-          if (isNameplateFace) {
-            obj.visible = false
-            return
-          } else {
-            applyK5NameplateBodyMaterial(obj)
-            applyPolygonOffset(obj, -1, -1)
-          }
+          applyOriginalUnlitMaterial(obj)
+          applyPolygonOffset(obj, -1, -1)
           return
         }
 
@@ -1097,10 +992,12 @@ export function RoomModel({
         // SlotFrame can place the live image without the pale GLB placeholder washing
         // over it.
         entry.hasFrame = true
-        const hiddenSlotMaterials = /^VM_Slot_K5_CD_\d{2}$/i.test(slotId)
-          ? new Set(['Inside', 'Gold'])
-          : undefined
-        applyOriginalSlotMaterials(obj, hiddenSlotMaterials)
+        const isK5BlenderkitSlot = /^VM_Slot_K5_CD_\d{2}$/i.test(slotId)
+        if (isK5BlenderkitSlot) {
+          applyLitOriginalSlotMaterials(obj)
+        } else {
+          applyOriginalSlotMaterials(obj)
+        }
 
         const posAttr = obj.geometry?.getAttribute('position')
         const nrmAttr = obj.geometry?.getAttribute('normal')
@@ -1214,6 +1111,8 @@ export function RoomModel({
       if (entry.euler === null) continue  // canvas not found for this slot
       let euler = entry.euler
       let mirrorTextureX = false
+      let slotXAxis = entry.xAxis
+      let slotZAxis = entry.zAxis
       if (entry.xAxis && entry.yAxis && entry.zAxis) {
         let xAxis = entry.xAxis
         let zAxis = entry.zAxis
@@ -1224,11 +1123,44 @@ export function RoomModel({
         }
         const basis = new THREE.Matrix4().makeBasis(xAxis, entry.yAxis, zAxis)
         euler = new THREE.Euler().setFromRotationMatrix(basis)
+        slotXAxis = xAxis
+        slotZAxis = zAxis
+      }
+      let nameplateTransform: ExtractedSlot['nameplateTransform']
+      const nameplatePoints = nameplateFacePoints.get(id)
+      if (nameplatePoints && slotXAxis && entry.yAxis && slotZAxis) {
+        let minX = Infinity, maxX = -Infinity
+        let minY = Infinity, maxY = -Infinity
+        let minZ = Infinity, maxZ = -Infinity
+        const origin = entry.pos
+        for (const point of nameplatePoints) {
+          const rel = point.clone().sub(origin)
+          const px = rel.dot(slotXAxis)
+          const py = rel.dot(entry.yAxis)
+          const pz = rel.dot(slotZAxis)
+          if (px < minX) minX = px; if (px > maxX) maxX = px
+          if (py < minY) minY = py; if (py > maxY) maxY = py
+          if (pz < minZ) minZ = pz; if (pz > maxZ) maxZ = pz
+        }
+        if (isFinite(minX) && isFinite(minY) && isFinite(minZ)) {
+          nameplateTransform = {
+            position: {
+              x: (minX + maxX) / 2,
+              y: (minY + maxY) / 2,
+              z: (minZ + maxZ) / 2,
+            },
+            size: {
+              w: maxX - minX,
+              h: maxY - minY,
+            },
+          }
+        }
       }
       extracted.push({
         id,
         hasBlenderFrame: entry.hasFrame,
         ...(mirrorTextureX ? { mirrorTextureX } : {}),
+        ...(nameplateTransform ? { nameplateTransform } : {}),
         transform: {
           position: { x: entry.pos.x, y: entry.pos.y, z: entry.pos.z },
           rotation: { x: euler.x, y: euler.y, z: euler.z },
@@ -1239,33 +1171,20 @@ export function RoomModel({
 
     if (extracted.length > 0) cbRef.current?.(extracted)
     obstacleCbRef.current?.(obstacles)
-    // Orient each title so its +Z faces INTO the room. The pill mesh normal can point
-    // either way, so decide by the room centre (from the shell bounds): if +Z points
-    // away from the centre, turn it 180° about up (negate X and Z) — that flips the
-    // facing WITHOUT mirroring the text.
-    {
-      for (const t of titleRaw) {
-        let xAxis = t.xAxis
-        let zAxis = t.zAxis
-        if (haveCenter && zAxis.x * (t.centroid.x - cx) + zAxis.z * (t.centroid.z - cz) > 0) {
-          xAxis = xAxis.clone().negate()
-          zAxis = zAxis.clone().negate()
-        }
-        const basis = new THREE.Matrix4().makeBasis(xAxis, t.yAxis, zAxis)
-        const euler = new THREE.Euler().setFromRotationMatrix(basis)
-        titleAnchors.push({
-          zoneKey: t.zoneKey,
-          position: { x: t.centroid.x, y: t.centroid.y, z: t.centroid.z },
-          rotation: { x: euler.x, y: euler.y, z: euler.z },
-          pillWidth: t.pillWidth,
-        })
-      }
-    }
-    titleCbRef.current?.(titleAnchors)
     if (isFinite(archMinX) && isFinite(archMinZ)) {
       boundsCbRef.current?.({ minX: archMinX, maxX: archMaxX, minZ: archMinZ, maxZ: archMaxZ })
     }
   }, [scene, knownIds, bakedAtlas, propsAtlas, floorTileTex, wallNorTex, floorNorTex])
 
-  return <primitive object={scene} position={offset ?? [0, 0, 0]} />
+  return (
+    <primitive
+      object={scene}
+      position={offset ?? [0, 0, 0]}
+      onPointerDown={(e: any) => e.stopPropagation()}
+      onPointerUp={(e: any) => e.stopPropagation()}
+      onPointerOver={(e: any) => e.stopPropagation()}
+      onPointerOut={(e: any) => e.stopPropagation()}
+      onClick={(e: any) => e.stopPropagation()}
+    />
+  )
 }
