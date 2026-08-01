@@ -6,17 +6,14 @@ import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
 import { RoomModel } from './RoomModel.js'
 import { isBackdropSlotId } from './slotIds.js'
-import type { ExtractedSlot, TitleAnchor } from './RoomModel.js'
+import type { ExtractedSlot } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
-import { ZoneTitle } from './ZoneTitle.js'
-import { ZONE_TITLES } from './zoneTitles.js'
 import { FloorPortal } from './FloorPortal.js'
 import { NavController } from './NavController.js'
 import type { RoomBounds } from './NavController.js'
 import type { CameraState } from './NavController.js'
 
 
-const HIDDEN_ZONE_TITLE_KEYS = new Set(['K5'])
 
 interface Props {
   room: Room
@@ -89,10 +86,7 @@ export function RoomScene({
   const handleBoundsExtracted = useCallback((b: RoomBounds) => {
     setGlbBounds(b)
   }, [])
-  const [titleAnchors, setTitleAnchors] = useState<TitleAnchor[]>([])
-  const handleTitleAnchors = useCallback((a: TitleAnchor[]) => {
-    setTitleAnchors(a)
-  }, [])
+
   const knownSlotIds = useMemo(() => room.slots.map((s) => s.id), [room.slots])
 
   // ── Walkable bounds ──────────────────────────────────────────────────────────
@@ -167,12 +161,12 @@ export function RoomScene({
   )
 
   // ── Resolve final slot list ──────────────────────────────────────────────────
-  const resolvedSlots = useMemo((): (Slot & { hasBlenderFrame: boolean; mirrorTextureX?: boolean })[] => {
+  const resolvedSlots = useMemo((): (Slot & Pick<ExtractedSlot, 'hasBlenderFrame' | 'mirrorTextureX' | 'nameplateTransform'>)[] => {
     if (glbSlots.length > 0) {
       // GLB-driven: merge extracted positions with JSON metadata
       const jsonById = new Map(room.slots.map((s) => [s.id, s]))
       const resolved = glbSlots
-        .map((gs): Slot & { hasBlenderFrame: boolean; mirrorTextureX?: boolean } => {
+        .map((gs): Slot & Pick<ExtractedSlot, 'hasBlenderFrame' | 'mirrorTextureX' | 'nameplateTransform'> => {
           const json = jsonById.get(gs.id)
           return {
             id: gs.id,
@@ -189,6 +183,7 @@ export function RoomScene({
             transform: gs.transform,
             hasBlenderFrame: gs.hasBlenderFrame,
             ...(gs.mirrorTextureX ? { mirrorTextureX: true } : {}),
+            ...(gs.nameplateTransform ? { nameplateTransform: gs.nameplateTransform } : {}),
           }
         })
         .filter((s) => s.visible)
@@ -215,7 +210,6 @@ export function RoomScene({
           onSlotsExtracted={handleSlotsExtracted}
           onObstaclesExtracted={handleObstaclesExtracted}
           onBoundsExtracted={handleBoundsExtracted}
-          onTitleAnchorsExtracted={handleTitleAnchors}
         />
       ) : (
         <>
@@ -241,19 +235,6 @@ export function RoomScene({
             viewerTextureUrl={viewerTextureUrl}
             onSelect={(slotId) => onSlotSelect(slotId, (slot.documentIds ?? []).map((id) => documents[id]).filter((item): item is DocumentIndexItem => Boolean(item)))}
             hideLabel={hideLabels}
-          />
-        )
-      })}
-
-      {titleAnchors.map((t) => {
-        const label = ZONE_TITLES[t.zoneKey]
-        if (!label || HIDDEN_ZONE_TITLE_KEYS.has(t.zoneKey)) return null
-        return (
-          <ZoneTitle
-            key={t.zoneKey}
-            position={[t.position.x, t.position.y, t.position.z]}
-            rotation={[t.rotation.x, t.rotation.y, t.rotation.z]}
-            text={label}
           />
         )
       })}

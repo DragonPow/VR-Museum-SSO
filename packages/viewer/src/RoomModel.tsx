@@ -350,6 +350,9 @@ function makeOriginalLitMaterial(original: THREE.Material | undefined): THREE.Ma
     metalness: 0.18,
     roughness: 0.36,
   })
+  if (result instanceof THREE.MeshStandardMaterial && result.metalness > 0.5) {
+    result.envMapIntensity = Math.max(result.envMapIntensity, 1.45)
+  }
   result.side = THREE.DoubleSide
   result.depthWrite = true
   if ('toneMapped' in result) {

@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updatedAt": "2026-07-25T09:20:39.849508Z",
+  "updatedAt": "2026-07-27T15:39:45.769Z",
   "periods": [
     {
       "id": "period-1975-1985",
@@ -44,17 +44,17 @@
           }
         },
         {
-          "id": "vp-center",
-          "name": "Trung tâm",
+          "id": "HJsbHDGHq7km",
+          "name": "Lãnh đạo",
           "position": {
-            "x": 0,
+            "x": -0.2113003494421604,
             "y": 1.6,
-            "z": -11.7
+            "z": -19.073505807805432
           },
           "lookAt": {
-            "x": 0,
-            "y": 1.6,
-            "z": -22
+            "x": 0.006696610633206007,
+            "y": 1.4363928875113663,
+            "z": -24.066071701260313
           }
         }
       ],
@@ -729,7 +729,8 @@
           "zone": "Khu 5",
           "nameplate": {
             "primary": "Lê Đặng Xuân Tân",
-            "secondary": "2018 - 2023"
+            "secondary": "2018 - 2023",
+            "role": "Quyền Phó giám đốc phụ trách"
           }
         },
         {
@@ -876,10 +877,11 @@
           "type": "image",
           "frameStyle": "classic",
           "documentIds": [
-            "item-01"
+            "demo-youtube-embed"
           ],
           "visible": true,
-          "zone": "Khu 10"
+          "zone": "Khu 10",
+          "fitMode": "cover"
         },
         {
           "id": "VM_Slot_K10_AP_02",
@@ -1031,9 +1033,12 @@
           "name": "K6_AT_02",
           "type": "image",
           "frameStyle": "classic",
-          "documentIds": [],
+          "documentIds": [
+            "item-8pUsaK5K"
+          ],
           "visible": true,
-          "zone": "Khu 6"
+          "zone": "Khu 6",
+          "fitMode": "contain"
         },
         {
           "id": "VM_Slot_K6_AT_03",
@@ -1306,8 +1311,21 @@
       "documentKey": "item-le-dang-xuan-tan",
       "mediaType": "image",
       "viewerImageId": "photo1"
+    },
+    {
+      "id": "item-8pUsaK5K",
+      "documentKey": "item-8pUsaK5K",
+      "mediaType": "image",
+      "viewerImageId": "photo-FpcnJDAE"
     }
   ],
   "documents": [],
-  "textures": []
+  "textures": [],
+  "settings": {
+    "imageRescale": {
+      "thumb": 360,
+      "wall": 1200,
+      "full": 4096
+    }
+  }
 }
