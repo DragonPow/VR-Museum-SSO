@@ -12,7 +12,7 @@ export const brand = {
   muted: '#5f748c',
   line: 'rgba(16,80,160,0.22)',
   shadow: '0 18px 50px rgba(8,47,109,0.18)',
-  fontFamily: '"Segoe UI", Arial, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+  fontFamily: '"Be Vietnam Pro", "Segoe UI", Arial, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
 }
 
 export const glassPanel: CSSProperties = {

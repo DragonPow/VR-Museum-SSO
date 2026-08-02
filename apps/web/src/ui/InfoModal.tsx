@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import type { DocumentImage, DocumentItem } from '@vm/shared'
 import { resolveDocumentImageVariantUrl } from '@vm/shared'
 import { MarkdownText } from './MarkdownText.js'
@@ -50,9 +50,53 @@ function isCompactViewport() {
   return typeof window !== 'undefined' && (window.innerWidth < 820 || window.innerHeight < 520)
 }
 
+const ENABLE_ZOOM = false
+
 export function InfoModal({ documents, onClose }: Props) {
   const [pageIndex, setPageIndex] = useState(0)
   const [compact, setCompact] = useState(isCompactViewport)
+  const [zoomedImageId, setZoomedImageId] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragged, setDragged] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 })
+  const imageWrapRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!ENABLE_ZOOM || !zoomedImageId) return
+    setIsDragging(true)
+    setDragged(false)
+    if (imageWrapRef.current) {
+      setDragStart({
+        x: e.clientX,
+        y: e.clientY,
+        scrollLeft: imageWrapRef.current.scrollLeft,
+        scrollTop: imageWrapRef.current.scrollTop,
+      })
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!ENABLE_ZOOM || !isDragging || !zoomedImageId || !imageWrapRef.current) return
+    e.preventDefault()
+    const dx = e.clientX - dragStart.x
+    const dy = e.clientY - dragStart.y
+
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      setDragged(true)
+    }
+
+    imageWrapRef.current.scrollLeft = dragStart.scrollLeft - dx * 1.5
+    imageWrapRef.current.scrollTop = dragStart.scrollTop - dy * 1.5
+  }
+
+  const handleMouseUpOrLeave = () => {
+    setIsDragging(false)
+  }
+
+  // Reset zoom state when pageIndex or documents change
+  useEffect(() => {
+    setZoomedImageId(null)
+  }, [pageIndex, documents])
 
   useEffect(() => {
     const on = () => setCompact(isCompactViewport())
@@ -124,16 +168,71 @@ export function InfoModal({ documents, onClose }: Props) {
       >
         <button style={styles.close} onClick={onClose}>×</button>
 
-        <div style={{ ...styles.imageWrap, ...(compact ? styles.imageWrapCompact : hasText ? styles.imageWrapWide : styles.imageWrapSolo) }}>
-          <div style={styles.imageStack}>
-            {imageUrls.map((image) => (
-              <figure key={image.id} style={styles.figure}>
-                <img src={image.url} alt={image.alt ?? item.title} style={{ ...styles.image, ...(compact ? styles.imageCompact : {}) }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                {image.caption && <figcaption style={styles.caption}>{image.caption}</figcaption>}
-              </figure>
-            ))}
+        <div
+          style={{
+            ...styles.imageWrap,
+            ...(compact ? styles.imageWrapCompact : hasText ? styles.imageWrapWide : styles.imageWrapSolo),
+          }}
+        >
+          <div
+            ref={imageWrapRef}
+            style={{
+              ...styles.imageScroll,
+              ...(compact ? { display: 'contents' } : {}),
+              cursor: ENABLE_ZOOM ? (zoomedImageId ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in') : 'default',
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+          >
+            <div style={styles.imageStack}>
+              {imageUrls.map((image) => {
+                const isZoomed = zoomedImageId === image.id
+                return (
+                  <figure key={image.id} style={styles.figure}>
+                    <img
+                      src={image.url}
+                      alt={image.alt ?? item.title}
+                      style={{
+                        ...styles.image,
+                        ...(compact ? styles.imageCompact : {}),
+                        ...(ENABLE_ZOOM && isZoomed ? {
+                          maxWidth: 'none',
+                          maxHeight: 'none',
+                          width: compact ? '220%' : '180%',
+                          cursor: 'zoom-out',
+                        } : {
+                          transition: 'width 0.25s ease-in-out, max-width 0.25s ease-in-out',
+                        }),
+                      }}
+                      onClick={(e) => {
+                        if (!ENABLE_ZOOM) return
+                        if (dragged) {
+                          e.stopPropagation()
+                          return
+                        }
+                        if (isZoomed) {
+                          setZoomedImageId(null)
+                        } else {
+                          setZoomedImageId(image.id)
+                        }
+                        e.stopPropagation()
+                      }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                    {image.caption && <figcaption style={styles.caption}>{image.caption}</figcaption>}
+                  </figure>
+                )
+              })}
+            </div>
           </div>
           {item.year && <div style={styles.yearBadge}>{item.year}</div>}
+          {ENABLE_ZOOM && !zoomedImageId && (
+            <div style={styles.zoomHint}>
+              <span>🔍 Click to zoom</span>
+            </div>
+          )}
         </div>
 
         {hasText && (
@@ -194,10 +293,11 @@ const styles: Record<string, React.CSSProperties> = {
   panelImageOnly: { maxWidth: '1180px' },
   panelCompact: { overflowY: 'auto', overflowX: 'hidden' },
   close: { position: 'absolute', top: '12px', right: '12px', background: 'rgba(255,255,255,0.94)', border: `1px solid ${brand.line}`, color: brand.blue, borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', fontSize: '18px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 },
-  imageWrap: { position: 'relative', background: '#071323', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', flexShrink: 0, overflow: 'auto', overscrollBehavior: 'contain' },
+  imageWrap: { position: 'relative', background: '#071323', display: 'flex', alignItems: 'stretch', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' },
+  imageScroll: { width: '100%', height: '100%', overflow: 'auto', overscrollBehavior: 'contain', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   imageWrapWide: { flex: '0 0 66%', alignSelf: 'stretch', minHeight: 0, maxHeight: '92vh' },
   imageWrapSolo: { width: '100%', minHeight: 'min(82vh, 760px)', maxHeight: '92vh' },
-  imageWrapCompact: { width: '100%', height: 'auto', minHeight: '180px', maxHeight: 'none', overflow: 'visible' },
+  imageWrapCompact: { width: '100%', height: 'auto', minHeight: '180px', maxHeight: 'none', overflow: 'visible', display: 'block' },
   imageStack: { width: '100%', minHeight: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '18px', alignItems: 'center', justifyContent: 'flex-start', padding: '18px 18px 48px' },
   figure: { margin: 0, width: '100%', flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' },
   image: { maxWidth: '100%', maxHeight: '70vh', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' },
@@ -219,4 +319,5 @@ const styles: Record<string, React.CSSProperties> = {
   edgePageBtnLeft: { left: '14px' },
   edgePageBtnRight: { right: '14px' },
   pageCountFloating: { position: 'absolute', left: '50%', bottom: '16px', transform: 'translateX(-50%)', zIndex: 3, minWidth: '56px', textAlign: 'center', fontSize: '13px', fontWeight: 900, color: brand.blue, background: 'rgba(255,255,255,0.92)', border: `1px solid ${brand.line}`, borderRadius: '999px', padding: '6px 12px' },
+  zoomHint: { position: 'absolute', bottom: '14px', right: '16px', background: 'rgba(255,255,255,0.92)', border: `1px solid ${brand.line}`, color: brand.blue, borderRadius: '6px', padding: '4px 11px', fontSize: '12px', fontWeight: 600, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', zIndex: 2 },
 }
