@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -1127,6 +1127,7 @@ export function RoomModel({
         } else {
           applyOriginalSlotMaterials(obj)
         }
+        obj.raycast = () => null
 
         const posAttr = obj.geometry?.getAttribute('position')
         const nrmAttr = obj.geometry?.getAttribute('normal')
