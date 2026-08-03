@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGLTF } from '@react-three/drei'
-import { useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { SlotTransform } from '@vm/shared'
 import type { RoomBounds } from './NavController.js'
@@ -34,8 +34,8 @@ function isHiddenZoneTitleMesh(name: string): boolean {
 
 /** Architecture meshes the visitor must not walk through. Matched by substring so
  *  three.js' `_1`/`_2` duplicate-name suffixes still hit. */
-const COLLIDER_NAME_HINTS = ['CenterBlock', 'Display_Case', 'VM_Display', 'Niche_Plinth', 'Hero_Cabinet', 'TT_Right_Alcove']
-/** Push walkable boundary this far (m) outside the mesh footprint â€” keeps the camera
+const COLLIDER_NAME_HINTS = ['CenterBlock', 'Display_Case', 'VM_Display', 'Niche_Plinth', 'K9_WoodFeature', 'TT_Right_Alcove']
+/** Push walkable boundary this far (m) outside the mesh footprint Ã¢â‚¬â€ keeps the camera
  *  a comfortable distance from the wall instead of clipping right into it. */
 const COLLIDER_MARGIN = 0.5
 // NavController expands obstacles by PLAYER_RADIUS (0.32m). Wall-like interior
@@ -45,6 +45,11 @@ const INTERIOR_WALL_COLLIDER_MARGIN = 0.08
 /** Small brightness lift on the baked atlas so the web reads as bright as the Blender
  *  (AgX) viewport instead of the slightly duller Reinhard bake. */
 const ATLAS_BRIGHTEN = 1.08
+const K9_GOLD_BASE = new THREE.Color('#d4a13a')
+const K9_GOLD_NEAR = new THREE.Color('#e4b646')
+const K9_GOLD_EMISSIVE = new THREE.Color('#70420b')
+const K9_GLOW_START_DISTANCE = 7.2
+const K9_GLOW_FULL_DISTANCE = 1.35
 
 /**
  * Atlas luminance that counts as "fully lit" for the floor: `light = clamp(L / FLOOR_ATLAS_REF, 0.74, 1.04)`.
@@ -164,7 +169,7 @@ function makeWallMaterial(
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   const hasBump = !!normalTex
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uLift = { value: 0.4 } // 1.0 = tường/trần màu kem phẳng (bỏ hẳn biến thiên atlas: hết seam/bleed/vệt). Hạ về ~0.85 nếu muốn giữ chút bóng bake.
+    shader.uniforms.uLift = { value: 0.4 } // 1.0 = tÆ°á»ng/tráº§n mÃ u kem pháº³ng (bá» háº³n biáº¿n thiÃªn atlas: háº¿t seam/bleed/vá»‡t). Háº¡ vá» ~0.85 náº¿u muá»‘n giá»¯ chÃºt bÃ³ng bake.
     shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.955, 0.875) }
     const commonLines = ['#include <common>', 'uniform float uLift;', 'uniform vec3 uCream;']
     const mapLines = [
@@ -368,6 +373,75 @@ function applyOriginalLitMaterial(obj: THREE.Mesh): void {
     ? obj.material.map((_mat, index) => makeOriginalLitMaterial(originals[index] ?? originals[0]))
     : makeOriginalLitMaterial(originals[0])
 }
+function applyK9ContactShadowMaterial(obj: THREE.Mesh): void {
+  const mat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color('#2b160d'),
+    transparent: true,
+    opacity: 0.14,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    toneMapped: false,
+  })
+  mat.polygonOffset = true
+  mat.polygonOffsetFactor = 1
+  mat.polygonOffsetUnits = 1
+  obj.material = mat
+  obj.renderOrder = 4
+}
+function makeK9WoodMaterial(original: THREE.Material | undefined): THREE.Material {
+  const mat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color('#f0c6a8'),
+    map: getMaterialMap(original),
+    side: THREE.DoubleSide,
+    toneMapped: false,
+  })
+  mat.name = original?.name ?? ''
+  return mat
+}
+
+function makeK9FrameMaterial(original: THREE.Material | undefined, color: string): THREE.Material {
+  const mat = new THREE.MeshStandardMaterial({
+    color,
+    metalness: 0.02,
+    roughness: 0.72,
+    emissive: new THREE.Color(color),
+    emissiveIntensity: 0.08,
+    side: THREE.DoubleSide,
+  })
+  mat.name = original?.name ?? ''
+  mat.toneMapped = false
+  return mat
+}
+
+function makeK9GoldMaterial(original: THREE.Material | undefined, title = false): THREE.Material {
+  const mat = new THREE.MeshStandardMaterial({
+    color: title ? '#d4a13a' : '#b88428',
+    metalness: title ? 0.5 : 0.7,
+    roughness: title ? 0.42 : 0.28,
+    emissive: title ? K9_GOLD_EMISSIVE.clone() : new THREE.Color('#3c2608'),
+    emissiveIntensity: title ? 0.06 : 0.14,
+    side: THREE.DoubleSide,
+  })
+  mat.name = original?.name ?? ''
+  mat.toneMapped = false
+  mat.envMapIntensity = title ? 1.05 : 1.7
+  return mat
+}
+
+function applyK9FeatureMaterial(obj: THREE.Mesh): void {
+  const originals = originalMaterialsFor(obj)
+  const materialFor = (original: THREE.Material | undefined) => {
+    if (obj.name.includes('BackPanel')) return makeK9WoodMaterial(original)
+    if (obj.name.includes('Title_Line')) return makeK9GoldMaterial(original, true)
+    if (obj.name.includes('Thin_Brass_Inlay')) return makeK9GoldMaterial(original, false)
+    if (obj.name.includes('Inner_Recess_Sidewall')) return makeK9FrameMaterial(original, '#2f2119')
+    return makeK9FrameMaterial(original, '#5b3f31')
+  }
+
+  obj.material = Array.isArray(obj.material)
+    ? obj.material.map((_mat, index) => materialFor(originals[index] ?? originals[0]))
+    : materialFor(originals[0])
+}
 function applyLitOriginalSlotMaterials(obj: THREE.Mesh, hiddenMaterialNames = new Set<string>()): void {
   const originals = originalMaterialsFor(obj)
   const materialFor = (original: THREE.Material | undefined) => {
@@ -440,7 +514,7 @@ interface Props {
 /**
  * A single Blender slot node holds two primitives (frame + canvas). glTF gives
  * them the same node name, but three.js `createUniqueName` renames duplicates to
- * `<name>_1`, `<name>_2`â€¦ so a runtime mesh is called e.g. `VM_Slot_K8_CD_01_2`.
+ * `<name>_1`, `<name>_2`Ã¢â‚¬Â¦ so a runtime mesh is called e.g. `VM_Slot_K8_CD_01_2`.
  * Resolve it back to the JSON slot id (`VM_Slot_K8_CD_01`) by longest-prefix match.
  */
 function resolveSlotId(meshName: string, knownIds: string[]): string | null {
@@ -468,6 +542,10 @@ export function RoomModel({
   const gltf = useGLTF(url) as { scene: THREE.Group }
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene])
   const invalidate = useThree((s) => s.invalidate)
+  const camera = useThree((s) => s.camera)
+  const k9TitleGoldMaterialsRef = useRef<THREE.MeshStandardMaterial[]>([])
+  const k9GlowTargetRef = useRef(new THREE.Vector3())
+  const k9GlowColorRef = useRef(new THREE.Color())
 
   const cbRef = useRef(onSlotsExtracted)
   cbRef.current = onSlotsExtracted
@@ -479,10 +557,35 @@ export function RoomModel({
   const knownKey = (knownSlotIds ?? []).join('|')
   const knownIds = useMemo(() => knownSlotIds ?? [], [knownKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // â”€â”€ Load the baked COMBINED atlas (full Blender render: albedo + light + GI +
+  useFrame(() => {
+    const mats = k9TitleGoldMaterialsRef.current
+    if (mats.length === 0) return
+
+    const dist = camera.position.distanceTo(k9GlowTargetRef.current)
+    const raw = THREE.MathUtils.clamp(
+      (K9_GLOW_START_DISTANCE - dist) / (K9_GLOW_START_DISTANCE - K9_GLOW_FULL_DISTANCE),
+      0,
+      1,
+    )
+    const glow = raw * raw * (3 - 2 * raw)
+
+    for (const mat of mats) {
+      const bias = typeof mat.userData.k9GlowBias === 'number' ? mat.userData.k9GlowBias : 1
+      const materialGlow = THREE.MathUtils.clamp(glow * bias, 0, 1)
+      const glowColor = k9GlowColorRef.current.copy(K9_GOLD_BASE).lerp(K9_GOLD_NEAR, materialGlow * 0.28)
+      mat.color.copy(glowColor)
+      mat.emissive.copy(K9_GOLD_EMISSIVE).multiplyScalar(0.56 + materialGlow * 0.3)
+      mat.emissiveIntensity = 0.065 + materialGlow * 0.09
+      mat.envMapIntensity = 0.96 + materialGlow * 0.2
+      mat.roughness = 0.56 - materialGlow * 0.035
+      mat.needsUpdate = true
+    }
+  })
+
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Load the baked COMBINED atlas (full Blender render: albedo + light + GI +
   //    shadow, sampled through UV2). Shell meshes switch to MeshBasicMaterial and
-  //    display this 1:1, so three.js does NO lighting of its own â†’ pixel-identical
-  //    to the Blender bake regardless of scene lights. â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //    display this 1:1, so three.js does NO lighting of its own Ã¢â€ â€™ pixel-identical
+  //    to the Blender bake regardless of scene lights. Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [bakedAtlas, setBakedAtlas] = useState<THREE.Texture | null>(null)
   useEffect(() => {
     if (!lightmapUrl) {
@@ -514,9 +617,9 @@ export function RoomModel({
     }
   }, [lightmapUrl, invalidate])
 
-  // â”€â”€ Second baked atlas: the props (niche wood frames, plinth, display cases).
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Second baked atlas: the props (niche wood frames, plinth, display cases).
   //    Same idea as the shell atlas but its own UV2 packing, so it needs its own
-  //    texture. Derived from lightmapUrl by filename convention. â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //    texture. Derived from lightmapUrl by filename convention. Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const propsUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_props') : null
   const [propsAtlas, setPropsAtlas] = useState<THREE.Texture | null>(null)
   useEffect(() => {
@@ -548,7 +651,7 @@ export function RoomModel({
       },
       undefined,
       () => {
-        /* props atlas is optional â€” ignore if missing */
+        /* props atlas is optional Ã¢â‚¬â€ ignore if missing */
       },
     )
     return () => {
@@ -556,7 +659,7 @@ export function RoomModel({
     }
   }, [propsUrl, invalidate])
 
-  // â”€â”€ Floor marble tile texture (Marble021) â€” tiled per 0.8 m in the floor shader. â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Floor marble tile texture (Marble021) Ã¢â‚¬â€ tiled per 0.8 m in the floor shader. Ã¢â€â‚¬Ã¢â€â‚¬
   const floorTileUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_floortile') : null
   const [floorTileTex, setFloorTileTex] = useState<THREE.Texture | null>(null)
   useEffect(() => {
@@ -658,6 +761,7 @@ export function RoomModel({
 
   useEffect(() => {
     scene.updateMatrixWorld(true)
+    k9TitleGoldMaterialsRef.current = []
 
     const slotMap = new Map<string, {
       pos: THREE.Vector3
@@ -670,6 +774,7 @@ export function RoomModel({
     }>()
     const nameplateFacePoints = new Map<string, THREE.Vector3[]>()
     const obstacles: RoomBounds[] = []
+    const k9TitleBox = new THREE.Box3()
 
     // Accumulate the room-shell footprint (perimeter walls) to derive walkable bounds.
     let archMinX = Infinity, archMaxX = -Infinity, archMinZ = Infinity, archMaxZ = -Infinity
@@ -700,7 +805,7 @@ export function RoomModel({
         if (obj.name.startsWith('TT_Dado')) {
           // Capture the ORIGINAL base colour ONCE. This effect re-runs when the async
           // lightmap atlases arrive (and twice under <StrictMode> in dev), so reading
-          // the LIVE material every time would re-soften an already-softened colour â€”
+          // the LIVE material every time would re-soften an already-softened colour Ã¢â‚¬â€
           // compounding the desaturation by a different amount in dev vs prod, which is
           // why the dado looked paler on localhost than on the deploys. Always derive
           // from the stored base colour so the result is identical everywhere (1 pass).
@@ -742,7 +847,7 @@ export function RoomModel({
         }
         // Free-standing dividers that form the U-bays (khu 1-4). A single mesh holds
         // all fins, so split it into one collision box per fin (gap-clustered along
-        // its long axis) â€” a single AABB would wall off the whole bay strip and stop
+        // its long axis) Ã¢â‚¬â€ a single AABB would wall off the whole bay strip and stop
         // the visitor entering the bays at all.
         if (obj.name.includes('AlcoveComb')) {
           const pos = obj.geometry.getAttribute('position')
@@ -825,7 +930,28 @@ export function RoomModel({
           applyPolygonOffset(obj, 1, 1)
           return
         }
-        if (obj.name.startsWith('TT_K5_Director_Panel_') || obj.name.startsWith('TT_K10_') || obj.name.startsWith('TT_K11_')) {
+        if (obj.name.startsWith('TT_K9_WoodFeature_')) {
+          if (obj.name.includes('Contact_Shadow')) {
+            applyK9ContactShadowMaterial(obj)
+            return
+          }
+          obj.castShadow = true
+          obj.receiveShadow = true
+          applyK9FeatureMaterial(obj)
+          if (obj.name.includes('Title_Line')) {
+            const glowBias = obj.name.includes('Title_Line_2') ? 2.85 : 0.45
+            const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+            for (const mat of mats) {
+              if (mat instanceof THREE.MeshStandardMaterial) {
+                mat.userData.k9GlowBias = glowBias
+                k9TitleGoldMaterialsRef.current.push(mat)
+              }
+            }
+            k9TitleBox.expandByObject(obj)
+          }
+          return
+        }
+        if (obj.name.startsWith('TT_K5_Director_Panel_') || obj.name.startsWith('TT_K5_Director_Title_') || obj.name.startsWith('TT_K10_') || obj.name.startsWith('TT_K11_')) {
           applyOriginalUnlitMaterial(obj)
           return
         }
@@ -856,20 +982,20 @@ export function RoomModel({
         }
 
         // Architecture meshes carrying a 2nd UV set (uv1 = TEXCOORD_1) get the baked
-        // Combined atlas as an unlit material â€” pixel-identical to the Blender render.
+        // Combined atlas as an unlit material Ã¢â‚¬â€ pixel-identical to the Blender render.
         const hasLightmapUv = obj.geometry.hasAttribute('uv1')
         // Two separate baked atlases, each with its OWN UV2 packing:
-        //  Â· shell  â†’ walls / floor / ceiling / fins / centre block / red niche
-        //  Â· props  â†’ niche wood frames, plinth, display cases
+        //  Ã‚Â· shell  Ã¢â€ â€™ walls / floor / ceiling / fins / centre block / red niche
+        //  Ã‚Â· props  Ã¢â€ â€™ niche wood frames, plinth, display cases
         // A mesh must sample the atlas its UV2 was packed into, so route by name.
         const isProp = false
         const atlas = isProp ? propsAtlas : bakedAtlas
 
         if (atlas && hasLightmapUv) {
           // Unlit MeshBasicMaterial showing the baked atlas 1:1 (matches the Blender
-          // render exactly). No scene light touches it â€” the atlas already contains
+          // render exactly). No scene light touches it Ã¢â‚¬â€ the atlas already contains
           // all lighting, shadows and GI.
-          // Floor tiles read almost identical to the warm walls â€” give the tile plane a
+          // Floor tiles read almost identical to the warm walls Ã¢â‚¬â€ give the tile plane a
           // slightly cooler + darker tint so it's distinguishable (kept subtle).
           // The baked atlas was already tone-mapped in Blender (Reinhard on the raw
           // Cycles bake), so keep toneMapped:false to avoid a second (AgX) pass.
@@ -877,9 +1003,9 @@ export function RoomModel({
           // walls / ceiling stay on the plain baked atlas.
           // Brighter + subtle warm-cream tint so walls read white & fresh like the Blender
           // (Eevee) view instead of the duller grey of the raw Reinhard bake.
-          // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) â€” a soft warm
+          // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) Ã¢â‚¬â€ a soft warm
           // off-white, not stark white. Gentle brighten + faint warm, keep the grain.
-          // Boss preference: brighter/whiter than the Blender taupe â€” fresh warm-cream white.
+          // Boss preference: brighter/whiter than the Blender taupe Ã¢â‚¬â€ fresh warm-cream white.
           const wallTint = new THREE.Color(0.72, 0.71, 0.69)
           const floorTint = new THREE.Color(0.92, 0.90, 0.84)
           const isTileMat = (m?: THREE.Material | null) =>
@@ -1101,6 +1227,10 @@ export function RoomModel({
         applyOriginalUnlitMaterial(obj)
       }
     })
+
+    if (!k9TitleBox.isEmpty()) {
+      k9TitleBox.getCenter(k9GlowTargetRef.current)
+    }
 
     // K6 runtime glass overlay disabled: the generated transparent plane caused
     // overdraw artifacts. The GLB currently does not include a stable TT_Niche_Glass
