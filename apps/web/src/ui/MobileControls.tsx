@@ -104,7 +104,7 @@ const styles: Record<string, React.CSSProperties> = {
   wrap: {
     position: 'absolute',
     bottom: '84px',
-    left: '20px',
+    right: '20px',
     zIndex: 15,
     display: 'flex',
     flexDirection: 'column',
