@@ -13,6 +13,7 @@ import { fetchDocumentDetails } from '../content/documents.js'
 import { InfoModal } from '../ui/InfoModal.js'
 import { ViewpointNav } from '../ui/ViewpointNav.js'
 import { MobileControls } from '../ui/MobileControls.js'
+import { ScreenControls } from '../ui/ScreenControls.js'
 import { Gallery2D } from './Gallery2D.js'
 import { brand, glassPanel } from '../ui/theme.js'
 
@@ -41,6 +42,7 @@ export function Tour({ content, onBack }: Props) {
   const isMobile = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent)
   const useFallback = shouldUseFallback()
   const mobileMoveRef = useRef<{ dx: number; dz: number }>({ dx: 0, dz: 0 })
+  const screenLookRef = useRef<{ dyaw: number; dpitch: number }>({ dyaw: 0, dpitch: 0 })
 
   // States for Gyro tooltip and pulse hint on mobile
   const [showTooltip, setShowTooltip] = useState(isMobile)
@@ -128,6 +130,7 @@ export function Tour({ content, onBack }: Props) {
           activeViewpointId={activeViewpointId}
           gyroEnabled={gyroEnabled}
           mobileMoveRef={mobileMoveRef}
+          screenLookRef={screenLookRef}
           hideLabels={selectedDocuments.length > 0}
           onSlotSelect={handleSlotSelect}
           onNavigate={navigateToRoom}
@@ -155,6 +158,14 @@ export function Tour({ content, onBack }: Props) {
       {isMobile && (
         <MobileControls
           moveRef={mobileMoveRef}
+        />
+      )}
+
+      {/* Desktop: Screen buttons for Move/Look */}
+      {!isMobile && (
+        <ScreenControls
+          moveRef={mobileMoveRef}
+          lookRef={screenLookRef}
         />
       )}
 

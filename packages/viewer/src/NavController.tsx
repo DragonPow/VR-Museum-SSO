@@ -31,6 +31,8 @@ interface Props {
   /** Admin editor: when true, floor clicks call onPortalPlace instead of walking */
   portalPlaceMode?: boolean
   onPortalPlace?: (pos: { x: number; z: number }) => void
+  /** Written by screen controls; read each frame. dyaw = turn yaw speed (-1..1), dpitch = turn pitch speed (-1..1) */
+  screenLookRef?: { current: { dyaw: number; dpitch: number } }
 }
 
 const DEFAULT_BOUNDS: RoomBounds = { minX: -5.5, maxX: 5.5, minZ: -7.5, maxZ: 7.5 }
@@ -203,6 +205,7 @@ export function NavController({
   cameraStateRef,
   portalPlaceMode = false,
   onPortalPlace,
+  screenLookRef,
 }: Props) {
   const { camera, gl, invalidate } = useThree()
 
@@ -499,6 +502,16 @@ export function NavController({
       transitioning.current = false
     }
 
+    // ── Screen buttons rotation ───────────────────────────────────────────────
+    const look = screenLookRef?.current
+    if (look && (look.dyaw !== 0 || look.dpitch !== 0)) {
+      const turnSpeed = 1.6 // radians per second
+      yaw.current += look.dyaw * turnSpeed * dt
+      pitch.current = clampPitch(pitch.current + look.dpitch * turnSpeed * dt)
+      transitioning.current = false
+      invalidate()
+    }
+
     // ── Floor-click walk-to: advance targetPos at constant walking speed ─────────
     if (walkTarget.current) {
       const wt = walkTarget.current
@@ -562,9 +575,12 @@ export function NavController({
     // Request next frame only while something is still animating
     const mobActive = !!mobileMoveRef?.current &&
       (mobileMoveRef.current.dx !== 0 || mobileMoveRef.current.dz !== 0)
+    const lookActive = !!screenLookRef?.current &&
+      (screenLookRef.current.dyaw !== 0 || screenLookRef.current.dpitch !== 0)
     const stillActive =
       gyroEnabled ||
       mobActive ||
+      lookActive ||
       keys.current.size > 0 ||
       walkTarget.current !== null ||
       transitioning.current ||
