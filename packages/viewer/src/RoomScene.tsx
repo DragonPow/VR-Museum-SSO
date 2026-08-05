@@ -5,7 +5,6 @@ import { getRoomSurfaces, getRoomDimensions } from './templates.js'
 import { RoomLighting } from './RoomLighting.js'
 import { RoomSurface } from './RoomSurface.js'
 import { RoomModel } from './RoomModel.js'
-import { RoomSidecarModel } from './RoomSidecarModel.js'
 import { isBackdropSlotId } from './slotIds.js'
 import type { ExtractedSlot } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
@@ -73,10 +72,6 @@ export function RoomScene({
   )
   const modelUrl = resolveAssetUrl(room.modelUrl, { assetBaseUrl, assetVersion })
   const lightmapUrl = resolveAssetUrl(room.lightmapUrl, { assetBaseUrl, assetVersion })
-  const k5StrelitziaUrl = useMemo(() => {
-    if (room.modelUrl !== '/content/models/truyenthong.glb') return null
-    return resolveAssetUrl('/content/models/truyenthong_k5_strelitzia.glb', { assetBaseUrl, assetVersion })
-  }, [assetBaseUrl, assetVersion, room.modelUrl])
 
   // ── GLB slot extraction ──────────────────────────────────────────────────────
   // When the room has a GLB model, VM_Slot_* meshes are the source of truth for
@@ -227,13 +222,6 @@ export function RoomScene({
           <RoomSurface config={surfaces.ceiling} textureUrl={ceilingUrl} color="#f5f0e8" />
         </>
       )}
-      {k5StrelitziaUrl ? (
-        <RoomSidecarModel
-          url={k5StrelitziaUrl}
-          {...(room.modelOffset != null ? { offset: room.modelOffset } : {})}
-        />
-      ) : null}
-
       {resolvedSlots.map((slot) => {
         const firstId = slot.documentIds?.[0]
         const document = firstId ? documents[firstId] ?? null : null

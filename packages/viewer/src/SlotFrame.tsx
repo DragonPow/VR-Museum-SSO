@@ -39,6 +39,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   const { invalidate } = useThree()
   const clonedTexRef = useRef<THREE.Texture | null>(null)
   const [imageAspect, setImageAspect] = useState<number | null>(null)
+  const pointerDownPos = useRef<{ x: number; y: number } | null>(null)
   const { transform, frameStyle } = slot
   // Use safe defaults so hooks below always receive valid values.
   // The null guard before JSX (after all hooks) prevents any rendering.
@@ -330,7 +331,19 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
         {...(documentItem && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
-          onClick:       (e) => { e.stopPropagation(); onSelect(slot.id) },
+          onPointerDown: (e) => {
+            pointerDownPos.current = { x: e.clientX, y: e.clientY }
+          },
+          onClick:       (e) => {
+            e.stopPropagation()
+            if (!pointerDownPos.current) return
+            const dx = e.clientX - pointerDownPos.current.x
+            const dy = e.clientY - pointerDownPos.current.y
+            const dist = Math.abs(dx) + Math.abs(dy)
+            pointerDownPos.current = null
+            if (dist > 6) return
+            onSelect(slot.id)
+          },
         } : {
           onPointerOver: (e) => e.stopPropagation(),
           onPointerOut:  (e) => e.stopPropagation(),
