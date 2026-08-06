@@ -11,6 +11,7 @@ interface Props {
 
 export function ViewpointHotspot({ viewpoint, onClick }: Props) {
   const [hovered, setHovered] = useState(false)
+  const groupRef = useRef<THREE.Group>(null)
   const ringRef = useRef<THREE.Mesh>(null)
   const rippleRef = useRef<THREE.Mesh>(null)
   const diamondRef = useRef<THREE.Mesh>(null)
@@ -18,6 +19,17 @@ export function ViewpointHotspot({ viewpoint, onClick }: Props) {
 
   // Frame loop for animations
   useFrame((state, delta) => {
+    const camera = state.camera
+    const vpPos = new THREE.Vector3(viewpoint.position.x, camera.position.y, viewpoint.position.z)
+    const dist = camera.position.distanceTo(vpPos)
+
+    const tooClose = dist < 0.8
+    if (groupRef.current) {
+      groupRef.current.visible = !tooClose
+    }
+
+    if (tooClose) return
+
     const clock = state.clock
     invalidate()
 
@@ -53,7 +65,7 @@ export function ViewpointHotspot({ viewpoint, onClick }: Props) {
   const badgeWidth = Math.max(0.5, labelText.length * charWidth + 0.16)
 
   return (
-    <group position={pos}>
+    <group ref={groupRef} position={pos}>
       {/* ── FLOOR projection group ── */}
       
       {/* Outer base ring */}

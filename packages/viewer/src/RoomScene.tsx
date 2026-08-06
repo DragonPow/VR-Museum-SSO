@@ -250,8 +250,7 @@ export function RoomScene({
       ))}
 
       {onViewpointSelect && room.viewpoints
-        ?.filter((vp) => vp.id !== activeViewpointId)
-        .map((vp) => (
+        ?.map((vp) => (
           <ViewpointHotspot
             key={vp.id}
             viewpoint={vp}

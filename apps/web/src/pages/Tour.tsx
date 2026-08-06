@@ -79,6 +79,7 @@ export function Tour({ content, onBack }: Props) {
   const roomState = useRoom(roomStub)
 
   // Once room data loads, set the entry viewpoint (if not already set)
+  // Once room data loads, set the entry viewpoint (if not already set)
   useEffect(() => {
     if (roomState.status === 'ok' && !activeViewpointId) {
       setActiveViewpoint(roomState.data.entryViewpointId)
@@ -89,6 +90,11 @@ export function Tour({ content, onBack }: Props) {
 
   const handleSlotSelect = (slotId: string, documents: DocumentIndexItem[]) => {
     void fetchDocumentDetails(documents).then((details) => selectSlot(slotId, details))
+  }
+
+  const handleViewpointSelect = (vpId: string) => {
+    setViewpoint(vpId)
+    window.dispatchEvent(new CustomEvent('vm:snap-viewpoint', { detail: vpId }))
   }
 
   if (useFallback) {
@@ -163,7 +169,7 @@ export function Tour({ content, onBack }: Props) {
           room={room}
           documents={documents}
           textures={textures}
-          activeViewpointId={activeViewpointId}
+          activeViewpointId={activeViewpointId ?? ''}
           gyroEnabled={gyroEnabled}
           mobileMoveRef={mobileMoveRef}
           screenLookRef={screenLookRef}
@@ -173,7 +179,7 @@ export function Tour({ content, onBack }: Props) {
           assetBaseUrl={ASSET_BASE_URL}
           assetVersion={import.meta.env.VITE_ASSET_VERSION ?? ''}
           navigationMode={navigationMode}
-          onViewpointSelect={setViewpoint}
+          onViewpointSelect={handleViewpointSelect}
         />
       </SceneCanvas>
 
@@ -211,8 +217,8 @@ export function Tour({ content, onBack }: Props) {
       {/* Viewpoint nav (bottom center) */}
       <ViewpointNav
         viewpoints={room.viewpoints}
-        activeId={activeViewpointId}
-        onSelect={setViewpoint}
+        activeId={activeViewpointId ?? ''}
+        onSelect={handleViewpointSelect}
         gyroEnabled={gyroEnabled}
         onGyroToggle={toggleGyro}
         showGyro={false}

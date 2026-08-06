@@ -8,16 +8,28 @@ function getGpuTier(): QualityTier {
       canvas.getContext('webgl2') ??
       (canvas.getContext('webgl') as WebGLRenderingContext | null)
     if (!gl) return 'low'
+    
     const ext = gl.getExtension('WEBGL_debug_renderer_info')
-    if (!ext) return 'medium'
-    const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) as string
-    const lower = renderer.toLowerCase()
-    // Known low-end patterns
-    if (/swiftshader|llvmpipe|softpipe|microsoft basic/.test(lower)) return 'low'
-    if (/intel (hd|uhd) graphics [0-9]{3}[^0-9]/.test(lower)) return 'medium'
-    if (/mali-[gt][0-9]+/.test(lower)) return 'medium'
-    if (/adreno [0-9]{3}/.test(lower)) return 'medium'
-    return 'high'
+    let tier: QualityTier = 'high'
+    if (ext) {
+      const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) as string
+      const lower = renderer.toLowerCase()
+      if (/swiftshader|llvmpipe|softpipe|microsoft basic/.test(lower)) {
+        tier = 'low'
+      } else if (/intel (hd|uhd) graphics [0-9]{3}[^0-9]/.test(lower)) {
+        tier = 'medium'
+      } else if (/mali-[gt][0-9]+/.test(lower)) {
+        tier = 'medium'
+      } else if (/adreno [0-9]{3}/.test(lower)) {
+        tier = 'medium'
+      }
+    }
+
+    // Force release WebGL resources immediately
+    const loseExt = gl.getExtension('WEBGL_lose_context')
+    if (loseExt) loseExt.loseContext()
+
+    return tier
   } catch {
     return 'medium'
   }
@@ -32,6 +44,7 @@ export interface PerfConfig {
 }
 
 let _cached: PerfConfig | null = null
+let _fallbackCached: boolean | null = null
 
 export function getPerfConfig(): PerfConfig {
   if (_cached) return _cached
@@ -52,12 +65,19 @@ export function getPerfConfig(): PerfConfig {
 }
 
 export function shouldUseFallback(): boolean {
-  // Fall back to 2D only when WebGL is entirely absent.
-  // Slow/software renderers get low-quality 3D, not no 3D.
+  if (_fallbackCached !== null) return _fallbackCached
   try {
     const canvas = document.createElement('canvas')
-    return !(canvas.getContext('webgl2') ?? canvas.getContext('webgl'))
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl')
+    const hasWebGL = !!gl
+    if (gl) {
+      const loseExt = gl.getExtension('WEBGL_lose_context')
+      if (loseExt) loseExt.loseContext()
+    }
+    _fallbackCached = !hasWebGL
+    return _fallbackCached
   } catch {
+    _fallbackCached = true
     return true
   }
 }

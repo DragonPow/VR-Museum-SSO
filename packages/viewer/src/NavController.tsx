@@ -289,6 +289,33 @@ export function NavController({
     invalidate()
   }, [activeViewpointId, camera, viewpoints, invalidate])
 
+  // ── Manual viewpoint snap event listener ─────────────────────────────────────
+  useEffect(() => {
+    const handleSnap = (e: Event) => {
+      const vpId = (e as CustomEvent).detail
+      const vp = viewpoints.find((v) => v.id === vpId)
+      if (!vp) return
+
+      const pos = toVec3(vp.position)
+      const lookAt = toVec3(vp.lookAt)
+      const { yaw: y, pitch: p } = computeYawPitch(pos, lookAt)
+
+      targetPos.current.copy(pos)
+      targetYaw.current = y
+      targetPitch.current = p
+      moveYaw.current = y
+      transitioning.current = true
+
+      walkTarget.current = null
+      velocity.current.x = 0
+      velocity.current.z = 0
+      invalidate()
+    }
+
+    window.addEventListener('vm:snap-viewpoint', handleSnap)
+    return () => window.removeEventListener('vm:snap-viewpoint', handleSnap)
+  }, [viewpoints, invalidate])
+
   // ── Pointer drag → look around & pinch zoom ──────────────────────────────────
   useEffect(() => {
     const canvas = gl.domElement
@@ -647,6 +674,9 @@ export function NavController({
       (mobileMoveRef.current.dx !== 0 || mobileMoveRef.current.dz !== 0)
     const lookActive = !!screenLookRef?.current &&
       (screenLookRef.current.dyaw !== 0 || screenLookRef.current.dpitch !== 0)
+
+
+
     const stillActive =
       gyroEnabled ||
       mobActive ||
