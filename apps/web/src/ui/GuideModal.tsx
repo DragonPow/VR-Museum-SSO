@@ -524,7 +524,7 @@ export function GuideModal({ content, onClose, currentRoomId }: Props) {
           <div className="guide-footer-title">Vui lòng chọn chế độ di chuyển để bắt đầu</div>
           <div className="guide-mode-options">
             <button className="guide-mode-btn mode-ptp" onClick={() => handleSelectMode('point-to-point')}>
-              <div className="mode-btn-title">Tham quan cố định theo khu</div>
+              <div className="mode-btn-title">Tham quan theo khu vực cố định</div>
             </button>
             <button className="guide-mode-btn mode-free" onClick={() => handleSelectMode('free')}>
               <div className="mode-btn-title">Tham quan di chuyển tự do</div>

@@ -190,17 +190,21 @@ export function Tour({ content, onBack }: Props) {
         <button
           style={{
             ...homeBtn,
-            background: navigationMode === 'point-to-point' ? 'rgba(200, 168, 90, 0.18)' : glassPanel.background,
-            borderColor: navigationMode === 'point-to-point' ? '#c8a85a' : glassPanel.borderColor,
-            color: navigationMode === 'point-to-point' ? '#a68030' : brand.blue,
-            boxShadow: navigationMode === 'point-to-point' ? '0 4px 12px rgba(200,168,90,0.25)' : '0 4px 12px rgba(8,47,109,0.15)',
+            background: navigationMode === 'point-to-point' ? brand.blue : glassPanel.background,
+            borderColor: navigationMode === 'point-to-point' ? brand.blueDark : glassPanel.borderColor,
+            color: navigationMode === 'point-to-point' ? '#ffffff' : brand.blue,
+            boxShadow: navigationMode === 'point-to-point' ? '0 4px 12px rgba(16,80,160,0.35)' : '0 4px 12px rgba(8,47,109,0.15)',
           }}
           onClick={() => setNavigationMode(navigationMode === 'point-to-point' ? 'free' : 'point-to-point')}
           title={navigationMode === 'point-to-point' ? "Chuyển sang chế độ di chuyển tự do" : "Chuyển sang chế độ di chuyển theo điểm dừng (tránh kẹt tường)"}
           aria-label="Chế độ di chuyển"
         >
           {navigationMode === 'point-to-point' ? <PointIcon /> : <FreeIcon />}
-          <span>{navigationMode === 'point-to-point' ? 'Di chuyển: Theo điểm đặt' : 'Di chuyển: Tự do'}</span>
+          <span>
+            {isMobile
+              ? (navigationMode === 'point-to-point' ? 'Cố định' : 'Tự do')
+              : (navigationMode === 'point-to-point' ? 'Di chuyển: Theo điểm cố định' : 'Di chuyển: Tự do')}
+          </span>
         </button>
       </div>
 
