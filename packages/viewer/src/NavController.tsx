@@ -33,6 +33,7 @@ interface Props {
   onPortalPlace?: (pos: { x: number; z: number }) => void
   /** Written by screen controls; read each frame. dyaw = turn yaw speed (-1..1), dpitch = turn pitch speed (-1..1) */
   screenLookRef?: { current: { dyaw: number; dpitch: number } }
+  freeWalkEnabled?: boolean
 }
 
 const DEFAULT_BOUNDS: RoomBounds = { minX: -5.5, maxX: 5.5, minZ: -7.5, maxZ: 7.5 }
@@ -206,6 +207,7 @@ export function NavController({
   portalPlaceMode = false,
   onPortalPlace,
   screenLookRef,
+  freeWalkEnabled = true,
 }: Props) {
   const { camera, gl, invalidate } = useThree()
 
@@ -233,6 +235,11 @@ export function NavController({
   const gyroSmooth = useRef<{ alpha: number; beta: number } | null>(null)
 
   const keys = useRef(new Set<string>())
+
+  // Camera FOV Zoom
+  const targetFov = useRef(75)
+  const zoomMinFov = 35
+  const zoomMaxFov = 85
 
   // ── Mount snap: set camera to entry viewpoint BEFORE first R3F frame ────────
   // Canvas is unmounted/remounted on each room change, so `camera` starts at
@@ -282,45 +289,98 @@ export function NavController({
     invalidate()
   }, [activeViewpointId, camera, viewpoints, invalidate])
 
-  // ── Pointer drag → look around ──────────────────────────────────────────────
+  // ── Pointer drag → look around & pinch zoom ──────────────────────────────────
   useEffect(() => {
     const canvas = gl.domElement
+    const activePointers = new Map<number, { x: number; y: number }>()
+    let initialPinchDist = 0
+    let initialFov = 75
 
     const onDown = (e: PointerEvent) => {
-      isDragging.current = true
-      dragPx.current = 0
-      lastMouse.current = { x: e.clientX, y: e.clientY }
-      canvas.setPointerCapture(e.pointerId)
-      if (indicatorRef.current) indicatorRef.current.visible = false
-      document.body.style.cursor = 'auto'
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (activePointers.size === 1) {
+        isDragging.current = true
+        dragPx.current = 0
+        lastMouse.current = { x: e.clientX, y: e.clientY }
+        canvas.setPointerCapture(e.pointerId)
+        if (indicatorRef.current) indicatorRef.current.visible = false
+        document.body.style.cursor = 'auto'
+      } else if (activePointers.size === 2) {
+        // Stop yaw/pitch dragging when pinching
+        isDragging.current = false
+        const pts = Array.from(activePointers.values())
+        const p1 = pts[0]
+        const p2 = pts[1]
+        if (p1 && p2) {
+          const dx = p1.x - p2.x
+          const dy = p1.y - p2.y
+          initialPinchDist = Math.sqrt(dx * dx + dy * dy)
+          initialFov = targetFov.current
+        }
+      }
     }
+
     const onMove = (e: PointerEvent) => {
-      if (!isDragging.current || gyroEnabled) return
-      const dx = e.clientX - lastMouse.current.x
-      const dy = e.clientY - lastMouse.current.y
-      dragPx.current += Math.abs(dx) + Math.abs(dy)
-      // Panorama convention: drag right → scene pans right (camera turns left → yaw increases).
-      // Touch gets higher sensitivity because touch events tend to fire with smaller deltas.
-      const sens = e.pointerType === 'touch' ? 0.011 : 0.003
-      yaw.current += dx * sens
-      pitch.current = clampPitch(pitch.current + dy * sens)
-      lastMouse.current = { x: e.clientX, y: e.clientY }
-      transitioning.current = false
-      invalidate()
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (activePointers.size === 1) {
+        if (!isDragging.current || gyroEnabled) return
+        const dx = e.clientX - lastMouse.current.x
+        const dy = e.clientY - lastMouse.current.y
+        dragPx.current += Math.abs(dx) + Math.abs(dy)
+        const sens = e.pointerType === 'touch' ? 0.011 : 0.003
+        yaw.current += dx * sens
+        pitch.current = clampPitch(pitch.current + dy * sens)
+        lastMouse.current = { x: e.clientX, y: e.clientY }
+        transitioning.current = false
+        invalidate()
+      } else if (activePointers.size === 2) {
+        const pts = Array.from(activePointers.values())
+        const p1 = pts[0]
+        const p2 = pts[1]
+        if (p1 && p2) {
+          const dx = p1.x - p2.x
+          const dy = p1.y - p2.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (initialPinchDist > 0 && dist > 0) {
+            const ratio = initialPinchDist / dist
+            targetFov.current = Math.max(zoomMinFov, Math.min(zoomMaxFov, initialFov * ratio))
+            invalidate()
+          }
+        }
+      }
     }
-    const onUp = () => {
-      isDragging.current = false
+
+    const onUp = (e: PointerEvent) => {
+      activePointers.delete(e.pointerId)
+      if (activePointers.size < 2) {
+        initialPinchDist = 0
+      }
+      if (activePointers.size === 0) {
+        isDragging.current = false
+      }
+    }
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const delta = e.deltaY * 0.05
+      targetFov.current = Math.max(zoomMinFov, Math.min(zoomMaxFov, targetFov.current + delta))
+      invalidate()
     }
 
     canvas.addEventListener('pointerdown', onDown)
     canvas.addEventListener('pointermove', onMove)
     canvas.addEventListener('pointerup', onUp)
     canvas.addEventListener('pointercancel', onUp)
+    canvas.addEventListener('wheel', onWheel, { passive: false })
+
     return () => {
       canvas.removeEventListener('pointerdown', onDown)
       canvas.removeEventListener('pointermove', onMove)
       canvas.removeEventListener('pointerup', onUp)
       canvas.removeEventListener('pointercancel', onUp)
+      canvas.removeEventListener('wheel', onWheel)
     }
   }, [gl, gyroEnabled])
 
@@ -418,6 +478,7 @@ export function NavController({
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.03) // limit to max 30fps step to prevent camera snaps on frame drops
     const t = Math.min(1, 8 * dt)
+    const cam = camera as THREE.PerspectiveCamera
 
     // Smooth moveYaw to match yaw.current, filtered heavily to prevent gyro jitter from messing up movement direction.
     let dMoveYaw = yaw.current - moveYaw.current
@@ -426,7 +487,7 @@ export function NavController({
     moveYaw.current += dMoveYaw * Math.min(1, 4.5 * dt)
 
     // ── Keyboard: velocity-based movement with smooth acceleration ──────────────
-    {
+    if (freeWalkEnabled) {
       const sinY = Math.sin(yaw.current)
       const cosY = Math.cos(yaw.current)
 
@@ -480,26 +541,28 @@ export function NavController({
     }
 
     // ── Mobile D-pad (same accel model) ─────────────────────────────────────────
-    const mob = mobileMoveRef?.current
-    if (mob && (mob.dx !== 0 || mob.dz !== 0)) {
-      const sinY = Math.sin(moveYaw.current)
-      const cosY = Math.cos(moveYaw.current)
-      const wdx = -sinY * mob.dz + cosY * mob.dx
-      const wdz = -cosY * mob.dz - sinY * mob.dx
-      const accel = Math.min(1, ACCEL_FACTOR * dt)
-      velocity.current.x += (wdx * MOVE_SPEED - velocity.current.x) * accel
-      velocity.current.z += (wdz * MOVE_SPEED - velocity.current.z) * accel
-      const rm = applyMove(
-        targetPos.current,
-        velocity.current.x * dt,
-        velocity.current.z * dt,
-        bounds,
-        obstacles,
-      )
-      if (!rm.mx) velocity.current.x = 0
-      if (!rm.mz) velocity.current.z = 0
-      walkTarget.current = null
-      transitioning.current = false
+    if (freeWalkEnabled) {
+      const mob = mobileMoveRef?.current
+      if (mob && (mob.dx !== 0 || mob.dz !== 0)) {
+        const sinY = Math.sin(moveYaw.current)
+        const cosY = Math.cos(moveYaw.current)
+        const wdx = -sinY * mob.dz + cosY * mob.dx
+        const wdz = -cosY * mob.dz - sinY * mob.dx
+        const accel = Math.min(1, ACCEL_FACTOR * dt)
+        velocity.current.x += (wdx * MOVE_SPEED - velocity.current.x) * accel
+        velocity.current.z += (wdz * MOVE_SPEED - velocity.current.z) * accel
+        const rm = applyMove(
+          targetPos.current,
+          velocity.current.x * dt,
+          velocity.current.z * dt,
+          bounds,
+          obstacles,
+        )
+        if (!rm.mx) velocity.current.x = 0
+        if (!rm.mz) velocity.current.z = 0
+        walkTarget.current = null
+        transitioning.current = false
+      }
     }
 
     // ── Screen buttons rotation ───────────────────────────────────────────────
@@ -513,7 +576,7 @@ export function NavController({
     }
 
     // ── Floor-click walk-to: advance targetPos at constant walking speed ─────────
-    if (walkTarget.current) {
+    if (freeWalkEnabled && walkTarget.current) {
       const wt = walkTarget.current
       const dx = wt.x - targetPos.current.x
       const dz = wt.z - targetPos.current.z
@@ -532,6 +595,13 @@ export function NavController({
 
     // Smooth position lerp
     camera.position.lerp(targetPos.current, t)
+
+    // Smoothly interpolate the camera FOV
+    const fovLerp = Math.min(1, 10 * dt)
+    if (Math.abs(cam.fov - targetFov.current) > 0.05) {
+      cam.fov += (targetFov.current - cam.fov) * fovLerp
+      cam.updateProjectionMatrix()
+    }
 
     // Smooth orientation transition on viewpoint snap
     if (transitioning.current && !gyroEnabled) {
@@ -586,7 +656,8 @@ export function NavController({
       transitioning.current ||
       Math.abs(velocity.current.x) > 0.001 ||
       Math.abs(velocity.current.z) > 0.001 ||
-      camera.position.distanceTo(targetPos.current) > 0.001
+      camera.position.distanceTo(targetPos.current) > 0.001 ||
+      Math.abs(cam.fov - targetFov.current) > 0.05
     if (stillActive) invalidate()
   })
 
@@ -611,6 +682,7 @@ export function NavController({
       onPortalPlace({ x: tx, z: tz })
       return
     }
+    if (!freeWalkEnabled) return
     if (isBlocked(tx, tz, obstacles) || pathBlocked(targetPos.current, tx, tz, obstacles)) return
     walkTarget.current = new THREE.Vector3(tx, eyeHeight, tz)
     invalidate()
@@ -621,13 +693,17 @@ export function NavController({
     e.stopPropagation()
     const ind = indicatorRef.current
     if (ind) {
-      const tx = e.point.x
-      const tz = e.point.z
-      const insideBounds =
-        tx >= bounds.minX && tx <= bounds.maxX &&
-        tz >= bounds.minZ && tz <= bounds.maxZ
-      ind.position.set(tx, 0.018, tz)
-      ind.visible = insideBounds && !isBlocked(tx, tz, obstacles) && !pathBlocked(targetPos.current, tx, tz, obstacles)
+      if (freeWalkEnabled) {
+        const tx = e.point.x
+        const tz = e.point.z
+        const insideBounds =
+          tx >= bounds.minX && tx <= bounds.maxX &&
+          tz >= bounds.minZ && tz <= bounds.maxZ
+        ind.position.set(tx, 0.018, tz)
+        ind.visible = insideBounds && !isBlocked(tx, tz, obstacles) && !pathBlocked(targetPos.current, tx, tz, obstacles)
+      } else {
+        ind.visible = false
+      }
     }
     if (portalPlaceMode) document.body.style.cursor = 'cell'
     invalidate()

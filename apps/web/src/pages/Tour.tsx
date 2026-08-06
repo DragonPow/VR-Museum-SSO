@@ -16,6 +16,7 @@ import { MobileControls } from '../ui/MobileControls.js'
 import { ScreenControls } from '../ui/ScreenControls.js'
 import { Gallery2D } from './Gallery2D.js'
 import { brand, glassPanel } from '../ui/theme.js'
+import { GuideModal } from '../ui/GuideModal.js'
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 
@@ -37,6 +38,8 @@ export function Tour({ content, onBack }: Props) {
     setViewpoint,
     setIndex,
     setActiveViewpoint,
+    navigationMode,
+    setNavigationMode,
   } = useMuseumStore()
 
   const { gyroEnabled, toggleGyro } = useGyroToggle()
@@ -48,6 +51,7 @@ export function Tour({ content, onBack }: Props) {
   // States for Gyro tooltip and pulse hint on mobile
   const [showTooltip, setShowTooltip] = useState(isMobile)
   const [showPulse, setShowPulse] = useState(isMobile)
+  const [showGuide, setShowGuide] = useState(true)
 
   // Auto-hide hints after 6 seconds
   useEffect(() => {
@@ -168,13 +172,37 @@ export function Tour({ content, onBack }: Props) {
           onNavigate={navigateToRoom}
           assetBaseUrl={ASSET_BASE_URL}
           assetVersion={import.meta.env.VITE_ASSET_VERSION ?? ''}
+          navigationMode={navigationMode}
+          onViewpointSelect={setViewpoint}
         />
       </SceneCanvas>
 
-      <button style={homeBtn} onClick={onBack} title="Về trang chủ" aria-label="Về trang chủ">
-        <HomeIcon />
-        <span>Trang chủ</span>
-      </button>
+      {/* Top-left action buttons */}
+      <div style={topLeftContainer}>
+        <button style={homeBtn} onClick={onBack} title="Về trang chủ" aria-label="Về trang chủ">
+          <HomeIcon />
+          <span>Trang chủ</span>
+        </button>
+        <button style={homeBtn} onClick={() => setShowGuide(true)} title="Hướng dẫn sử dụng" aria-label="Hướng dẫn sử dụng">
+          <HelpIcon />
+          <span>Hướng dẫn</span>
+        </button>
+        <button
+          style={{
+            ...homeBtn,
+            background: navigationMode === 'point-to-point' ? 'rgba(200, 168, 90, 0.18)' : glassPanel.background,
+            borderColor: navigationMode === 'point-to-point' ? '#c8a85a' : glassPanel.borderColor,
+            color: navigationMode === 'point-to-point' ? '#a68030' : brand.blue,
+            boxShadow: navigationMode === 'point-to-point' ? '0 4px 12px rgba(200,168,90,0.25)' : '0 4px 12px rgba(8,47,109,0.15)',
+          }}
+          onClick={() => setNavigationMode(navigationMode === 'point-to-point' ? 'free' : 'point-to-point')}
+          title={navigationMode === 'point-to-point' ? "Chuyển sang chế độ di chuyển tự do" : "Chuyển sang chế độ di chuyển theo điểm dừng (tránh kẹt tường)"}
+          aria-label="Chế độ di chuyển"
+        >
+          {navigationMode === 'point-to-point' ? <PointIcon /> : <FreeIcon />}
+          <span>{navigationMode === 'point-to-point' ? 'Di chuyển: Theo điểm đặt' : 'Di chuyển: Tự do'}</span>
+        </button>
+      </div>
 
       {/* Viewpoint nav (bottom center) */}
       <ViewpointNav
@@ -187,14 +215,14 @@ export function Tour({ content, onBack }: Props) {
       />
 
       {/* Mobile: Joystick movement */}
-      {isMobile && (
+      {isMobile && navigationMode === 'free' && (
         <MobileControls
           moveRef={mobileMoveRef}
         />
       )}
 
       {/* Desktop: Screen buttons for Move/Look */}
-      {!isMobile && (
+      {!isMobile && navigationMode === 'free' && (
         <ScreenControls
           moveRef={mobileMoveRef}
           lookRef={screenLookRef}
@@ -215,7 +243,7 @@ export function Tour({ content, onBack }: Props) {
           >
             <PhoneGyroIcon />
           </button>
-          
+
           {showTooltip && (
             <div style={tooltip}>
               Chạm để xoay nhìn quanh bằng cảm biến điện thoại
@@ -227,7 +255,7 @@ export function Tour({ content, onBack }: Props) {
       )}
 
       {/* Drag hint — fades out after 4s */}
-      <DragHint isMobile={isMobile} />
+      <DragHint isMobile={isMobile} navigationMode={navigationMode} />
 
       {/* Info modal */}
       {selectedDocuments.length > 0 && (
@@ -238,6 +266,15 @@ export function Tour({ content, onBack }: Props) {
           hasNext={currentSlotIndex < activeSlots.length - 1}
           onPrev={handlePrevSlot}
           onNext={handleNextSlot}
+        />
+      )}
+
+      {/* Guide modal */}
+      {showGuide && (
+        <GuideModal
+          content={content}
+          currentRoomId={currentRoomId}
+          onClose={() => setShowGuide(false)}
         />
       )}
     </div>
@@ -254,6 +291,16 @@ function HomeIcon() {
   )
 }
 
+function HelpIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" strokeWidth="3" />
+    </svg>
+  )
+}
+
 function RoomLoadingScreen() {
   return (
     <div style={{ ...centerStyle, flexDirection: 'column', gap: 12 }}>
@@ -263,13 +310,22 @@ function RoomLoadingScreen() {
   )
 }
 
-function DragHint({ isMobile }: { isMobile: boolean }) {
+function DragHint({ isMobile, navigationMode }: { isMobile: boolean; navigationMode: 'point-to-point' | 'free' }) {
   const [visible, setVisible] = useState(true)
   useEffect(() => {
     const t = setTimeout(() => setVisible(false), 5000)
     return () => clearTimeout(t)
   }, [])
   if (!visible) return null
+
+  const text = navigationMode === 'point-to-point'
+    ? (isMobile
+      ? 'Kéo để nhìn quanh · Chạm các vòng tròn vàng trên sàn để di chuyển'
+      : 'Kéo để nhìn quanh · Click điểm sáng vàng dưới sàn để di chuyển · Click khung ảnh để xem chi tiết')
+    : (isMobile
+      ? 'Kéo để nhìn quanh · D-pad bên trái để di chuyển · Bật gyro trong nút điều khiển'
+      : 'Kéo để nhìn quanh · Click sàn để di chuyển · WASD hoặc phím di chuyển để đi bộ · Click khung ảnh để xem chi tiết')
+
   return (
     <div
       style={{
@@ -291,10 +347,31 @@ function DragHint({ isMobile }: { isMobile: boolean }) {
         maxWidth: '320px',
       }}
     >
-      {isMobile
-        ? 'Kéo để nhìn quanh · D-pad bên trái để di chuyển · Bật gyro trong nút điều khiển'
-        : 'Kéo để nhìn quanh · Click sàn để di chuyển · WASD hoặc phím điều hướng để đi bộ · Click khung ảnh để xem chi tiết'}
+      {text}
     </div>
+  )
+}
+
+function PointIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="3" fill="currentColor" />
+    </svg>
+  )
+}
+
+function FreeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M15 3h6v6" />
+      <path d="M9 21H3v-6" />
+      <path d="M21 3l-7 7" />
+      <path d="M3 21l7-7" />
+      <path d="M18 14l3 3-3 3" />
+      <path d="M6 10l-3-3 3-3" />
+      <path d="M3 7h8m10 10h-8" />
+    </svg>
   )
 }
 
@@ -307,11 +384,16 @@ const centerStyle: React.CSSProperties = {
   background: `linear-gradient(135deg, ${brand.sky}, #d8e8f8)`,
 }
 
-const homeBtn: React.CSSProperties = {
+const topLeftContainer: React.CSSProperties = {
   position: 'absolute',
   top: 12,
   left: 12,
   zIndex: 10,
+  display: 'flex',
+  gap: 8,
+}
+
+const homeBtn: React.CSSProperties = {
   ...glassPanel,
   color: brand.blue,
   borderRadius: 8,
@@ -324,6 +406,7 @@ const homeBtn: React.CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 8,
+  boxShadow: '0 4px 12px rgba(8,47,109,0.15)',
 }
 
 const spinnerStyle: React.CSSProperties = {

@@ -9,6 +9,7 @@ import { isBackdropSlotId } from './slotIds.js'
 import type { ExtractedSlot } from './RoomModel.js'
 import { SlotFrame } from './SlotFrame.js'
 import { FloorPortal } from './FloorPortal.js'
+import { ViewpointHotspot } from './ViewpointHotspot.js'
 import { NavController } from './NavController.js'
 import type { RoomBounds } from './NavController.js'
 import type { CameraState } from './NavController.js'
@@ -37,6 +38,8 @@ interface Props {
   /** Optional immutable deploy/content version used to bust browser/CDN asset cache. */
   assetVersion?: string
   screenLookRef?: { current: { dyaw: number; dpitch: number } }
+  navigationMode?: 'point-to-point' | 'free'
+  onViewpointSelect?: (vpId: string) => void
 }
 
 export function RoomScene({
@@ -56,6 +59,8 @@ export function RoomScene({
   assetBaseUrl,
   assetVersion,
   screenLookRef,
+  navigationMode = 'free',
+  onViewpointSelect,
 }: Props) {
   const surfaces = getRoomSurfaces(room.template)
   const wallUrl = resolveAssetUrl(
@@ -244,6 +249,16 @@ export function RoomScene({
         <FloorPortal key={portal.id} portal={portal} onNavigate={onNavigate ?? (() => {})} />
       ))}
 
+      {onViewpointSelect && room.viewpoints
+        ?.filter((vp) => vp.id !== activeViewpointId)
+        .map((vp) => (
+          <ViewpointHotspot
+            key={vp.id}
+            viewpoint={vp}
+            onClick={() => onViewpointSelect(vp.id)}
+          />
+        ))}
+
       <NavController
         viewpoints={room.viewpoints}
         activeViewpointId={activeViewpointId}
@@ -251,6 +266,7 @@ export function RoomScene({
         bounds={bounds}
         obstacles={allObstacles}
         portalPlaceMode={portalPlaceMode}
+        freeWalkEnabled={navigationMode === 'free'}
         {...(cameraStateRef != null ? { cameraStateRef } : {})}
         {...(onPortalPlace != null ? { onPortalPlace } : {})}
         {...(mobileMoveRef != null ? { mobileMoveRef } : {})}

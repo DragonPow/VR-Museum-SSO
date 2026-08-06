@@ -7,6 +7,7 @@ interface MuseumStore {
   activeViewpointId: string | null
   selectedDocuments: DocumentItem[]
   selectedSlotId: string | null
+  navigationMode: 'point-to-point' | 'free'
 
   setIndex: (index: ContentIndex) => void
   navigateToRoom: (roomId: string) => void
@@ -14,6 +15,7 @@ interface MuseumStore {
   closeModal: () => void
   setViewpoint: (vpId: string) => void
   setActiveViewpoint: (vpId: string) => void
+  setNavigationMode: (mode: 'point-to-point' | 'free') => void
 }
 
 export const useMuseumStore = create<MuseumStore>((set) => ({
@@ -22,6 +24,7 @@ export const useMuseumStore = create<MuseumStore>((set) => ({
   activeViewpointId: null,
   selectedDocuments: [],
   selectedSlotId: null,
+  navigationMode: 'free',
 
   setIndex: (index) => {
     set({ index, currentRoomId: index.defaultRoomId, activeViewpointId: null })
@@ -35,6 +38,7 @@ export const useMuseumStore = create<MuseumStore>((set) => ({
   closeModal: () => set({ selectedDocuments: [], selectedSlotId: null }),
   setViewpoint: (vpId) => set({ activeViewpointId: vpId }),
   setActiveViewpoint: (vpId) => set({ activeViewpointId: vpId }),
+  setNavigationMode: (navigationMode) => set({ navigationMode }),
 }))
 
 export function useCurrentRoomStub(): RoomStub | undefined {

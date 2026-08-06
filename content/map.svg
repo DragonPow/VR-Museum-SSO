@@ -1,0 +1,105 @@
+<svg viewBox="0 0 420 240" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; display: block;">
+  <!-- Outer Wall Boundary -->
+  <rect x="10" y="10" width="400" height="220" rx="4" fill="none" stroke="#4a5568" stroke-width="3" />
+
+  <!-- Tour Route Dashed Path (Red/Orange) - Clean loop around the center island -->
+  <path 
+    d="M 210,208 L 85,208 L 85,42 L 335,42 L 335,208 L 330,208" 
+    fill="none" 
+    stroke="rgba(239, 68, 68, 0.42)" 
+    stroke-width="1.5" 
+    stroke-dasharray="4 4" 
+    stroke-linejoin="round" 
+  />
+
+  <!-- Path directional arrows -->
+  <polygon points="140,205 134,208 140,211" fill="#ef4444" opacity="0.6" />
+  <polygon points="82,128 85,122 88,128" fill="#ef4444" opacity="0.6" />
+  <polygon points="210,39 216,42 210,45" fill="#ef4444" opacity="0.6" />
+  <polygon points="332,122 335,128 338,122" fill="#ef4444" opacity="0.6" />
+
+  <!-- Left wall sticking-out dividers (Gray) - 4 identical, thin horizontal lines -->
+  <rect x="10" y="60" width="45" height="6" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" rx="1" />
+  <rect x="10" y="110" width="45" height="6" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" rx="1" />
+  <rect x="10" y="160" width="45" height="6" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" rx="1" />
+  <rect x="10" y="210" width="45" height="6" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" rx="1" />
+
+  <!-- Right wall sticking-out divider (Gray) -->
+  <rect x="365" y="110" width="45" height="6" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" rx="1" />
+
+  <!-- Center island (Gray) -->
+  <rect x="120" y="70" width="180" height="100" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5" rx="3" />
+  <text x="210" y="123" font-size="8.5" fill="#64748b" font-weight="800" text-anchor="middle" letter-spacing="0.2px" style="pointer-events: none;">
+    TRUNG TÂM PHÒNG
+  </text>
+
+  <!-- Location Pin "Đang ở đây" -->
+  <g transform="translate(210, 206)" style="pointer-events: none;">
+    <text x="0" y="-14" font-size="8.5" font-weight="900" fill="#ef4444" text-anchor="middle" letter-spacing="0.3px">
+      ĐANG Ở ĐÂY
+    </text>
+    <path 
+      d="M0,-10 C-3.8,-10 -7,-6.8 -7,-3 C-7,1.5 0,7 0,7 C0,7 7,1.5 7,-3 C7,-6.8 3.8,-10 0,-10 Z M0,-5 C-0.9,-5 -1.6,-4.3 -1.6,-3.4 C-1.6,-2.5 -0.9,-1.8 0,-1.8 C0.9,-1.8 1.6,-2.5 1.6,-3.4 C1.6,-4.3 0.9,-5 0,-5 Z" 
+      fill="#ef4444" 
+    />
+  </g>
+
+  <!-- ORANGE HANGING AREAS (Interactive) -->
+  <rect data-zone-id="11" x="50" y="222" width="80" height="5" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="10" x="290" y="222" width="80" height="5" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="4" x="13" y="18" width="5" height="34" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="3" x="13" y="74" width="5" height="30" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="2" x="13" y="124" width="5" height="30" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="1" x="13" y="174" width="5" height="30" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="5" x="145" y="13" width="130" height="5" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="6" x="145" y="72" width="130" height="4" fill="#f57c00" rx="1" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="9" x="145" y="164" width="130" height="4" fill="#f57c00" rx="1" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="7" x="402" y="20" width="5" height="80" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+  <rect data-zone-id="8" x="402" y="126" width="5" height="80" fill="#f57c00" rx="1.5" style="transition: all 0.2s; cursor: pointer;" />
+
+  <!-- LABELED NUMBER BADGES -->
+  <g data-zone-id="4" transform="translate(35, 35)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">6</text>
+  </g>
+  <g data-zone-id="3" transform="translate(35, 89)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">5</text>
+  </g>
+  <g data-zone-id="2" transform="translate(35, 139)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">4</text>
+  </g>
+  <g data-zone-id="1" transform="translate(35, 189)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">3</text>
+  </g>
+  <g data-zone-id="5" transform="translate(210, 32)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">7</text>
+  </g>
+  <g data-zone-id="6" transform="translate(210, 92)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">8</text>
+  </g>
+  <g data-zone-id="7" transform="translate(382, 60)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">9</text>
+  </g>
+  <g data-zone-id="8" transform="translate(382, 166)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">10</text>
+  </g>
+  <g data-zone-id="9" transform="translate(210, 146)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">1</text>
+  </g>
+  <g data-zone-id="10" transform="translate(330, 208)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">11</text>
+  </g>
+  <g data-zone-id="11" transform="translate(90, 208)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="7" style="transition: all 0.2s;" />
+    <text x="0" y="2.5" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle">2</text>
+  </g>
+</svg>

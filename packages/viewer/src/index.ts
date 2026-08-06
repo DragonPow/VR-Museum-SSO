@@ -15,3 +15,5 @@ export { getPerfConfig, shouldUseFallback } from './PerfGuard.js'
 export { loadTexture, preloadUrls, disposeRoom } from './TextureManager.js'
 export { getRoomDimensions, getRoomSurfaces } from './templates.js'
 export { getLightConfig } from './lighting.js'
+export { ViewpointHotspot } from './ViewpointHotspot.js'
+
