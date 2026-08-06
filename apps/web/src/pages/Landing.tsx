@@ -164,6 +164,33 @@ export function Landing({ content, onEnter }: Props) {
           flex-shrink: 0;
         }
 
+        .landing-header {
+          position: absolute;
+          top: 40px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 10;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .landing-logo {
+          height: 72px;
+          width: auto;
+          opacity: 1;
+          filter: drop-shadow(0 2px 8px rgba(16, 80, 160, 0.06));
+        }
+
+        @media (max-height: 720px) {
+          .landing-header {
+            top: 20px;
+          }
+          .landing-logo {
+            height: 48px;
+          }
+        }
+
         /* --- MOBILE VIEWS (< 768px): More compact and neat --- */
         @media (max-width: 767px) {
           .landing-title {
@@ -225,6 +252,14 @@ export function Landing({ content, onEnter }: Props) {
           .sparkle-icon {
             width: 11px;
             height: 11px;
+          }
+
+          .landing-header {
+            top: 24px;
+          }
+
+          .landing-logo {
+            height: 48px;
           }
         }
 
@@ -299,9 +334,21 @@ export function Landing({ content, onEnter }: Props) {
             width: 18px;
             height: 18px;
           }
+
+          .landing-header {
+            top: 48px;
+          }
+
+          .landing-logo {
+            height: 90px;
+          }
         }
       `}</style>
       <div style={styles.bg} />
+
+      <div className="landing-header">
+        <img src="/logo.webp" alt="NSMO A2 Logo" className="landing-logo" />
+      </div>
 
       <main style={styles.content}>
         <h1 className="landing-title">
@@ -323,7 +370,7 @@ export function Landing({ content, onEnter }: Props) {
 
         <div className="golden-badge landing-welcome-badge">
           <SparkleIcon className="sparkle-icon" />
-          <span>Nhiệt liệt chào mừng kỷ niệm 50 năm thành lập Trung tâm Điều độ hệ thống điện miền Nam</span>
+          <span>Nhiệt liệt chào mừng kỷ niệm 50 năm thành lập Trung tâm Điều độ Hệ thống điện miền Nam</span>
           <SparkleIcon className="sparkle-icon" />
         </div>
       </main>
