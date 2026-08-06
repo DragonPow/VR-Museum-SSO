@@ -249,7 +249,7 @@ export function RoomScene({
         <FloorPortal key={portal.id} portal={portal} onNavigate={onNavigate ?? (() => {})} />
       ))}
 
-      {onViewpointSelect && room.viewpoints
+      {navigationMode === 'point-to-point' && onViewpointSelect && room.viewpoints
         ?.filter((vp) => vp.id !== activeViewpointId)
         .map((vp) => (
           <ViewpointHotspot

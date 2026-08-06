@@ -21,9 +21,12 @@ export function RoomMap({ isMobile }: Props) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const base = import.meta.env.BASE_URL
+    const joinBase = (path: string) => `${base}${path.replace(/^\/+/, '')}`
+
     Promise.all([
-      fetch('/content/map.json').then((res) => res.json()),
-      fetch('/content/map.svg').then((res) => res.text())
+      fetch(joinBase('content/map.json')).then((res) => res.json()),
+      fetch(joinBase('content/map.svg')).then((res) => res.text())
     ])
       .then(([jsonData, svgText]) => {
         if (jsonData && Array.isArray(jsonData.zones)) {
