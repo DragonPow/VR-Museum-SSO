@@ -238,7 +238,7 @@ export function NavController({
 
   // Camera FOV Zoom
   const targetFov = useRef(75)
-  const zoomMinFov = 35
+  const zoomMinFov = 23
   const zoomMaxFov = 85
 
   // ── Mount snap: set camera to entry viewpoint BEFORE first R3F frame ────────
