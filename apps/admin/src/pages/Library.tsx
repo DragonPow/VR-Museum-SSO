@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
-import type { DocumentImage, DocumentItem, ImageRescaleSettings } from '@vm/shared'
+import type { DocumentImage, DocumentItem, ImageRescaleSettings, ExternalLink } from '@vm/shared'
+import { DocumentItemSchema } from '@vm/shared'
 import { useDraftStore } from '../store.js'
 import { uploadFile, checkApi, deleteDocumentStorage, deleteImageStorage } from '../api.js'
 import { resizeImage, blobToObjectUrl } from '../util/imageResize.js'
@@ -335,6 +336,7 @@ function UploadModal({ periods, onClose, onDone }: {
     title: '', year: '', periodId: periods[0]?.id ?? '',
     priority: 0, summary: '', body: '', tags: '', source: '',
     embedUrl: '', externalUrl: '', externalLabel: '',
+    externalLinks: [] as ExternalLink[],
   })
 
   const handleFiles = (files: FileList | File[]) => {
@@ -419,7 +421,79 @@ function UploadModal({ periods, onClose, onDone }: {
     if (!form.title.trim() || !form.periodId || images.length === 0) return
     if (form.contentType === 'youtube' && !form.embedUrl.trim()) return
     if (form.contentType === 'iframe' && !form.embedUrl.trim()) return
-    if (form.contentType === 'external' && !form.externalUrl.trim()) return
+    if (form.contentType === 'external' && !form.externalUrl.trim() && !(form.externalLinks && form.externalLinks.some(l => l.url.trim()))) return
+
+    const ensureProtocol = (u: string) => {
+      const t = u.trim()
+      if (!t) return t
+      if (t.startsWith('http://') || t.startsWith('https://') || t.startsWith('/')) return t
+      return `https://${t}`
+    }
+
+    const finalLinks = (form.externalLinks || [])
+      .map(link => {
+        const trimmedLabel = link.label?.trim()
+        return {
+          url: ensureProtocol(link.url),
+          ...(trimmedLabel ? { label: trimmedLabel } : {})
+        } as ExternalLink
+      })
+      .filter(link => link.url !== '')
+
+    if (finalLinks.length === 0 && form.contentType === 'external' && form.externalUrl.trim()) {
+      finalLinks.push({
+        url: ensureProtocol(form.externalUrl),
+        label: form.externalLabel.trim() || 'Mở link đính kèm'
+      })
+    }
+
+    const firstLink = finalLinks[0]
+    const hasLinks = finalLinks.length > 0
+
+    // Validate locally first using Zod before doing any heavy image processing/upload
+    const tempItem = {
+      id: 'temp-id',
+      title: form.title.trim(),
+      ...(form.year.trim() ? { year: form.year.trim() } : {}),
+      periodId: form.periodId,
+      priority: form.priority || 0,
+      summary: form.summary.trim(),
+      body: form.body.trim(),
+      tags: splitTags(form.tags),
+      source: form.source.trim(),
+      documentKey: 'temp-key',
+      thumbnailImageId: 'photo1',
+      viewerImageId: 'photo1',
+      detailImageIds: ['photo1'],
+      images: [{ id: 'photo1', caption: 'temp' }],
+      mediaType: form.contentType,
+      ...(form.contentType === 'youtube' ? { embedUrl: normalizeYouTubeUrl(form.embedUrl) } : {}),
+      ...(form.contentType === 'iframe' ? { embedUrl: normalizeIframeUrl(form.embedUrl) } : {}),
+      ...((form.contentType === 'external' || form.contentType === 'image') && firstLink ? {
+        externalUrl: firstLink.url,
+        ...(firstLink.label ? { externalLabel: firstLink.label } : {}),
+      } : {}),
+      ...(hasLinks ? { externalLinks: finalLinks } : {}),
+    }
+
+    const validationResult = DocumentItemSchema.safeParse(tempItem)
+    if (!validationResult.success) {
+      const errorText = validationResult.error.issues.map(issue => {
+        let fieldName = issue.path.join('.')
+        fieldName = fieldName
+          .replace('externalUrl', 'Đường dẫn ngoài')
+          .replace('externalLabel', 'Nhãn nút mở link')
+          .replace('embedUrl', 'Đường dẫn iframe/YouTube')
+          .replace('title', 'Tiêu đề')
+          .replace('year', 'Năm')
+          .replace(/externalLinks\.(\d+)\.url/, (_, idx) => `Đường dẫn liên kết #${parseInt(idx) + 1}`)
+          .replace(/externalLinks\.(\d+)\.label/, (_, idx) => `Nhãn nút liên kết #${parseInt(idx) + 1}`)
+        return `• ${fieldName}: ${issue.message}`
+      }).join('\n')
+      setErrorMsg(`Dữ liệu chưa hợp lệ:\n${errorText}`)
+      setStep('error')
+      return
+    }
 
     setErrorMsg('')
     try {
@@ -434,17 +508,48 @@ function UploadModal({ periods, onClose, onDone }: {
         setUploadProgress(`Đang xử lý ảnh ${i + 1}/${images.length}...`)
         setStep('uploading')
 
-        const rawExt = await uploadImageVariants(itemId, img.id, img.file, content?.settings?.imageRescale)
-        uploadedImages.push({
-          id: img.id,
-          rawExt,
-          caption: img.caption.trim(),
-        })
+        try {
+          const rawExt = await uploadImageVariants(itemId, img.id, img.file, content?.settings?.imageRescale)
+          uploadedImages.push({
+            id: img.id,
+            rawExt,
+            caption: img.caption.trim(),
+          })
+        } catch (err) {
+          throw new Error(`Lỗi tải ảnh #${i + 1} (${img.caption}): ${err instanceof Error ? err.message : String(err)}`)
+        }
 
         if (i < images.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, 1200))
         }
       }
+
+      const ensureProtocol = (u: string) => {
+        const t = u.trim()
+        if (!t) return t
+        if (t.startsWith('http://') || t.startsWith('https://') || t.startsWith('/')) return t
+        return `https://${t}`
+      }
+
+      const finalLinks = (form.externalLinks || [])
+        .map(link => {
+          const trimmedLabel = link.label?.trim()
+          return {
+            url: ensureProtocol(link.url),
+            ...(trimmedLabel ? { label: trimmedLabel } : {})
+          } as ExternalLink
+        })
+        .filter(link => link.url !== '')
+
+      if (finalLinks.length === 0 && form.contentType === 'external' && form.externalUrl.trim()) {
+        finalLinks.push({
+          url: ensureProtocol(form.externalUrl),
+          label: form.externalLabel.trim() || 'Mở link đính kèm'
+        })
+      }
+
+      const firstLink = finalLinks[0]
+      const hasLinks = finalLinks.length > 0
 
       const item: DocumentItem = {
         id: itemId,
@@ -464,10 +569,11 @@ function UploadModal({ periods, onClose, onDone }: {
         mediaType: form.contentType,
         ...(form.contentType === 'youtube' ? { embedUrl: normalizeYouTubeUrl(form.embedUrl) } : {}),
         ...(form.contentType === 'iframe' ? { embedUrl: normalizeIframeUrl(form.embedUrl) } : {}),
-        ...(form.contentType === 'external' ? {
-          externalUrl: form.externalUrl.trim(),
-          externalLabel: form.externalLabel.trim() || 'Mở link đính kèm',
+        ...((form.contentType === 'external' || form.contentType === 'image') && firstLink ? {
+          externalUrl: firstLink.url,
+          ...(firstLink.label ? { externalLabel: firstLink.label } : {}),
         } : {}),
+        ...(hasLinks ? { externalLinks: finalLinks } : {}),
       }
 
       setStep('done')
@@ -481,7 +587,7 @@ function UploadModal({ periods, onClose, onDone }: {
   const busy = step === 'resizing' || step === 'uploading'
   const canSubmit = Boolean(
     form.title.trim() && form.periodId && images.length > 0 && !busy &&
-    (form.contentType === 'image' ? true : form.contentType === 'youtube' || form.contentType === 'iframe' ? form.embedUrl.trim() : form.externalUrl.trim())
+    (form.contentType === 'image' ? true : form.contentType === 'youtube' || form.contentType === 'iframe' ? form.embedUrl.trim() : (form.externalUrl.trim() || (form.externalLinks && form.externalLinks.some(l => l.url.trim()))))
   )
 
   return (
@@ -557,6 +663,72 @@ function UploadModal({ periods, onClose, onDone }: {
                   <input style={styles.input} placeholder="Mở trang" value={form.externalLabel} onChange={(e) => setForm((f) => ({ ...f, externalLabel: e.target.value }))} />
                 </FormField>
               </>
+            )}
+            {(form.contentType === 'external' || form.contentType === 'image') && (
+              <div style={{ gridColumn: '1 / -1', border: '1px solid #3a2e1e', borderRadius: '8px', padding: '16px', background: 'rgba(255,255,255,0.02)', marginTop: '8px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#9a9080', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Danh sách liên kết đính kèm {form.contentType === 'image' ? '' : '(Không bắt buộc)'}</span>
+                  <button
+                    type="button"
+                    style={{ background: '#3a2e1e', border: '1px solid #4a3e2e', color: '#f0e8d8', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}
+                    onClick={() => {
+                      const currentLinks = form.externalLinks || [];
+                      setForm((f) => ({
+                        ...f,
+                        externalLinks: [...currentLinks, { url: '', label: '' }],
+                      }));
+                    }}
+                  >
+                    + Thêm link
+                  </button>
+                </div>
+                {(!form.externalLinks || form.externalLinks.length === 0) ? (
+                  <div style={{ fontSize: '12px', color: '#6a5a40', fontStyle: 'italic' }}>Chưa có liên kết đính kèm nào. Bấm "+ Thêm link" để đính kèm đường dẫn.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {form.externalLinks.map((link, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          style={{ ...styles.input, flex: 2 }}
+                          placeholder="Nhãn nút (VD: Xem chi tiết)"
+                          value={link.label || ''}
+                          onChange={(e) => {
+                            const newLinks = [...form.externalLinks];
+                            const curr = newLinks[idx];
+                            if (curr) {
+                              newLinks[idx] = { ...curr, label: e.target.value };
+                              setForm((f) => ({ ...f, externalLinks: newLinks }));
+                            }
+                          }}
+                        />
+                        <input
+                          style={{ ...styles.input, flex: 3 }}
+                          placeholder="https://..."
+                          value={link.url}
+                          onChange={(e) => {
+                            const newLinks = [...form.externalLinks];
+                            const curr = newLinks[idx];
+                            if (curr) {
+                              newLinks[idx] = { ...curr, url: e.target.value };
+                              setForm((f) => ({ ...f, externalLinks: newLinks }));
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          style={{ background: 'rgba(200,90,90,0.15)', border: '1px solid #c85a5a', color: '#ff8888', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          onClick={() => {
+                            const newLinks = form.externalLinks.filter((_, i) => i !== idx);
+                            setForm((f) => ({ ...f, externalLinks: newLinks }));
+                          }}
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
             <FormField label="Tiêu đề *" required style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} placeholder="VD: Lễ kỷ niệm thành lập" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
@@ -693,6 +865,7 @@ function EditModal({ item, periods, onClose, onSave }: {
     embedUrl: item.embedUrl ?? '',
     externalUrl: item.externalUrl ?? '',
     externalLabel: item.externalLabel ?? '',
+    externalLinks: item.externalLinks ?? [] as ExternalLink[],
     thumbnailImageId: item.thumbnailImageId,
     viewerImageId: item.viewerImageId,
   })
@@ -726,8 +899,13 @@ function EditModal({ item, periods, onClose, onSave }: {
       for (let i = 0; i < picked.length; i++) {
         const file = picked[i]!
         const key = `photo-${nanoid(8)}`
-        await uploadImageVariants(item.documentKey, key, file, content?.settings?.imageRescale)
-        added.push({ id: key, caption: file.name.replace(/\.[^.]+$/, '') })
+        setMediaBusy(`Đang tải ảnh ${i + 1}/${picked.length}...`)
+        try {
+          await uploadImageVariants(item.documentKey, key, file, content?.settings?.imageRescale)
+          added.push({ id: key, caption: file.name.replace(/\.[^.]+$/, '') })
+        } catch (err) {
+          throw new Error(`Lỗi tải ảnh #${i + 1} (${file.name}): ${err instanceof Error ? err.message : String(err)}`)
+        }
 
         if (i < picked.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, 1200))
@@ -763,9 +941,37 @@ function EditModal({ item, periods, onClose, onSave }: {
   }
 
   const handleSave = () => {
+    setMediaError('')
     for (const id of removedImageIds) {
       void deleteImageStorage(item.documentKey, id)
     }
+
+    const ensureProtocol = (u: string) => {
+      const t = u.trim()
+      if (!t) return t
+      if (t.startsWith('http://') || t.startsWith('https://') || t.startsWith('/')) return t
+      return `https://${t}`
+    }
+
+    const finalLinks = (form.externalLinks || [])
+      .map(link => {
+        const trimmedLabel = link.label?.trim()
+        return {
+          url: ensureProtocol(link.url),
+          ...(trimmedLabel ? { label: trimmedLabel } : {})
+        } as ExternalLink
+      })
+      .filter(link => link.url !== '')
+
+    if (finalLinks.length === 0 && form.contentType === 'external' && form.externalUrl.trim()) {
+      finalLinks.push({
+        url: ensureProtocol(form.externalUrl),
+        label: form.externalLabel.trim() || 'Mở link đính kèm'
+      })
+    }
+
+    const firstLink = finalLinks[0]
+    const hasLinks = finalLinks.length > 0
 
     const patch: Partial<DocumentItem> = {
       title: form.title.trim(),
@@ -795,21 +1001,69 @@ function EditModal({ item, periods, onClose, onSave }: {
       patch.embedUrl = normalizeYouTubeUrl(form.embedUrl)
       clearField('externalUrl')
       clearField('externalLabel')
+      clearField('externalLinks')
     } else if (form.contentType === 'iframe') {
       patch.mediaType = 'iframe'
       patch.embedUrl = normalizeIframeUrl(form.embedUrl)
       clearField('externalUrl')
       clearField('externalLabel')
-    } else if (form.contentType === 'external') {
-      patch.mediaType = 'external'
-      clearField('embedUrl')
-      patch.externalUrl = form.externalUrl.trim()
-      patch.externalLabel = form.externalLabel.trim() || 'Mở trang'
+      clearField('externalLinks')
     } else {
-      patch.mediaType = 'image'
+      if (form.contentType === 'external') {
+        patch.mediaType = 'external'
+      } else {
+        patch.mediaType = 'image'
+      }
       clearField('embedUrl')
-      clearField('externalUrl')
-      clearField('externalLabel')
+
+      if (firstLink) {
+        patch.externalUrl = firstLink.url
+        if (firstLink.label) {
+          patch.externalLabel = firstLink.label
+        } else {
+          clearField('externalLabel')
+        }
+      } else {
+        clearField('externalUrl')
+        clearField('externalLabel')
+      }
+
+      if (hasLinks) {
+        patch.externalLinks = finalLinks
+      } else {
+        clearField('externalLinks')
+      }
+    }
+
+    // Validate the complete merged item locally before triggering onSave
+    const updatedItem = {
+      ...item,
+      ...patch,
+    }
+
+    // Strip undefined keys from updatedItem to match real shape expected by validator
+    Object.keys(updatedItem).forEach(key => {
+      if ((updatedItem as Record<string, unknown>)[key] === undefined) {
+        delete (updatedItem as Record<string, unknown>)[key]
+      }
+    })
+
+    const validationResult = DocumentItemSchema.safeParse(updatedItem)
+    if (!validationResult.success) {
+      const errorText = validationResult.error.issues.map(issue => {
+        let fieldName = issue.path.join('.')
+        fieldName = fieldName
+          .replace('externalUrl', 'Đường dẫn ngoài')
+          .replace('externalLabel', 'Nhãn nút mở link')
+          .replace('embedUrl', 'Đường dẫn iframe/YouTube')
+          .replace('title', 'Tiêu đề')
+          .replace('year', 'Năm')
+          .replace(/externalLinks\.(\d+)\.url/, (_, idx) => `Đường dẫn liên kết #${parseInt(idx) + 1}`)
+          .replace(/externalLinks\.(\d+)\.label/, (_, idx) => `Nhãn nút liên kết #${parseInt(idx) + 1}`)
+        return `• ${fieldName}: ${issue.message}`
+      }).join('\n')
+      setMediaError(`Dữ liệu chưa hợp lệ:\n${errorText}`)
+      return
     }
 
     onSave(patch)
@@ -856,6 +1110,72 @@ function EditModal({ item, periods, onClose, onSave }: {
                   <input style={styles.input} placeholder="Mở trang" value={form.externalLabel} onChange={(e) => setForm((f) => ({ ...f, externalLabel: e.target.value }))} />
                 </FormField>
               </>
+            )}
+            {(form.contentType === 'external' || form.contentType === 'image') && (
+              <div style={{ gridColumn: '1 / -1', border: '1px solid #3a2e1e', borderRadius: '8px', padding: '16px', background: 'rgba(255,255,255,0.02)', marginTop: '8px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#9a9080', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Danh sách liên kết đính kèm {form.contentType === 'image' ? '' : '(Không bắt buộc)'}</span>
+                  <button
+                    type="button"
+                    style={{ background: '#3a2e1e', border: '1px solid #4a3e2e', color: '#f0e8d8', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}
+                    onClick={() => {
+                      const currentLinks = form.externalLinks || [];
+                      setForm((f) => ({
+                        ...f,
+                        externalLinks: [...currentLinks, { url: '', label: '' }],
+                      }));
+                    }}
+                  >
+                    + Thêm link
+                  </button>
+                </div>
+                {(!form.externalLinks || form.externalLinks.length === 0) ? (
+                  <div style={{ fontSize: '12px', color: '#6a5a40', fontStyle: 'italic' }}>Chưa có liên kết đính kèm nào. Bấm "+ Thêm link" để đính kèm đường dẫn.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {form.externalLinks.map((link, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          style={{ ...styles.input, flex: 2 }}
+                          placeholder="Nhãn nút (VD: Xem chi tiết)"
+                          value={link.label || ''}
+                          onChange={(e) => {
+                            const newLinks = [...form.externalLinks];
+                            const curr = newLinks[idx];
+                            if (curr) {
+                              newLinks[idx] = { ...curr, label: e.target.value };
+                              setForm((f) => ({ ...f, externalLinks: newLinks }));
+                            }
+                          }}
+                        />
+                        <input
+                          style={{ ...styles.input, flex: 3 }}
+                          placeholder="https://..."
+                          value={link.url}
+                          onChange={(e) => {
+                            const newLinks = [...form.externalLinks];
+                            const curr = newLinks[idx];
+                            if (curr) {
+                              newLinks[idx] = { ...curr, url: e.target.value };
+                              setForm((f) => ({ ...f, externalLinks: newLinks }));
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          style={{ background: 'rgba(200,90,90,0.15)', border: '1px solid #c85a5a', color: '#ff8888', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          onClick={() => {
+                            const newLinks = form.externalLinks.filter((_, i) => i !== idx);
+                            setForm((f) => ({ ...f, externalLinks: newLinks }));
+                          }}
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
             <FormField label="Tiêu đề *" required style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />

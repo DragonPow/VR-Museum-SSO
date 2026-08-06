@@ -124,6 +124,11 @@ export interface DocumentIndexItem {
   viewerImageId: string
 }
 
+export interface ExternalLink {
+  url: string
+  label?: string
+}
+
 export interface DocumentItem {
   id: string
   documentKey: string
@@ -143,6 +148,7 @@ export interface DocumentItem {
   /** External page for this document, e.g. Drive dossier. */
   externalUrl?: string
   externalLabel?: string
+  externalLinks?: ExternalLink[]
   source: string
   priority: number
 }

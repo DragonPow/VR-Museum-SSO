@@ -112,6 +112,11 @@ export const DocumentIndexItemSchema = z.object({
   viewerImageId: NonEmptyString,
 })
 
+export const ExternalLinkSchema = z.object({
+  url: UrlString,
+  label: z.string().optional(),
+})
+
 export const DocumentItemSchema = z.object({
   id: NonEmptyString,
   documentKey: NonEmptyString,
@@ -129,6 +134,7 @@ export const DocumentItemSchema = z.object({
   embedUrl: UrlString.optional(),
   externalUrl: UrlString.optional(),
   externalLabel: z.string().optional(),
+  externalLinks: z.array(ExternalLinkSchema).optional(),
   source: z.string(),
   priority: z.number().int().min(0),
 })
