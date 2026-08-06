@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { DocumentImage, DocumentItem } from '@vm/shared'
 import { resolveDocumentImageVariantUrl } from '@vm/shared'
 import { MarkdownText } from './MarkdownText.js'
@@ -22,8 +22,6 @@ function toEmbedUrl(url: string): string {
   return url
 }
 
-
-
 function toDrivePreviewUrl(url: string): string {
   try {
     const parsed = new URL(url)
@@ -44,59 +42,33 @@ function hostLabel(url: string): string {
 interface Props {
   documents: DocumentItem[]
   onClose: () => void
+  hasPrev?: boolean
+  hasNext?: boolean
+  onPrev?: () => void
+  onNext?: () => void
 }
 
 function isCompactViewport() {
   return typeof window !== 'undefined' && (window.innerWidth < 820 || window.innerHeight < 520)
 }
 
-const ENABLE_ZOOM = false
+function getDocumentImages(item: DocumentItem): Array<DocumentImage & { url: string }> {
+  const imageMap = new Map(item.images.map((image) => [image.id, image]))
+  const configured: DocumentImage[] = (item.detailImageIds.length > 0 ? item.detailImageIds : [item.viewerImageId])
+    .map((id) => imageMap.get(id) ?? { id })
+  const resolved: Array<DocumentImage & { url: string }> = []
+  for (const image of configured) {
+    const url = resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', {
+      assetBaseUrl: ASSET_BASE_URL,
+      assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '',
+    })
+    if (url) resolved.push({ ...image, url })
+  }
+  return resolved
+}
 
-export function InfoModal({ documents, onClose }: Props) {
-  const [pageIndex, setPageIndex] = useState(0)
+export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext }: Props) {
   const [compact, setCompact] = useState(isCompactViewport)
-  const [zoomedImageId, setZoomedImageId] = useState<string | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragged, setDragged] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 })
-  const imageWrapRef = useRef<HTMLDivElement>(null)
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!ENABLE_ZOOM || !zoomedImageId) return
-    setIsDragging(true)
-    setDragged(false)
-    if (imageWrapRef.current) {
-      setDragStart({
-        x: e.clientX,
-        y: e.clientY,
-        scrollLeft: imageWrapRef.current.scrollLeft,
-        scrollTop: imageWrapRef.current.scrollTop,
-      })
-    }
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ENABLE_ZOOM || !isDragging || !zoomedImageId || !imageWrapRef.current) return
-    e.preventDefault()
-    const dx = e.clientX - dragStart.x
-    const dy = e.clientY - dragStart.y
-
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      setDragged(true)
-    }
-
-    imageWrapRef.current.scrollLeft = dragStart.scrollLeft - dx * 1.5
-    imageWrapRef.current.scrollTop = dragStart.scrollTop - dy * 1.5
-  }
-
-  const handleMouseUpOrLeave = () => {
-    setIsDragging(false)
-  }
-
-  // Reset zoom state when pageIndex or documents change
-  useEffect(() => {
-    setZoomedImageId(null)
-  }, [pageIndex, documents])
 
   useEffect(() => {
     const on = () => setCompact(isCompactViewport())
@@ -109,167 +81,189 @@ export function InfoModal({ documents, onClose }: Props) {
   }, [])
 
   useEffect(() => {
-    if (pageIndex > documents.length - 1) setPageIndex(Math.max(0, documents.length - 1))
-  }, [documents.length, pageIndex])
-
-  const item = documents[pageIndex]
-  const pageCount = documents.length
-  const canPage = pageCount > 1
-
-  const imageUrls = useMemo(() => {
-    if (!item) return []
-    const imageMap = new Map(item.images.map((image) => [image.id, image]))
-    const configured: DocumentImage[] = (item.detailImageIds.length > 0 ? item.detailImageIds : [item.viewerImageId])
-      .map((id) => imageMap.get(id) ?? { id })
-    const resolved: Array<DocumentImage & { url: string }> = []
-    for (const image of configured) {
-      const url = resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', { assetBaseUrl: ASSET_BASE_URL, assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '' })
-      if (url) resolved.push({ ...image, url })
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
     }
-    return resolved
-  }, [item])
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onClose])
 
-  if (!item) return null
+  if (documents.length === 0) return null
 
-  const goPrev = () => setPageIndex((i) => Math.max(0, i - 1))
-  const goNext = () => setPageIndex((i) => Math.min(pageCount - 1, i + 1))
-
-  if ((item.mediaType === 'youtube' || item.mediaType === 'iframe') && item.embedUrl) {
-    const iframeSrc = item.mediaType === 'youtube' ? toEmbedUrl(item.embedUrl) : toDrivePreviewUrl(item.embedUrl)
-    return (
-      <div style={styles.overlay} onClick={onClose}>
-        <div style={item.mediaType === 'iframe' ? styles.documentPanel : styles.embedPanel} onClick={(e) => e.stopPropagation()}>
-          <button style={styles.close} onClick={onClose}>×</button>
-          <iframe
-            src={iframeSrc}
-            title={item.title}
-            style={styles.embedIframe}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-          {canPage && <PageNav index={pageIndex} total={pageCount} onPrev={goPrev} onNext={goNext} />}
-        </div>
-      </div>
-    )
-  }
-
-  const hasText = Boolean(item.summary || item.body || item.tags.length > 0 || item.source || item.externalUrl)
+  // Determine if any document has text metadata to adjust width
+  const hasAnyText = documents.some(
+    (item) => Boolean(item.summary || item.body || item.tags.length > 0 || item.source || item.externalUrl)
+  )
 
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div
         style={{
           ...styles.panel,
-          ...(hasText ? styles.panelWithText : styles.panelImageOnly),
+          ...(hasAnyText ? styles.panelWithText : styles.panelImageOnly),
           ...(compact ? styles.panelCompact : {}),
-          flexDirection: compact ? 'column' : 'row',
+          flexDirection: 'column',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <button style={styles.close} onClick={onClose}>×</button>
 
-        <div
-          style={{
-            ...styles.imageWrap,
-            ...(compact ? styles.imageWrapCompact : hasText ? styles.imageWrapWide : styles.imageWrapSolo),
-          }}
-        >
-          <div
-            ref={imageWrapRef}
-            style={{
-              ...styles.imageScroll,
-              ...(compact ? { display: 'contents' } : {}),
-              cursor: ENABLE_ZOOM ? (zoomedImageId ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in') : 'default',
-            }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUpOrLeave}
-            onMouseLeave={handleMouseUpOrLeave}
-          >
-            <div style={styles.imageStack}>
-              {imageUrls.map((image) => {
-                const isZoomed = zoomedImageId === image.id
-                return (
-                  <figure key={image.id} style={styles.figure}>
-                    <img
-                      src={image.url}
-                      alt={image.alt ?? item.title}
+        <div style={styles.scrollContainer}>
+          {documents.map((item, index) => {
+            const itemHasText = Boolean(
+              item.summary || item.body || item.tags.length > 0 || item.source || item.externalUrl
+            )
+            const imageUrls = getDocumentImages(item)
+            const isIframeOrYoutube = (item.mediaType === 'youtube' || item.mediaType === 'iframe') && item.embedUrl
+
+            return (
+              <div key={item.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                {index > 0 && (
+                  <div style={styles.dividerLine} />
+                )}
+
+                <div
+                  style={{
+                    ...styles.pageBlock,
+                    flexDirection: compact ? 'column' : 'row',
+                  }}
+                >
+                  <div
+                    style={{
+                      ...styles.imageWrap,
+                      ...(compact ? styles.imageWrapCompact : itemHasText ? styles.imageWrapWide : styles.imageWrapSolo),
+                    }}
+                  >
+                    {isIframeOrYoutube ? (
+                      <div style={styles.iframeWrapper}>
+                        <div
+                          style={{
+                            ...styles.iframeContainer,
+                            aspectRatio: item.mediaType === 'iframe' ? '3 / 4' : '16 / 9',
+                            minHeight: item.mediaType === 'iframe' && !compact ? '580px' : 'auto',
+                            maxHeight: item.mediaType === 'iframe' ? '70vh' : 'none',
+                          }}
+                        >
+                          <iframe
+                            src={
+                              item.mediaType === 'youtube'
+                                ? toEmbedUrl(item.embedUrl!)
+                                : toDrivePreviewUrl(item.embedUrl!)
+                            }
+                            title={item.title}
+                            style={styles.inlineIframe}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          ...styles.imageScroll,
+                          ...(compact ? { display: 'contents' } : {}),
+                        }}
+                      >
+                        <div style={styles.imageStack}>
+                          {imageUrls.map((image) => (
+                            <figure key={image.id} style={styles.figure}>
+                              <img
+                                src={image.url}
+                                alt={image.alt ?? item.title}
+                                style={{
+                                  ...styles.image,
+                                  ...(compact ? styles.imageCompact : {}),
+                                }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                              />
+                              {image.caption && <figcaption style={styles.caption}>{image.caption}</figcaption>}
+                            </figure>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {item.year && <div style={styles.yearBadge}>{item.year}</div>}
+                  </div>
+
+                  {itemHasText && (
+                    <div
                       style={{
-                        ...styles.image,
-                        ...(compact ? styles.imageCompact : {}),
-                        ...(ENABLE_ZOOM && isZoomed ? {
-                          maxWidth: 'none',
-                          maxHeight: 'none',
-                          width: compact ? '220%' : '180%',
-                          cursor: 'zoom-out',
-                        } : {
-                          transition: 'width 0.25s ease-in-out, max-width 0.25s ease-in-out',
-                        }),
+                        ...styles.body,
+                        ...(compact ? styles.bodyCompact : styles.bodySticky),
                       }}
-                      onClick={(e) => {
-                        if (!ENABLE_ZOOM) return
-                        if (dragged) {
-                          e.stopPropagation()
-                          return
-                        }
-                        if (isZoomed) {
-                          setZoomedImageId(null)
-                        } else {
-                          setZoomedImageId(image.id)
-                        }
-                        e.stopPropagation()
-                      }}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                    {image.caption && <figcaption style={styles.caption}>{image.caption}</figcaption>}
-                  </figure>
-                )
-              })}
-            </div>
-          </div>
-          {item.year && <div style={styles.yearBadge}>{item.year}</div>}
-          {ENABLE_ZOOM && !zoomedImageId && (
-            <div style={styles.zoomHint}>
-              <span>🔍 Click to zoom</span>
-            </div>
-          )}
-        </div>
-
-        {hasText && (
-          <div style={{ ...styles.body, ...(compact ? styles.bodyCompact : {}) }}>
-            <div style={styles.kicker}>{item.externalUrl ? hostLabel(item.externalUrl) : 'Tư liệu'}</div>
-            <h2 style={styles.title}>{item.title}</h2>
-            {item.summary && <p style={styles.lead}>{item.summary}</p>}
-            {item.body && <MarkdownText text={item.body} style={{ marginTop: '14px' }} />}
-            {item.tags.length > 0 && (
-              <div style={styles.tags}>{item.tags.map((tag) => <span key={tag} style={styles.tag}>#{tag}</span>)}</div>
-            )}
-            {item.source && <div style={styles.source}>Nguồn: {item.source}</div>}
-            {item.externalUrl && (
-              <div style={styles.linkBlock}>
-                <div style={styles.linkHint}>Liên kết đính kèm</div>
-                <a href={item.externalUrl} target="_blank" rel="noreferrer" style={styles.primaryLink}>
-                  <ExternalLinkIcon />
-                  <span>{item.externalLabel ?? 'Mở link đính kèm'}</span>
-                </a>
+                    >
+                      <div style={styles.kicker}>{item.externalUrl ? hostLabel(item.externalUrl) : 'Tư liệu'}</div>
+                      <h2 style={styles.title}>{item.title}</h2>
+                      {item.summary && <p style={styles.lead}>{item.summary}</p>}
+                      {item.body && <MarkdownText text={item.body} style={{ marginTop: '14px' }} />}
+                      {item.tags.length > 0 && (
+                        <div style={styles.tags}>{item.tags.map((tag) => <span key={tag} style={styles.tag}>#{tag}</span>)}</div>
+                      )}
+                      {item.source && <div style={styles.source}>Nguồn: {item.source}</div>}
+                      {((item.externalLinks && item.externalLinks.length > 0) || item.externalUrl) && (
+                        <div style={styles.linkBlock}>
+                          <div style={styles.linkHint}>Liên kết đính kèm</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                            {item.externalLinks && item.externalLinks.length > 0 ? (
+                              item.externalLinks.map((link, idx) => (
+                                <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={styles.primaryLink}>
+                                  <ExternalLinkIcon />
+                                  <span>{link.label || 'Mở liên kết'}</span>
+                                </a>
+                              ))
+                            ) : (
+                              <a href={item.externalUrl} target="_blank" rel="noreferrer" style={styles.primaryLink}>
+                                <ExternalLinkIcon />
+                                <span>{item.externalLabel ?? 'Mở link đính kèm'}</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-
-          </div>
-        )}
-        {canPage && <PageNav index={pageIndex} total={pageCount} onPrev={goPrev} onNext={goNext} />}
+            )
+          })}
+        </div>
       </div>
-    </div>
-  )
-}
 
-function PageNav({ index, total, onPrev, onNext }: { index: number; total: number; onPrev: () => void; onNext: () => void }) {
-  return (
-    <>
-      <button style={{ ...styles.edgePageBtn, ...styles.edgePageBtnLeft }} onClick={onPrev} disabled={index === 0} aria-label="Trang trước">‹</button>
-      <button style={{ ...styles.edgePageBtn, ...styles.edgePageBtnRight }} onClick={onNext} disabled={index === total - 1} aria-label="Trang sau">›</button>
-      <div style={styles.pageCountFloating}>{index + 1} / {total}</div>
-    </>
+      {!compact && onPrev && (
+        <button
+          style={{
+            ...styles.edgePageBtn,
+            ...styles.edgePageBtnLeft,
+            ...(!hasPrev ? styles.edgePageBtnDisabled : {}),
+          }}
+          onClick={onPrev}
+          disabled={!hasPrev}
+          title={!hasPrev ? "Đã hết tư liệu trong khu vực này" : "Tài liệu trước"}
+          aria-label="Tài liệu trước"
+        >
+          ‹
+        </button>
+      )}
+      {!compact && onNext && (
+        <button
+          style={{
+            ...styles.edgePageBtn,
+            ...styles.edgePageBtnRight,
+            ...(!hasNext ? styles.edgePageBtnDisabled : {}),
+          }}
+          onClick={onNext}
+          disabled={!hasNext}
+          title={!hasNext ? "Đã hết tư liệu trong khu vực này" : "Tài liệu sau"}
+          aria-label="Tài liệu sau"
+        >
+          ›
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -285,27 +279,27 @@ function ExternalLinkIcon() {
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: { position: 'fixed', inset: 0, background: 'rgba(8,47,109,0.42)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '18px', backdropFilter: 'blur(4px)' },
-  embedPanel: { position: 'relative', width: 'min(1080px, 94vw)', aspectRatio: '16 / 9', background: '#000000', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.35)' },
-  documentPanel: { position: 'relative', width: 'min(1120px, 94vw)', height: 'min(88vh, 860px)', background: '#000000', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.35)' },
-  embedIframe: { width: '100%', height: '100%', border: 0, display: 'block', background: '#000000' },
   panel: { display: 'flex', background: '#f8fbff', border: `1px solid ${brand.line}`, borderRadius: '10px', width: '100%', maxHeight: '92vh', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 70px rgba(8,47,109,0.3)' },
   panelWithText: { maxWidth: '1240px' },
   panelImageOnly: { maxWidth: '1180px' },
   panelCompact: { overflowY: 'auto', overflowX: 'hidden' },
-  close: { position: 'absolute', top: '12px', right: '12px', background: 'rgba(255,255,255,0.94)', border: `1px solid ${brand.line}`, color: brand.blue, borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', fontSize: '18px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 },
-  imageWrap: { position: 'relative', background: '#071323', display: 'flex', alignItems: 'stretch', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' },
-  imageScroll: { width: '100%', height: '100%', overflow: 'auto', overscrollBehavior: 'contain', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  imageWrapWide: { flex: '0 0 66%', alignSelf: 'stretch', minHeight: 0, maxHeight: '92vh' },
-  imageWrapSolo: { width: '100%', minHeight: 'min(82vh, 760px)', maxHeight: '92vh' },
+  close: { position: 'absolute', top: '12px', right: '12px', background: 'rgba(255,255,255,0.94)', border: `1px solid ${brand.line}`, color: brand.blue, borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', fontSize: '18px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  scrollContainer: { flex: 1, width: '100%', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' },
+  pageBlock: { display: 'flex', width: '100%', position: 'relative' },
+  imageWrap: { position: 'relative', background: '#071323', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' },
+  imageScroll: { width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  imageWrapWide: { flex: '0 0 66%', alignSelf: 'stretch', minHeight: 0 },
+  imageWrapSolo: { width: '100%', minHeight: 'min(82vh, 760px)' },
   imageWrapCompact: { width: '100%', height: 'auto', minHeight: '180px', maxHeight: 'none', overflow: 'visible', display: 'block' },
-  imageStack: { width: '100%', minHeight: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '18px', alignItems: 'center', justifyContent: 'flex-start', padding: '18px 18px 48px' },
+  imageStack: { width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '18px', alignItems: 'center', justifyContent: 'flex-start', padding: '18px 18px 48px' },
   figure: { margin: 0, width: '100%', flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' },
-  image: { maxWidth: '100%', maxHeight: '70vh', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' },
+  image: { width: '100%', height: 'auto', display: 'block' },
   imageCompact: { maxHeight: 'none', width: '100%' },
   caption: { color: 'rgba(255,255,255,0.78)', fontSize: '12px', textAlign: 'center' },
   yearBadge: { position: 'absolute', bottom: '14px', left: '16px', background: 'rgba(255,255,255,0.92)', border: `1px solid ${brand.line}`, color: brand.blue, borderRadius: '6px', padding: '4px 11px', fontSize: '13px', fontWeight: 800 },
-  body: { flex: 1, minWidth: 0, padding: '34px 34px 32px', overflowY: 'auto', background: 'linear-gradient(180deg,#ffffff,#eef7ff)' },
+  body: { flex: 1, minWidth: 0, padding: '34px 34px 32px', background: 'linear-gradient(180deg,#ffffff,#eef7ff)' },
   bodyCompact: { flex: '0 0 auto', overflowY: 'visible' },
+  bodySticky: { position: 'sticky', top: 0, alignSelf: 'flex-start', maxHeight: '92vh', overflowY: 'auto' },
   kicker: { fontSize: '11px', color: brand.blue, textTransform: 'uppercase', fontWeight: 900, letterSpacing: 0, marginBottom: '10px' },
   title: { fontSize: '26px', fontWeight: 900, color: brand.text, marginBottom: '14px', lineHeight: 1.24 },
   lead: { fontSize: '16px', color: brand.text, lineHeight: 1.7, borderLeft: `3px solid ${brand.blue}`, paddingLeft: '13px' },
@@ -315,9 +309,13 @@ const styles: Record<string, React.CSSProperties> = {
   linkBlock: { marginTop: '22px', paddingTop: '18px', borderTop: `1px solid ${brand.line}` },
   linkHint: { fontSize: '12px', color: brand.muted, marginBottom: '8px' },
   primaryLink: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', borderRadius: '8px', padding: '11px 16px', background: brand.blue, color: '#ffffff', textDecoration: 'none', fontSize: '13px', fontWeight: 900 },
-  edgePageBtn: { position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: '44px', height: '58px', borderRadius: '10px', border: `1px solid ${brand.line}`, background: 'rgba(255,255,255,0.94)', color: brand.blue, cursor: 'pointer', fontSize: '34px', lineHeight: 1, zIndex: 3, boxShadow: '0 10px 24px rgba(8,47,109,0.2)' },
-  edgePageBtnLeft: { left: '14px' },
-  edgePageBtnRight: { right: '14px' },
-  pageCountFloating: { position: 'absolute', left: '50%', bottom: '16px', transform: 'translateX(-50%)', zIndex: 3, minWidth: '56px', textAlign: 'center', fontSize: '13px', fontWeight: 900, color: brand.blue, background: 'rgba(255,255,255,0.92)', border: `1px solid ${brand.line}`, borderRadius: '999px', padding: '6px 12px' },
-  zoomHint: { position: 'absolute', bottom: '14px', right: '16px', background: 'rgba(255,255,255,0.92)', border: `1px solid ${brand.line}`, color: brand.blue, borderRadius: '6px', padding: '4px 11px', fontSize: '12px', fontWeight: 600, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', zIndex: 2 },
+  dividerLine: { height: '1px', background: brand.line, margin: '32px 34px' },
+  iframeWrapper: { width: '100%', padding: '18px', boxSizing: 'border-box', display: 'flex', justifyContent: 'center', alignItems: 'center' },
+  iframeContainer: { position: 'relative', width: '100%', background: '#000000', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' },
+  inlineIframe: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 },
+  edgePageBtn: { position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: '44px', height: '58px', borderRadius: '10px', border: `1px solid ${brand.line}`, background: 'rgba(255,255,255,0.94)', color: brand.blue, cursor: 'pointer', fontSize: '34px', lineHeight: 1, zIndex: 11, boxShadow: '0 10px 24px rgba(8,47,109,0.2)' },
+  edgePageBtnLeft: { left: '24px' },
+  edgePageBtnRight: { right: '24px' },
+  edgePageBtnDisabled: { opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none', borderColor: '#d2dcf0', color: '#8fa0be' },
 }
+

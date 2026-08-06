@@ -30,6 +30,7 @@ export function Tour({ content, onBack }: Props) {
     currentRoomId,
     activeViewpointId,
     selectedDocuments,
+    selectedSlotId,
     navigateToRoom,
     selectSlot,
     closeModal,
@@ -119,6 +120,37 @@ export function Tour({ content, onBack }: Props) {
 
   const { room, documents, textures } = buildRoomDataProps(roomState.data, content.textures)
 
+  const currentSlot = room.slots.find((s) => s.id === selectedSlotId)
+  const currentZone = currentSlot?.zone
+  const activeSlots = room.slots.filter(
+    (s) => s.visible !== false && (s.documentIds ?? []).length > 0 && s.zone === currentZone
+  )
+  const currentSlotIndex = selectedSlotId ? activeSlots.findIndex((s) => s.id === selectedSlotId) : -1
+
+
+
+  const handlePrevSlot = () => {
+    if (currentSlotIndex > 0) {
+      const prev = activeSlots[currentSlotIndex - 1]
+      if (!prev) return
+      const docsToFetch = (prev.documentIds ?? [])
+        .map((id) => documents[id])
+        .filter((d): d is DocumentIndexItem => !!d)
+      void fetchDocumentDetails(docsToFetch).then((details) => selectSlot(prev.id, details))
+    }
+  }
+
+  const handleNextSlot = () => {
+    if (currentSlotIndex < activeSlots.length - 1) {
+      const next = activeSlots[currentSlotIndex + 1]
+      if (!next) return
+      const docsToFetch = (next.documentIds ?? [])
+        .map((id) => documents[id])
+        .filter((d): d is DocumentIndexItem => !!d)
+      void fetchDocumentDetails(docsToFetch).then((details) => selectSlot(next.id, details))
+    }
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', fontFamily: brand.fontFamily }}>
       {/* 3D Scene */}
@@ -198,7 +230,16 @@ export function Tour({ content, onBack }: Props) {
       <DragHint isMobile={isMobile} />
 
       {/* Info modal */}
-      {selectedDocuments.length > 0 && <InfoModal documents={selectedDocuments} onClose={closeModal} />}
+      {selectedDocuments.length > 0 && (
+        <InfoModal
+          documents={selectedDocuments}
+          onClose={closeModal}
+          hasPrev={currentSlotIndex > 0}
+          hasNext={currentSlotIndex < activeSlots.length - 1}
+          onPrev={handlePrevSlot}
+          onNext={handleNextSlot}
+        />
+      )}
     </div>
   )
 }

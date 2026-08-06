@@ -24,6 +24,38 @@ export function Gallery2D({ content, roomData, currentRoomId, onNavigate, onBack
     .map((id) => documentMap[id])
     .filter((document): document is DocumentIndexItem => !!document && !seen.has(document.id) && (seen.add(document.id), true))
 
+  const selectedDocId = selectedDocuments[0]?.id
+  const currentSlot = selectedDocId
+    ? room.slots.find((s) => (s.documentIds ?? []).includes(selectedDocId))
+    : undefined
+  const currentZone = currentSlot?.zone
+
+  const activeZoneSlots = room.slots.filter((s) => s.zone === currentZone)
+  const zoneDocIds = new Set(activeZoneSlots.flatMap((s) => s.documentIds ?? []))
+  const assignedDocumentsInZone = assignedDocuments.filter((d) => zoneDocIds.has(d.id))
+
+  const currentDocIndex = selectedDocId
+    ? assignedDocumentsInZone.findIndex((d) => d.id === selectedDocId)
+    : -1
+
+
+
+  const handlePrevDoc = () => {
+    if (currentDocIndex > 0) {
+      const prev = assignedDocumentsInZone[currentDocIndex - 1]
+      if (!prev) return
+      void fetchDocumentDetails([prev]).then(setSelectedDocuments)
+    }
+  }
+
+  const handleNextDoc = () => {
+    if (currentDocIndex < assignedDocumentsInZone.length - 1) {
+      const next = assignedDocumentsInZone[currentDocIndex + 1]
+      if (!next) return
+      void fetchDocumentDetails([next]).then(setSelectedDocuments)
+    }
+  }
+
   return (
     <div style={styles.wrap}>
       <div style={styles.header}>
@@ -62,7 +94,16 @@ export function Gallery2D({ content, roomData, currentRoomId, onNavigate, onBack
         )}
       </div>
 
-      {selectedDocuments.length > 0 && <InfoModal documents={selectedDocuments} onClose={() => setSelectedDocuments([])} />}
+      {selectedDocuments.length > 0 && (
+        <InfoModal
+          documents={selectedDocuments}
+          onClose={() => setSelectedDocuments([])}
+          hasPrev={currentDocIndex > 0}
+          hasNext={currentDocIndex < assignedDocumentsInZone.length - 1}
+          onPrev={handlePrevDoc}
+          onNext={handleNextDoc}
+        />
+      )}
     </div>
   )
 }
