@@ -289,27 +289,27 @@ export function RoomMap({ isMobile }: Props) {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
-        Bản đồ & Cấu trúc phòng truyền thống
+        {!isMobile ? 'Bản đồ & Cấu trúc phòng truyền thống' : 'Bản đồ phòng truyền thống'}
       </h3>
 
       {/* Sơ đồ phòng truyền thống SVG */}
-      <div 
-        className="guide-map-canvas" 
+      <div
+        className="guide-map-canvas"
         onMouseMove={handleMouseMove}
         onMouseOver={handleSvgMouseOver}
         onMouseOut={handleSvgMouseOut}
         data-hovered-zone={hoveredZone ?? ''}
       >
-        <div 
-          dangerouslySetInnerHTML={{ __html: svgContent }} 
+        <div
+          dangerouslySetInnerHTML={{ __html: svgContent }}
           style={{ width: '100%', height: 'auto', display: 'block', maxHeight: isMobile ? '230px' : '345px' }}
         />
 
         {/* Floating Tooltip (shown on Desktop only when hoveredZoneObj exists) */}
         {!isMobile && hoveredZoneObj && (
-          <div 
-            className="guide-map-tooltip animate-fade-in" 
-            style={{ 
+          <div
+            className="guide-map-tooltip animate-fade-in"
+            style={{
               position: 'absolute',
               left: `${mousePos.x}px`,
               top: `${mousePos.y}px`,

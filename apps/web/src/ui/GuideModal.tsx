@@ -372,7 +372,7 @@ export function GuideModal({ content, onClose, currentRoomId, sceneReady = true 
       <div className="guide-container" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="guide-header">
-          <h2 className="guide-title">Phòng truyền thống - Hướng dẫn sử dụng</h2>
+          <h2 className="guide-title">Hướng dẫn sử dụng</h2>
           {sceneReady ? (
             <button className="guide-close" onClick={onClose} aria-label="Đóng hướng dẫn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -398,7 +398,7 @@ export function GuideModal({ content, onClose, currentRoomId, sceneReady = true 
               className={`guide-tab-btn ${activeTab === 'controls' ? 'active' : ''}`}
               onClick={() => setActiveTab('controls')}
             >
-              Hướng dẫn thao tác
+              {!isMobile ? 'Hướng dẫn thao tác' : 'Các thao tác'}
             </button>
           </div>
         )}
@@ -575,7 +575,7 @@ export function GuideModal({ content, onClose, currentRoomId, sceneReady = true 
         <div className="guide-footer-content">
           {sceneReady ? (
             <>
-              <div className="guide-footer-title">Vui lòng chọn chế độ di chuyển để bắt đầu</div>
+              <div className="guide-footer-title">{!isMobile ? 'Vui lòng chọn chế độ di chuyển để bắt đầu' : 'Vui lòng chọn chế độ di chuyển'}</div>
               <div className="guide-mode-options">
                 <button className="guide-mode-btn mode-ptp" onClick={() => handleSelectMode('point-to-point')}>
                   <div className="mode-btn-title">Tham quan theo khu vực cố định</div>
