@@ -247,6 +247,32 @@ export function RoomEditor() {
     setVpDialog({ ...vpDialog, state: snapshotViewpointState(state) })
   }
 
+  const updateDialogPosition = (axis: 'x' | 'y' | 'z', value: number) => {
+    if (!vpDialog) return
+    const nextPos = { ...vpDialog.state.position, [axis]: value }
+    const nextGround = { ...vpDialog.state.groundPosition, [axis]: axis === 'y' ? 0 : value }
+    setVpDialog({
+      ...vpDialog,
+      state: {
+        ...vpDialog.state,
+        position: nextPos,
+        groundPosition: nextGround,
+      },
+    })
+  }
+
+  const updateDialogLookAt = (axis: 'x' | 'y' | 'z', value: number) => {
+    if (!vpDialog) return
+    const nextLookAt = { ...vpDialog.state.lookAt, [axis]: value }
+    setVpDialog({
+      ...vpDialog,
+      state: {
+        ...vpDialog.state,
+        lookAt: nextLookAt,
+      },
+    })
+  }
+
   const handleApplyRoomTitle = () => {
     const nextTitle = roomTitleInput.trim()
     if (!nextTitle || nextTitle === room.title) return
@@ -702,9 +728,64 @@ export function RoomEditor() {
             />
             Đặt làm điểm vào mặc định
           </label>
-          <div style={{ fontSize: '12px', color: '#6a5a40' }}>
-            Vị trí đứng: ({vpDialog.state.groundPosition.x.toFixed(2)},{' '}
-            {vpDialog.state.groundPosition.z.toFixed(2)})
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Vị trí đứng (X / Y / Z)</label>
+            <div style={styles.fieldRow3}>
+              <input
+                style={styles.input}
+                type="number"
+                step="0.01"
+                value={vpDialog.state.position.x}
+                onChange={(e) => updateDialogPosition('x', Number(e.target.value))}
+                placeholder="X"
+              />
+              <input
+                style={styles.input}
+                type="number"
+                step="0.01"
+                value={vpDialog.state.position.y}
+                onChange={(e) => updateDialogPosition('y', Number(e.target.value))}
+                placeholder="Y"
+              />
+              <input
+                style={styles.input}
+                type="number"
+                step="0.01"
+                value={vpDialog.state.position.z}
+                onChange={(e) => updateDialogPosition('z', Number(e.target.value))}
+                placeholder="Z"
+              />
+            </div>
+          </div>
+
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Hướng nhìn / LookAt (X / Y / Z)</label>
+            <div style={styles.fieldRow3}>
+              <input
+                style={styles.input}
+                type="number"
+                step="0.01"
+                value={vpDialog.state.lookAt.x}
+                onChange={(e) => updateDialogLookAt('x', Number(e.target.value))}
+                placeholder="X"
+              />
+              <input
+                style={styles.input}
+                type="number"
+                step="0.01"
+                value={vpDialog.state.lookAt.y}
+                onChange={(e) => updateDialogLookAt('y', Number(e.target.value))}
+                placeholder="Y"
+              />
+              <input
+                style={styles.input}
+                type="number"
+                step="0.01"
+                value={vpDialog.state.lookAt.z}
+                onChange={(e) => updateDialogLookAt('z', Number(e.target.value))}
+                placeholder="Z"
+              />
+            </div>
           </div>
           <div style={styles.dialogActions}>
             <button style={styles.btnSecondary} onClick={() => setVpDialog(null)}>
