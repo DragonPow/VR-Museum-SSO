@@ -129,6 +129,8 @@ export interface ExternalLink {
   label?: string
 }
 
+export type ImageBgPreset = 'dark' | 'light' | 'warm' | 'transparent'
+
 export interface DocumentItem {
   id: string
   documentKey: string
@@ -151,6 +153,7 @@ export interface DocumentItem {
   externalLinks?: ExternalLink[]
   source: string
   priority: number
+  imageBgPreset?: ImageBgPreset
 }
 
 export interface TextureAsset {

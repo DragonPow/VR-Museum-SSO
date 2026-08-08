@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
-import type { DocumentImage, DocumentItem, ImageRescaleSettings, ExternalLink } from '@vm/shared'
+import type { DocumentImage, DocumentItem, ImageRescaleSettings, ExternalLink, ImageBgPreset } from '@vm/shared'
 import { DocumentItemSchema } from '@vm/shared'
 import { useDraftStore } from '../store.js'
 import { uploadFile, checkApi, deleteDocumentStorage, deleteImageStorage } from '../api.js'
@@ -337,6 +337,7 @@ function UploadModal({ periods, onClose, onDone }: {
     priority: 0, summary: '', body: '', tags: '', source: '',
     embedUrl: '', externalUrl: '', externalLabel: '',
     externalLinks: [] as ExternalLink[],
+    imageBgPreset: 'dark' as ImageBgPreset,
   })
 
   const handleFiles = (files: FileList | File[]) => {
@@ -474,6 +475,7 @@ function UploadModal({ periods, onClose, onDone }: {
         ...(firstLink.label ? { externalLabel: firstLink.label } : {}),
       } : {}),
       ...(hasLinks ? { externalLinks: finalLinks } : {}),
+      imageBgPreset: form.imageBgPreset,
     }
 
     const validationResult = DocumentItemSchema.safeParse(tempItem)
@@ -574,6 +576,7 @@ function UploadModal({ periods, onClose, onDone }: {
           ...(firstLink.label ? { externalLabel: firstLink.label } : {}),
         } : {}),
         ...(hasLinks ? { externalLinks: finalLinks } : {}),
+        imageBgPreset: form.imageBgPreset,
       }
 
       setStep('done')
@@ -744,6 +747,14 @@ function UploadModal({ periods, onClose, onDone }: {
                 {periods.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
               </select>
             </FormField>
+            <FormField label="Màu nền hiển thị chi tiết" style={{ gridColumn: '1 / -1' }}>
+              <select style={styles.input} value={form.imageBgPreset} onChange={(e) => setForm((f) => ({ ...f, imageBgPreset: e.target.value as ImageBgPreset }))}>
+                <option value="dark">Tối (Mặc định)</option>
+                <option value="light">Sáng (Màu khói)</option>
+                <option value="warm">Ấm (Màu kem ngà)</option>
+                <option value="transparent">Trong suốt / Trắng nền</option>
+              </select>
+            </FormField>
             <FormField label="Mô tả ngắn" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.summary} onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))} />
             </FormField>
@@ -868,6 +879,7 @@ function EditModal({ item, periods, onClose, onSave }: {
     externalLinks: item.externalLinks ?? [] as ExternalLink[],
     thumbnailImageId: item.thumbnailImageId,
     viewerImageId: item.viewerImageId,
+    imageBgPreset: (item.imageBgPreset ?? 'dark') as ImageBgPreset,
   })
   const initialImages = item.images?.length > 0 ? item.images : [{ id: item.viewerImageId || 'photo1' }]
   const [images, setImages] = useState<DocumentImage[]>(initialImages)
@@ -978,6 +990,7 @@ function EditModal({ item, periods, onClose, onSave }: {
       ...(form.year.trim() ? { year: form.year.trim() } : {}),
       periodId: form.periodId,
       priority: form.priority || 0,
+      imageBgPreset: form.imageBgPreset,
       summary: form.summary.trim(),
       body: form.body.trim(),
       tags: splitTags(form.tags),
@@ -1189,6 +1202,14 @@ function EditModal({ item, periods, onClose, onSave }: {
             <FormField label="Thời kỳ" style={{ gridColumn: '1 / -1' }}>
               <select style={styles.input} value={form.periodId} onChange={(e) => setForm((f) => ({ ...f, periodId: e.target.value }))}>
                 {periods.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+              </select>
+            </FormField>
+            <FormField label="Màu nền hiển thị chi tiết" style={{ gridColumn: '1 / -1' }}>
+              <select style={styles.input} value={form.imageBgPreset} onChange={(e) => setForm((f) => ({ ...f, imageBgPreset: e.target.value as ImageBgPreset }))}>
+                <option value="dark">Tối (Mặc định)</option>
+                <option value="light">Sáng (Màu khói)</option>
+                <option value="warm">Ấm (Màu kem ngà)</option>
+                <option value="transparent">Trong suốt / Trắng nền</option>
               </select>
             </FormField>
             <FormField label="Mô tả ngắn" style={{ gridColumn: '1 / -1' }}>

@@ -137,6 +137,7 @@ export const DocumentItemSchema = z.object({
   externalLinks: z.array(ExternalLinkSchema).optional(),
   source: z.string(),
   priority: z.number().int().min(0),
+  imageBgPreset: z.enum(['dark', 'light', 'warm', 'transparent']).optional(),
 })
 
 export const TextureAssetSchema = z.object({

@@ -1,10 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { DocumentImage, DocumentItem } from '@vm/shared'
+import type { DocumentImage, DocumentItem, ImageBgPreset } from '@vm/shared'
 import { resolveDocumentImageVariantUrl } from '@vm/shared'
 import { MarkdownText } from './MarkdownText.js'
 import { brand } from './theme.js'
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
+
+const BG_COLORS = {
+  dark: '#071323',
+  light: '#f3f4f6',
+  warm: '#fbf8f3',
+  transparent: 'transparent',
+}
+
+const CAPTION_COLORS = {
+  dark: 'rgba(255,255,255,0.78)',
+  light: 'rgba(0,0,0,0.6)',
+  warm: 'rgba(0,0,0,0.6)',
+  transparent: 'rgba(0,0,0,0.6)',
+}
 
 function toEmbedUrl(url: string): string {
   try {
@@ -119,6 +133,9 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
             )
             const imageUrls = getDocumentImages(item)
             const isIframeOrYoutube = (item.mediaType === 'youtube' || item.mediaType === 'iframe') && item.embedUrl
+            const preset = item.imageBgPreset ?? 'dark'
+            const bgColor = BG_COLORS[preset] ?? BG_COLORS.dark
+            const captionColor = CAPTION_COLORS[preset] ?? CAPTION_COLORS.dark
 
             return (
               <div key={item.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -135,6 +152,7 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
                   <div
                     style={{
                       ...styles.imageWrap,
+                      background: bgColor,
                       ...(compact ? styles.imageWrapCompact : itemHasText ? styles.imageWrapWide : styles.imageWrapSolo),
                     }}
                   >
@@ -180,7 +198,11 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
                                 }}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                               />
-                              {image.caption && <figcaption style={styles.caption}>{image.caption}</figcaption>}
+                              {image.caption && (
+                                <figcaption style={{ ...styles.caption, color: captionColor }}>
+                                  {image.caption}
+                                </figcaption>
+                              )}
                             </figure>
                           ))}
                         </div>
