@@ -23,7 +23,17 @@ export class ApiError extends Error {
 
 async function apiFetch(path: string, init?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
   try {
-    const res = await fetch(`${BASE}${path}`, init)
+    const token = import.meta.env.VITE_API_SECRET
+    const headers = new Headers(init?.headers)
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
+
+    const res = await fetch(`${BASE}${path}`, {
+      credentials: 'include',
+      ...init,
+      headers,
+    })
     if (!res.ok) {
       const text = await res.text().catch(() => res.statusText)
       const isRateLimit = res.status === 429 || res.status === 503 || (res.status === 500 && text.includes('10058'))

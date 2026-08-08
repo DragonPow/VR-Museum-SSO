@@ -4,6 +4,7 @@ interface Env {
   MEDIA_BUCKET: R2Bucket
   ALLOWED_ORIGIN: string
   PUBLIC_R2_URL: string // e.g. https://pub-xxx.r2.dev  (optional)
+  API_SECRET?: string
 }
 
 const DRAFT_KEY = 'draft.json'
@@ -39,6 +40,27 @@ export default {
 async function route(request: Request, url: URL, env: Env): Promise<Response> {
   const { pathname } = url
   const method = request.method
+
+  // Authenticate using API_SECRET if configured (Production)
+  if (env.API_SECRET) {
+    const isPublic =
+      method === 'GET' &&
+      (pathname === '/api/health' ||
+        pathname === '/api/content' ||
+        pathname.startsWith('/api/documents/') ||
+        pathname.startsWith('/content/media/') ||
+        pathname.startsWith('/content/documents/') ||
+        pathname.startsWith('/media/') ||
+        pathname.startsWith('/content/models/'))
+
+    if (!isPublic) {
+      const authHeader = request.headers.get('Authorization')
+      const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7).trim() : null
+      if (token !== env.API_SECRET) {
+        return json({ error: 'Unauthorized' }, 401)
+      }
+    }
+  }
 
   if (method === 'GET' && pathname === '/api/health') {
     return json({ ok: true })
@@ -213,6 +235,7 @@ function cors(res: Response, requestOrigin: string, allowedOrigin: string): Resp
   headers.set('Access-Control-Allow-Origin', resolveAllowedOrigin(requestOrigin, allowedOrigin))
   headers.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  headers.set('Access-Control-Allow-Credentials', 'true')
   headers.set('Vary', 'Origin')
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers })
 }
@@ -223,7 +246,7 @@ function resolveAllowedOrigin(requestOrigin: string, allowedOrigin: string): str
     .map((item) => item.trim())
     .filter(Boolean)
 
-  if (origins.length === 0 || origins.includes('*')) return '*'
+  if (origins.length === 0 || origins.includes('*')) return requestOrigin || '*'
   if (requestOrigin && origins.includes(requestOrigin)) return requestOrigin
   return origins[0] ?? '*'
 }

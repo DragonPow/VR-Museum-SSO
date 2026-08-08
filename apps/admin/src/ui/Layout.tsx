@@ -18,6 +18,7 @@ interface Props {
 export function Layout({ children }: Props) {
   const dirty = useDraftStore((s) => s.dirty)
   const location = useLocation()
+  const isLocal = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
 
   return (
     <div style={styles.root}>
@@ -56,6 +57,18 @@ export function Layout({ children }: Props) {
               <span style={styles.dirtyDot} />
               Có thay đổi chưa lưu
             </div>
+          )}
+          {!isLocal && (
+            <button
+              onClick={() => {
+                if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                  window.location.href = '/cdn-cgi/access/logout'
+                }
+              }}
+              style={styles.logoutBtn}
+            >
+              🚪 Đăng xuất
+            </button>
           )}
           <div style={styles.version}>v0.1.0 — dev</div>
         </div>
@@ -143,6 +156,19 @@ const styles: Record<string, React.CSSProperties> = {
     flexShrink: 0,
   },
   version: { fontSize: '11px', color: '#4a3a20' },
+  logoutBtn: {
+    background: 'transparent',
+    border: '1px solid #c85a5a',
+    borderRadius: '6px',
+    color: '#e58b8b',
+    padding: '6px 12px',
+    fontSize: '11px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    textAlign: 'center',
+    marginTop: '4px',
+    transition: 'all 0.15s',
+  },
   main: {
     flex: 1,
     overflow: 'hidden',
