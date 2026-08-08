@@ -482,8 +482,8 @@ export function NavController({
       // DeviceOrientation alpha increases COUNTER-clockwise, so turning the phone
       // right decreases alpha → yaw must move the same way as the phone (add dAlpha).
       const targetYaw = base.yaw + degToRad(dAlpha)
-      // beta increases when tilting forward (looking down) → pitch decreases
-      const targetPitch = clampPitch(base.pitch - degToRad(sm.beta - base.beta))
+      // beta increases when tilting forward (looking down) → pitch increases
+      const targetPitch = clampPitch(base.pitch + degToRad(sm.beta - base.beta))
 
       // Record the RAW target only; the frame loop eases toward it at a fixed rate.
       // Smoothing here (per sensor event) stuttered because deviceorientation fires

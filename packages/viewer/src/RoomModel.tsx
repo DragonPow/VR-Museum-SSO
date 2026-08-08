@@ -85,6 +85,7 @@ function makeTiledFloorMaterial(
     return new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   }
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
+  ;(mat as any).extensions = { derivatives: true }
   const hasNor = !!tileNor
   mat.onBeforeCompile = (shader) => {
     // Sample Marble021 in world space so tile seams stay perpendicular to the walls.
