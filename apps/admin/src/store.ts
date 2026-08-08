@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DEFAULT_CONTENT, documentIndexFromDocument } from '@vm/shared'
 import { loadDraftContent, loadStaticContent } from './contentSource.js'
-import type { Content, DocumentItem, Period, Room, Viewpoint, RoomPortal, SlotNameplate } from '@vm/shared'
+import type { Content, DocumentItem, Period, Room, Viewpoint, RoomPortal, SlotNameplate, ExternalLink } from '@vm/shared'
 
 
 function documentKeyFromLegacyItem(item: Record<string, unknown>): string {
@@ -35,6 +35,11 @@ function normalizeLegacyDocument(item: Record<string, unknown>): DocumentItem {
       }))
     : [{ id: 'photo1', ...(typeof item.rawExt === 'string' ? { rawExt: item.rawExt } : {}) }]
   const firstImageId = images[0]?.id ?? 'photo1'
+
+  const mediaType = (typeof item.mediaType === 'string' && ['image', 'youtube', 'iframe', 'external'].includes(item.mediaType))
+    ? (item.mediaType as DocumentItem['mediaType'])
+    : (hasEmbed ? 'youtube' : hasExternal ? 'external' : 'image')
+
   return {
     id: typeof item.id === 'string' ? item.id : `document-${Date.now()}`,
     documentKey,
@@ -44,7 +49,7 @@ function normalizeLegacyDocument(item: Record<string, unknown>): DocumentItem {
     summary: typeof item.summary === 'string' ? item.summary : (typeof item.shortDesc === 'string' ? item.shortDesc : ''),
     body: typeof item.body === 'string' ? item.body : (typeof item.longDesc === 'string' ? item.longDesc : ''),
     tags: Array.isArray(item.tags) ? item.tags.filter((tag): tag is string => typeof tag === 'string') : [],
-    mediaType: typeof item.mediaType === 'string' && item.mediaType === 'iframe' ? 'iframe' : hasEmbed ? 'youtube' : hasExternal ? 'external' : 'image',
+    mediaType,
     thumbnailImageId: typeof item.thumbnailImageId === 'string' ? item.thumbnailImageId : firstImageId,
     viewerImageId: typeof item.viewerImageId === 'string' ? item.viewerImageId : firstImageId,
     detailImageIds: Array.isArray(item.detailImageIds) ? item.detailImageIds.filter((id): id is string => typeof id === 'string') : images.map((image) => image.id),
@@ -52,6 +57,7 @@ function normalizeLegacyDocument(item: Record<string, unknown>): DocumentItem {
     ...(hasEmbed ? { embedUrl: item.embedUrl as string } : {}),
     ...(hasExternal ? { externalUrl: item.externalUrl as string } : {}),
     ...(typeof item.externalLabel === 'string' ? { externalLabel: item.externalLabel } : {}),
+    ...(Array.isArray(item.externalLinks) ? { externalLinks: item.externalLinks as ExternalLink[] } : {}),
     source: typeof item.source === 'string' ? item.source : '',
     priority: typeof item.priority === 'number' ? item.priority : 0,
   }
