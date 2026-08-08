@@ -237,16 +237,15 @@ export function Tour({ content, onBack }: Props) {
         <SceneReadyNotifier onReady={() => setSceneReady(true)} />
       </SceneCanvas>
 
-      {/* Top-left action buttons */}
-      <div style={topLeftContainer}>
-        <button style={homeBtn} onClick={onBack} title="Về trang chủ" aria-label="Về trang chủ">
-          <HomeIcon />
-          <span>Trang chủ</span>
-        </button>
+      {/* Top-right action buttons */}
+      <div style={topRightContainer}>
+        {/* Hướng dẫn */}
         <button style={homeBtn} onClick={() => setShowGuide(true)} title="Hướng dẫn sử dụng" aria-label="Hướng dẫn sử dụng">
           <HelpIcon />
           <span>Hướng dẫn</span>
         </button>
+
+        {/* Di chuyển */}
         <button
           style={{
             ...homeBtn,
@@ -266,6 +265,31 @@ export function Tour({ content, onBack }: Props) {
               : (navigationMode === 'point-to-point' ? 'Di chuyển: Theo điểm cố định' : 'Di chuyển: Tự do')}
           </span>
         </button>
+
+        {/* Mobile: Gyroscope Sensor Toggle */}
+        {isMobile && (
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <button
+              style={{
+                ...gyroBtn,
+                ...(gyroEnabled ? gyroBtnOn : {}),
+              }}
+              onClick={handleGyroClick}
+              title={gyroEnabled ? "Tắt xoay 360°" : "Bật xoay 360°"}
+              aria-label="Cảm biến xoay"
+            >
+              <PhoneGyroIcon />
+            </button>
+
+            {showTooltip && (
+              <div style={tooltip}>
+                Chạm để xoay nhìn quanh bằng cảm biến điện thoại
+                <div style={tooltipArrow} />
+              </div>
+            )}
+            {showPulse && <span style={pulseBadge} />}
+          </div>
+        )}
       </div>
 
       {/* Viewpoint nav (bottom center) */}
@@ -285,38 +309,13 @@ export function Tour({ content, onBack }: Props) {
         />
       )}
 
-      {/* Desktop: Screen buttons for Move/Look */}
-      {!isMobile && navigationMode === 'free' && (
+      {/* Desktop: Screen buttons for Move/Look - Temporarily hidden per user request */}
+      {/* {!isMobile && navigationMode === 'free' && (
         <ScreenControls
           moveRef={mobileMoveRef}
           lookRef={screenLookRef}
         />
-      )}
-
-      {/* Mobile: Gyroscope Sensor Toggle (top right, symmetry with Home button) */}
-      {isMobile && (
-        <div style={gyroContainer}>
-          <button
-            style={{
-              ...gyroBtn,
-              ...(gyroEnabled ? gyroBtnOn : {}),
-            }}
-            onClick={handleGyroClick}
-            title={gyroEnabled ? "Tắt xoay 360°" : "Bật xoay 360°"}
-            aria-label="Cảm biến xoay"
-          >
-            <PhoneGyroIcon />
-          </button>
-
-          {showTooltip && (
-            <div style={tooltip}>
-              Chạm để xoay nhìn quanh bằng cảm biến điện thoại
-              <div style={tooltipArrow} />
-            </div>
-          )}
-          {showPulse && <span style={pulseBadge} />}
-        </div>
-      )}
+      )} */}
 
       {/* Drag hint — fades out after 4s */}
       <DragHint isMobile={isMobile} navigationMode={navigationMode} />
@@ -350,15 +349,6 @@ export function Tour({ content, onBack }: Props) {
   )
 }
 
-function HomeIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-      <path d="M3 10.8 12 3l9 7.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5.5 9.5V20h13V9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9.5 20v-6h5v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
 
 function HelpIcon() {
   return (
@@ -453,13 +443,14 @@ const centerStyle: React.CSSProperties = {
   background: `linear-gradient(135deg, ${brand.sky}, #d8e8f8)`,
 }
 
-const topLeftContainer: React.CSSProperties = {
+const topRightContainer: React.CSSProperties = {
   position: 'absolute',
   top: 12,
-  left: 12,
+  right: 12,
   zIndex: 10,
   display: 'flex',
   gap: 8,
+  alignItems: 'center',
 }
 
 const homeBtn: React.CSSProperties = {
@@ -509,15 +500,6 @@ function PhoneGyroIcon() {
   )
 }
 
-const gyroContainer: React.CSSProperties = {
-  position: 'absolute',
-  top: 12,
-  right: 12,
-  zIndex: 10,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-end',
-}
 
 const gyroBtn: React.CSSProperties = {
   ...glassPanel,
