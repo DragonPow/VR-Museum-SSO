@@ -396,11 +396,18 @@ export function NavController({
       invalidate()
     }
 
+    const onBlur = () => {
+      activePointers.clear()
+      isDragging.current = false
+      initialPinchDist = 0
+    }
+
     canvas.addEventListener('pointerdown', onDown)
     canvas.addEventListener('pointermove', onMove)
     canvas.addEventListener('pointerup', onUp)
     canvas.addEventListener('pointercancel', onUp)
     canvas.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('blur', onBlur)
 
     return () => {
       canvas.removeEventListener('pointerdown', onDown)
@@ -408,8 +415,9 @@ export function NavController({
       canvas.removeEventListener('pointerup', onUp)
       canvas.removeEventListener('pointercancel', onUp)
       canvas.removeEventListener('wheel', onWheel)
+      window.removeEventListener('blur', onBlur)
     }
-  }, [gl, gyroEnabled])
+  }, [gl, gyroEnabled, invalidate])
 
   // ── External wake (mobile D-pad) ────────────────────────────────────────────
   // frameloop is 'demand'; the D-pad lives outside the Canvas and only writes a ref,
@@ -421,7 +429,6 @@ export function NavController({
     return () => window.removeEventListener('vm:wake', wake)
   }, [invalidate])
 
-  // ── Keyboard ────────────────────────────────────────────────────────────────
   useEffect(() => {
     const ARROW = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
     const onDown = (e: KeyboardEvent) => {
@@ -434,13 +441,18 @@ export function NavController({
       if (isTypingTarget(e.target)) return
       keys.current.delete(e.code)
     }
+    const onBlur = () => {
+      keys.current.clear()
+    }
     window.addEventListener('keydown', onDown)
     window.addEventListener('keyup', onUp)
+    window.addEventListener('blur', onBlur)
     return () => {
       window.removeEventListener('keydown', onDown)
       window.removeEventListener('keyup', onUp)
+      window.removeEventListener('blur', onBlur)
     }
-  }, [])
+  }, [invalidate])
 
   // ── Gyroscope ───────────────────────────────────────────────────────────────
   // Uses RELATIVE orientation (delta from when gyro was enabled) so there is no
@@ -451,6 +463,10 @@ export function NavController({
     gyroBase.current = null // reset anchor on each enable
     gyroTarget.current = null
     gyroSmooth.current = null
+
+    const onFocus = () => {
+      gyroBase.current = null
+    }
 
     const onOrientation = (e: DeviceOrientationEvent) => {
       if (e.alpha == null || e.beta == null) return
@@ -494,8 +510,10 @@ export function NavController({
     }
 
     window.addEventListener('deviceorientation', onOrientation, true)
+    window.addEventListener('focus', onFocus)
     return () => {
       window.removeEventListener('deviceorientation', onOrientation, true)
+      window.removeEventListener('focus', onFocus)
       gyroBase.current = null
       gyroSmooth.current = null
     }
