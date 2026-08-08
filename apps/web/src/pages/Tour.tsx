@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ContentIndex, DocumentIndexItem } from '@vm/shared'
+import {
+  resolveAssetUrl,
+  resolveDocumentImageVariantUrl,
+  type ContentIndex,
+  type DocumentIndexItem,
+} from '@vm/shared'
 import {
   SceneCanvas,
   RoomScene,
   buildRoomDataProps,
   useGyroToggle,
   shouldUseFallback,
+  preloadUrls,
+  isBackdropSlotId,
 } from '@vm/viewer'
 import { useMuseumStore, useCurrentRoomStub } from '../store.js'
 import { useRoom } from '../content/useRoom.js'
@@ -77,6 +84,52 @@ export function Tour({ content, onBack }: Props) {
 
   const roomStub = useCurrentRoomStub()
   const roomState = useRoom(roomStub)
+
+  const [sceneReady, setSceneReady] = useState(false)
+
+  // Reset scene ready state on room change
+  useEffect(() => {
+    setSceneReady(false)
+  }, [currentRoomId])
+
+  // Preload textures when room data becomes available
+  useEffect(() => {
+    if (roomState.status === 'ok') {
+      const { room, documents, textures } = buildRoomDataProps(roomState.data, content.textures)
+      const urls: string[] = []
+
+      // 1. Preload wall, floor, ceiling textures
+      if (room.wallTextureId && textures[room.wallTextureId]) {
+        const url = resolveAssetUrl(textures[room.wallTextureId], { assetBaseUrl: ASSET_BASE_URL })
+        if (url) urls.push(url)
+      }
+      if (room.floorTextureId && textures[room.floorTextureId]) {
+        const url = resolveAssetUrl(textures[room.floorTextureId], { assetBaseUrl: ASSET_BASE_URL })
+        if (url) urls.push(url)
+      }
+      if (room.ceilingTextureId && textures[room.ceilingTextureId]) {
+        const url = resolveAssetUrl(textures[room.ceilingTextureId], { assetBaseUrl: ASSET_BASE_URL })
+        if (url) urls.push(url)
+      }
+
+      // 2. Preload slot images
+      room.slots.forEach((slot) => {
+        const firstId = slot.documentIds?.[0]
+        const doc = firstId ? documents[firstId] : null
+        if (doc) {
+          const variant = isBackdropSlotId(slot.id) ? 'full' : (slot.viewerVariant ?? 'wall')
+          const texUrl = resolveDocumentImageVariantUrl(doc.documentKey ?? null, doc.viewerImageId ?? null, variant, { assetBaseUrl: ASSET_BASE_URL })
+          if (texUrl) {
+            urls.push(texUrl)
+          }
+        }
+      })
+
+      if (urls.length > 0) {
+        preloadUrls(urls)
+      }
+    }
+  }, [roomState.status, roomState.status === 'ok' ? roomState.data : null, content.textures])
 
   // Once room data loads, set the entry viewpoint (if not already set)
   // Once room data loads, set the entry viewpoint (if not already set)
@@ -181,6 +234,7 @@ export function Tour({ content, onBack }: Props) {
           navigationMode={navigationMode}
           onViewpointSelect={handleViewpointSelect}
         />
+        <SceneReadyNotifier onReady={() => setSceneReady(true)} />
       </SceneCanvas>
 
       {/* Top-left action buttons */}
@@ -284,7 +338,12 @@ export function Tour({ content, onBack }: Props) {
         <GuideModal
           content={content}
           currentRoomId={currentRoomId}
-          onClose={() => setShowGuide(false)}
+          onClose={() => {
+            if (sceneReady) {
+              setShowGuide(false)
+            }
+          }}
+          sceneReady={sceneReady}
         />
       )}
     </div>
@@ -524,4 +583,11 @@ const tooltipArrow: React.CSSProperties = {
   borderLeft: '5px solid transparent',
   borderRight: '5px solid transparent',
   borderBottom: '5px solid rgba(16, 80, 160, 0.94)',
+}
+
+function SceneReadyNotifier({ onReady }: { onReady: () => void }) {
+  useEffect(() => {
+    onReady()
+  }, [onReady])
+  return null
 }

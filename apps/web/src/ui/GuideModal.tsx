@@ -1,5 +1,6 @@
 import type { ContentIndex } from '@vm/shared'
 import { useState, useEffect } from 'react'
+import { useProgress } from '@react-three/drei'
 import { brand } from './theme.js'
 import { useMuseumStore } from '../store.js'
 import { RoomMap } from './RoomMap.js'
@@ -8,9 +9,11 @@ interface Props {
   content: ContentIndex
   onClose: () => void
   currentRoomId: string | null
+  sceneReady?: boolean
 }
 
-export function GuideModal({ content, onClose, currentRoomId }: Props) {
+export function GuideModal({ content, onClose, currentRoomId, sceneReady = true }: Props) {
+  const { progress, active } = useProgress()
   const navigationMode = useMuseumStore((s) => s.navigationMode)
   const setNavigationMode = useMuseumStore((s) => s.setNavigationMode)
   const [isMobile, setIsMobile] = useState(false)
@@ -32,16 +35,16 @@ export function GuideModal({ content, onClose, currentRoomId }: Props) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && sceneReady) {
         onClose()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  }, [onClose, sceneReady])
 
   return (
-    <div className="guide-overlay" onClick={onClose}>
+    <div className="guide-overlay" onClick={sceneReady ? onClose : undefined}>
       <style>{`
         .guide-overlay {
           position: fixed;
@@ -319,18 +322,67 @@ export function GuideModal({ content, onClose, currentRoomId }: Props) {
             max-height: 180px;
           }
         }
+        
+        .guide-loading-spinner {
+          width: 22px;
+          height: 22px;
+          border: 2.5px solid rgba(16, 80, 160, 0.15);
+          border-top: 2.5px solid ${brand.blue};
+          border-radius: 50%;
+          animation: guideSpinner 0.8s linear infinite;
+          margin-right: 5px;
+        }
+        @keyframes guideSpinner {
+          to { transform: rotate(360deg); }
+        }
+        
+        .guide-loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          max-width: 480px;
+          padding: 8px 0;
+          animation: guideFadeIn 0.3s ease-out;
+        }
+        .guide-loading-text {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: ${brand.blue};
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+        }
+        .guide-loading-progress-bar {
+          width: 100%;
+          height: 6px;
+          background: rgba(16, 80, 160, 0.08);
+          border-radius: 99px;
+          overflow: hidden;
+          position: relative;
+        }
+        .guide-loading-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, ${brand.blue}, #5cc3f6);
+          border-radius: 99px;
+          transition: width 0.25s ease-out;
+        }
       `}</style>
 
       <div className="guide-container" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="guide-header">
           <h2 className="guide-title">Phòng truyền thống - Hướng dẫn sử dụng</h2>
-          <button className="guide-close" onClick={onClose} aria-label="Đóng hướng dẫn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          {sceneReady ? (
+            <button className="guide-close" onClick={onClose} aria-label="Đóng hướng dẫn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          ) : (
+            <div className="guide-loading-spinner" title="Đang tải dữ liệu phòng..." />
+          )}
         </div>
 
         {/* Tab switcher for mobile */}
@@ -521,15 +573,28 @@ export function GuideModal({ content, onClose, currentRoomId }: Props) {
 
         {/* Footer */}
         <div className="guide-footer-content">
-          <div className="guide-footer-title">Vui lòng chọn chế độ di chuyển để bắt đầu</div>
-          <div className="guide-mode-options">
-            <button className="guide-mode-btn mode-ptp" onClick={() => handleSelectMode('point-to-point')}>
-              <div className="mode-btn-title">Tham quan theo khu vực cố định</div>
-            </button>
-            <button className="guide-mode-btn mode-free" onClick={() => handleSelectMode('free')}>
-              <div className="mode-btn-title">Tham quan di chuyển tự do</div>
-            </button>
-          </div>
+          {sceneReady ? (
+            <>
+              <div className="guide-footer-title">Vui lòng chọn chế độ di chuyển để bắt đầu</div>
+              <div className="guide-mode-options">
+                <button className="guide-mode-btn mode-ptp" onClick={() => handleSelectMode('point-to-point')}>
+                  <div className="mode-btn-title">Tham quan theo khu vực cố định</div>
+                </button>
+                <button className="guide-mode-btn mode-free" onClick={() => handleSelectMode('free')}>
+                  <div className="mode-btn-title">Tham quan di chuyển tự do</div>
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="guide-loading-container">
+              <div className="guide-loading-text">
+                Đang chuẩn bị không gian 3D... {Math.round(progress)}%
+              </div>
+              <div className="guide-loading-progress-bar">
+                <div className="guide-loading-progress-fill" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

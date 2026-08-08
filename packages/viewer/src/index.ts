@@ -1,7 +1,7 @@
 export { SceneCanvas } from './SceneCanvas.js'
 export { RoomScene } from './RoomScene.js'
 export { RoomModel, VM_SLOT_PREFIX, TITLE_PILL_PREFIX } from './RoomModel.js'
-export { HERO_SLOT_ID } from './slotIds.js'
+export { HERO_SLOT_ID, isBackdropSlotId } from './slotIds.js'
 export type { ExtractedSlot } from './RoomModel.js'
 export { buildRoomProps, buildRoomDataProps } from './roomUtils.js'
 export { SlotFrame } from './SlotFrame.js'
