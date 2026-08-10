@@ -2,9 +2,9 @@ import { DEFAULT_CONTENT, parseContent, splitContentForPublish } from '../../../
 
 interface Env {
   MEDIA_BUCKET: R2Bucket
+  DB: D1Database
   ALLOWED_ORIGIN: string
   PUBLIC_R2_URL: string // e.g. https://pub-xxx.r2.dev  (optional)
-  API_SECRET?: string
 }
 
 const DRAFT_KEY = 'draft.json'
@@ -41,27 +41,6 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
   const { pathname } = url
   const method = request.method
 
-  // Authenticate using API_SECRET if configured (Production)
-  if (env.API_SECRET) {
-    const isPublic =
-      method === 'GET' &&
-      (pathname === '/api/health' ||
-        pathname === '/api/content' ||
-        pathname.startsWith('/api/documents/') ||
-        pathname.startsWith('/content/media/') ||
-        pathname.startsWith('/content/documents/') ||
-        pathname.startsWith('/media/') ||
-        pathname.startsWith('/content/models/'))
-
-    if (!isPublic) {
-      const authHeader = request.headers.get('Authorization')
-      const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7).trim() : null
-      if (token !== env.API_SECRET) {
-        return json({ error: 'Unauthorized' }, 401)
-      }
-    }
-  }
-
   if (method === 'GET' && pathname === '/api/health') {
     return json({ ok: true })
   }
@@ -73,8 +52,6 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     const body = await obj.text()
     return new Response(body, { headers: { 'Content-Type': 'application/json' } })
   }
-
-
 
   if (method === 'GET' && pathname.startsWith('/api/documents/')) {
     const id = decodeURIComponent(pathname.replace('/api/documents/', '')).replace(/\.json$/, '')
@@ -207,7 +184,91 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
     return new Response(obj.body, { headers })
   }
 
+  // GET /api/visitor-count — public count for the landing page
+  if (method === 'GET' && pathname === '/api/visitor-count') {
+    try {
+      const stats = await getVisitorStats(env.DB)
+      return json({ count: stats.totalUv })
+    } catch (err) {
+      return json({ error: `D1 query failed: ${err}` }, 500)
+    }
+  }
+
+  // GET /api/stats — Get visitor count & analytics
+  if (method === 'GET' && pathname === '/api/stats') {
+    try {
+      return json(await getVisitorStats(env.DB))
+    } catch (err) {
+      return json({ error: `D1 query failed: ${err}` }, 500)
+    }
+  }
+
+  // POST /api/visit — Record page visit with visitorId
+  if (method === 'POST' && pathname === '/api/visit') {
+    try {
+      let visitorId = ''
+      try {
+        const body = await request.json() as { visitorId?: string }
+        visitorId = body.visitorId || ''
+      } catch {
+        return json({ error: 'Invalid JSON body' }, 400)
+      }
+
+      if (!/^[a-zA-Z0-9_-]{8,80}$/.test(visitorId)) {
+        return json({ error: 'visitorId is invalid' }, 400)
+      }
+
+      await env.DB.prepare(
+        "INSERT INTO visitor_logs (visitor_id) VALUES (?)"
+      ).bind(visitorId).run()
+
+      return json({ ok: true })
+    } catch (err) {
+      return json({ error: `D1 log failed: ${err}` }, 500)
+    }
+  }
+
   return json({ error: 'Not found' }, 404)
+}
+
+async function getVisitorStats(db: D1Database) {
+  const pvRes = await db.prepare(
+    "SELECT COUNT(*) as count FROM visitor_logs"
+  ).first<{ count: number }>()
+  const totalPv = pvRes?.count ?? 0
+
+  const uvRes = await db.prepare(
+    "SELECT COUNT(DISTINCT visitor_id) as count FROM visitor_logs"
+  ).first<{ count: number }>()
+  const totalUv = uvRes?.count ?? 0
+
+  const peakDayRes = await db.prepare(
+    "SELECT strftime('%Y-%m-%d', timestamp) as day, COUNT(DISTINCT visitor_id) as count FROM visitor_logs GROUP BY day ORDER BY count DESC LIMIT 1"
+  ).first<{ day: string; count: number }>()
+
+  const peakHourRes = await db.prepare(
+    "SELECT strftime('%H:00', timestamp) as hour, COUNT(DISTINCT visitor_id) as count FROM visitor_logs GROUP BY hour ORDER BY count DESC LIMIT 1"
+  ).first<{ hour: string; count: number }>()
+
+  const dailyRes = await db.prepare(
+    `SELECT
+       strftime('%Y-%m-%d', timestamp) as day,
+       COUNT(DISTINCT visitor_id) as unique_count,
+       COUNT(*) as total_count
+     FROM visitor_logs
+     WHERE timestamp >= datetime('now', '-7 days')
+     GROUP BY day
+     ORDER BY day ASC`
+  ).all<{ day: string; unique_count: number; total_count: number }>()
+
+  return {
+    count: totalUv,
+    totalUv,
+    totalPv,
+    peakDay: peakDayRes ? { day: peakDayRes.day, count: peakDayRes.count } : null,
+    peakHour: peakHourRes ? { hour: peakHourRes.hour, count: peakHourRes.count } : null,
+    dailyHistory: dailyRes.results ?? [],
+  }
 }
 
 async function seedDefaultContent(env: Env): Promise<Response> {
@@ -234,7 +295,7 @@ function cors(res: Response, requestOrigin: string, allowedOrigin: string): Resp
   const headers = new Headers(res.headers)
   headers.set('Access-Control-Allow-Origin', resolveAllowedOrigin(requestOrigin, allowedOrigin))
   headers.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  headers.set('Access-Control-Allow-Headers', 'Content-Type')
   headers.set('Access-Control-Allow-Credentials', 'true')
   headers.set('Vary', 'Origin')
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers })

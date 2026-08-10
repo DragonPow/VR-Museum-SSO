@@ -1,5 +1,18 @@
+import { useState, useEffect } from 'react'
 import type { ContentIndex } from '@vm/shared'
 import { brand } from '../ui/theme.js'
+
+const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
+
+function getOrCreateVisitorId(): string {
+  const key = 'visitor_id'
+  let id = localStorage.getItem(key)
+  if (!id) {
+    id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 15)
+    localStorage.setItem(key, id)
+  }
+  return id
+}
 
 interface Props {
   content: ContentIndex
@@ -9,6 +22,41 @@ interface Props {
 export function Landing({ content, onEnter }: Props) {
   const yearStart = Math.min(...content.periods.map((p) => p.yearStart))
   const yearEnd = Math.max(...content.periods.map((p) => p.yearEnd))
+
+  const [visitorCount, setVisitorCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    const visitorId = getOrCreateVisitorId()
+
+    // 1. Register current visit (Always register visit for PV count)
+    fetch(`${API_BASE}/api/visit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorId })
+    })
+      .then((res) => {
+        if (res.ok) {
+          localStorage.setItem('has_visited_museum', 'true')
+        }
+      })
+      .catch((err) => {
+        console.error('Error registering visit:', err)
+      })
+      .finally(() => {
+        // 2. Fetch updated visitor count (UV count)
+        fetch(`${API_BASE}/api/visitor-count`)
+          .then((res) => {
+            if (!res.ok) throw new Error('Failed to fetch visitor count')
+            return res.json() as Promise<{ count: number }>
+          })
+          .then((data) => {
+            setVisitorCount(data.count)
+          })
+          .catch((err) => {
+            console.error('Error fetching visitor count:', err)
+          })
+      })
+  }, [])
 
   return (
     <div style={styles.wrap} className="landing-content-wrap">
@@ -258,7 +306,38 @@ export function Landing({ content, onEnter }: Props) {
           filter: drop-shadow(0 2px 8px rgba(16, 80, 160, 0.06));
           z-index: 10;
         }
+        .visitor-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 20px;
+          padding: 8px 18px;
+          max-width: min(92vw, 420px);
+          background: rgba(255, 255, 255, 0.45);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 50px;
+          font-size: 13px;
+          color: #0b3a75;
+          font-weight: 500;
+          box-shadow: 0 4px 15px rgba(13, 85, 158, 0.04);
+          transition: all 0.25s ease-in-out;
+        }
 
+        .visitor-badge:hover {
+          background: rgba(255, 255, 255, 0.65);
+          box-shadow: 0 6px 18px rgba(13, 85, 158, 0.08);
+          transform: translateY(-1px);
+        }
+
+        .visitor-badge-icon {
+          width: 15px;
+          height: 15px;
+          flex-shrink: 0;
+          color: #1d7ce6;
+          opacity: 0.85;
+        }
         @media (max-height: 720px) {
           .landing-logo {
             top: 12px;
@@ -439,6 +518,7 @@ export function Landing({ content, onEnter }: Props) {
             top: clamp(24px, 4vh, 48px);
             height: 81px;
           }
+
         }
       `}</style>
       <div style={styles.bg} />
@@ -463,6 +543,18 @@ export function Landing({ content, onEnter }: Props) {
           <span>Bắt đầu tham quan</span>
           <ChevronRight className="cta-button-chevron" />
         </button>
+
+        {visitorCount !== null && (
+          <div className="visitor-badge">
+            <svg className="visitor-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Số lượt đã tham quan: <strong>{visitorCount.toLocaleString()}</strong> lượt</span>
+          </div>
+        )}
 
         <div className="badge-container">
           <div className="golden-badge landing-welcome-badge">

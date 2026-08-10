@@ -23,11 +23,7 @@ export class ApiError extends Error {
 
 async function apiFetch(path: string, init?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
   try {
-    const token = import.meta.env.VITE_API_SECRET
     const headers = new Headers(init?.headers)
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`)
-    }
 
     const res = await fetch(`${BASE}${path}`, {
       credentials: 'include',
@@ -210,4 +206,24 @@ export async function checkApi(): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+export interface DailyStat {
+  day: string
+  unique_count: number
+  total_count: number
+}
+
+export interface VisitorStats {
+  count: number
+  totalUv: number
+  totalPv: number
+  peakDay: { day: string; count: number } | null
+  peakHour: { hour: string; count: number } | null
+  dailyHistory: DailyStat[]
+}
+
+export async function getVisitorStats(): Promise<VisitorStats> {
+  const res = await apiFetch('/api/stats')
+  return res.json() as Promise<VisitorStats>
 }

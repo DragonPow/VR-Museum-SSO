@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useDraftStore } from './store.js'
 import { Layout } from './ui/Layout.js'
 import { Dashboard } from './pages/Dashboard.js'
+import { Analytics } from './pages/Analytics.js'
 import { Library } from './pages/Library.js'
 import { Assign } from './pages/Assign.js'
 import { Preview } from './pages/Preview.js'
@@ -23,6 +24,7 @@ export function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/library" element={<Library />} />
           <Route path="/assign" element={<Assign />} />
           <Route path="/preview" element={<Preview />} />
