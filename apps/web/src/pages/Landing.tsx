@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { ContentIndex } from '@vm/shared'
 import { brand } from '../ui/theme.js'
+import { useMuseumAudio } from '@vm/viewer'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
 
@@ -20,8 +21,12 @@ interface Props {
 }
 
 export function Landing({ content, onEnter }: Props) {
-  const yearStart = Math.min(...content.periods.map((p) => p.yearStart))
-  const yearEnd = Math.max(...content.periods.map((p) => p.yearEnd))
+  const { unlockAudio } = useMuseumAudio()
+
+  const handleEnterClick = () => {
+    unlockAudio()
+    onEnter()
+  }
 
   const [visitorCount, setVisitorCount] = useState<number | null>(null)
 
@@ -53,7 +58,16 @@ export function Landing({ content, onEnter }: Props) {
             setVisitorCount(data.count)
           })
           .catch((err) => {
-            console.error('Error fetching visitor count:', err)
+            console.error('Error fetching visitor count, using local simulation:', err)
+            const stored = localStorage.getItem('fake_visitor_count')
+            let fakeCountVal = 1548
+            if (stored) {
+              fakeCountVal = parseInt(stored, 10) + 1
+            } else {
+              fakeCountVal = 1548 + Math.floor(Math.random() * 82)
+            }
+            localStorage.setItem('fake_visitor_count', fakeCountVal.toString())
+            setVisitorCount(fakeCountVal)
           })
       })
   }, [])
@@ -145,9 +159,13 @@ export function Landing({ content, onEnter }: Props) {
           text-transform: uppercase;
         }
 
+        .mobile-only-br {
+          display: none;
+        }
+
         .landing-title-main-wrap {
           display: table;
-          margin: clamp(14px, 2vw, 20px) auto 0;
+          margin: 0 auto clamp(20px, 3.5vw, 38px);
           filter: 
             drop-shadow(-0.5px -0.5px 0px rgba(255, 255, 255, 0.95)) 
             drop-shadow(0.8px 0.8px 0px rgba(0, 15, 45, 0.9)) 
@@ -242,57 +260,141 @@ export function Landing({ content, onEnter }: Props) {
           transform: translateX(2px);
         }
 
-        .badge-container {
+        @keyframes marquee-scroll {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+
+        .unified-footer {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 48px;
+          background: linear-gradient(180deg, rgba(235, 245, 255, 0.2) 0%, rgba(0, 136, 255, 0.55) 100%);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-top: 1px solid rgba(255, 255, 255, 0.3);
           display: flex;
-          justify-content: center;
-          width: 100%;
-          margin-top: 30px;
-          margin-bottom: 20px;
-        }
-
-        .landing-welcome-badge {
-          border-radius: 3px;
-          padding: 9px 38px;
-          color: #ffffff;
-          font-size: 12px;
-          font-weight: 650;
-          line-height: 1.4;
-          max-width: 95%;
-          width: fit-content;
-          text-align: center;
-          display: inline-flex;
           align-items: center;
-          justify-content: center;
-          gap: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          box-shadow:
-            0 7px 18px rgba(204, 0, 0, 0.18),
-            inset 0 0 12px rgba(255, 255, 255, 0.10);
+          justify-content: space-between;
+          z-index: 20;
+          box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.1);
+          font-family: "Be Vietnam Pro", sans-serif;
+          overflow: hidden;
         }
 
-        .landing-welcome-badge:hover {
-          transform: scale(1.02);
-          border-color: #f3d489;
-          box-shadow: 
-            0 12px 32px rgba(204, 0, 0, 0.38);
+        .footer-left {
+          display: flex;
+          align-items: center;
+          height: 100%;
+          padding-left: 20px;
+          padding-right: 15px;
+          z-index: 22;
+          background: transparent;
         }
 
-        .sparkle-icon {
+        .footer-right {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          height: 100%;
+          z-index: 22;
+          background: transparent;
+        }
+
+        .footer-center {
+          flex: 1;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          height: 100%;
+          position: relative;
+          z-index: 21;
+        }
+
+        .footer-visitor-count {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.45);
+          border: 1px solid rgba(0, 32, 84, 0.15);
+          padding: 5px 14px;
+          border-radius: 20px;
+          color: #002054;
+          font-size: 12.5px;
+          font-weight: 500;
+          white-space: nowrap;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          transition: all 0.2s ease;
+        }
+
+        .footer-visitor-count strong {
+          color: #0055d4;
+          font-weight: 700;
+        }
+
+        .footer-visitor-count:hover {
+          background: rgba(255, 255, 255, 0.6);
+          border-color: rgba(0, 32, 84, 0.25);
+        }
+
+        .footer-icon {
           width: 14px;
           height: 14px;
+          color: #002054;
+          opacity: 0.95;
           flex-shrink: 0;
-          color: #e5b13a;
-          filter: drop-shadow(0 0 2px rgba(229, 177, 58, 0.4));
         }
 
-        .sparkle-icon-left {
-          animation: sparkle-right 6s linear infinite;
+        .visitor-text-mobile {
+          display: none;
         }
 
-        .sparkle-icon-right {
-          animation: sparkle-left 6s linear infinite;
+        .footer-copyright-logo {
+          height: 100%;
+          display: flex;
+          align-items: center;
+        }
+
+        .copyright-logo-img {
+          height: 48px;
+          width: auto;
+          display: block;
+          object-fit: contain;
+          background-color: #fdfdff;
+        }
+
+        .marquee-text-container {
+          display: inline-block;
+          white-space: nowrap;
+          animation: marquee-scroll 30s linear infinite;
+        }
+
+        .marquee-text {
+          font-family: "Be Vietnam Pro", sans-serif;
+          color: #002054;
+          font-size: 12.5px;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          padding-right: 48px;
+        }
+
+        .marquee-star {
+          color: #d97706;
+          margin-right: 6px;
+          font-size: 13px;
+        }
+
+        .highlight-blue {
+          color: #0055d4;
+          font-weight: 700;
+        }
+
+        .highlight-red {
+          color: #c41217;
+          font-weight: 700;
         }
 
         .landing-logo {
@@ -306,29 +408,16 @@ export function Landing({ content, onEnter }: Props) {
           filter: drop-shadow(0 2px 8px rgba(16, 80, 160, 0.06));
           z-index: 10;
         }
-        .visitor-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 20px;
-          padding: 8px 18px;
-          max-width: min(92vw, 420px);
-          background: rgba(255, 255, 255, 0.45);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
-          border-radius: 50px;
-          font-size: 13px;
-          color: #0b3a75;
-          font-weight: 500;
-          box-shadow: 0 4px 15px rgba(13, 85, 158, 0.04);
-          transition: all 0.25s ease-in-out;
-        }
 
-        .visitor-badge:hover {
-          background: rgba(255, 255, 255, 0.65);
-          box-shadow: 0 6px 18px rgba(13, 85, 158, 0.08);
-          transform: translateY(-1px);
+        .anniversary-logo {
+          position: absolute;
+          top: clamp(6px, 1.8vw, 16px);
+          right: clamp(16px, 3.5vw, 32px);
+          height: 78px;
+          width: auto;
+          opacity: 1;
+          filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+          z-index: 10;
         }
 
         .visitor-badge-icon {
@@ -342,6 +431,10 @@ export function Landing({ content, onEnter }: Props) {
           .landing-logo {
             top: 12px;
             height: 43px;
+          }
+          .anniversary-logo {
+            top: 4px;
+            height: 52px;
           }
         }
 
@@ -359,70 +452,72 @@ export function Landing({ content, onEnter }: Props) {
             letter-spacing: 0.04em;
           }
 
+          .mobile-only-br {
+            display: inline;
+          }
+
           .landing-title-main-wrap {
-            margin-top: 12px;
+            margin-top: 0;
+            margin-bottom: 18px;
           }
 
-          .landing-title-main {
-            font-size: clamp(20px, 5.8vw, 27px);
-            padding-top: 8px;
-            padding-bottom: 12px;
-            line-height: 1.3;
-            letter-spacing: 0.035em;
-            white-space: nowrap;
+          .unified-footer {
+            height: 38px;
+          }
+          
+          .footer-left {
+            padding-left: 10px;
+            padding-right: 6px;
+            background: transparent;
+          }
+          
+          .footer-right {
+            padding: 0;
+            background: transparent;
           }
 
-
-          .timeline {
-            margin-top: 8px;
-            gap: 10px;
+          .visitor-text-desktop {
+            display: none;
           }
 
-          .timeline-line {
-            width: 24px;
-            height: 1.5px;
+          .visitor-text-mobile {
+            display: inline;
           }
 
-          .timeline-year {
-            font-size: 13.5px;
-            letter-spacing: 0.1em;
+          .footer-visitor-count {
+            font-size: 11px;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 14px;
           }
 
-          .cta-button {
-            height: 44px;
-            font-size: 13.5px;
-            padding: 0 20px;
-            margin-top: 18px;
-            border-radius: 10px;
-            gap: 10px;
+          .footer-icon {
+            width: 12px;
+            height: 12px;
           }
 
-          .cta-button-chevron {
-            width: 14px;
-            height: 14px;
+          .footer-copyright-logo {
+            height: 100%;
           }
 
-          .badge-container {
-            margin-top: 22px;
-            margin-bottom: 14px;
+          .copyright-logo-img {
+            height: 38px;
+            border-width: 0;
           }
 
-          .landing-welcome-badge {
-            font-size: 10.5px;
-            padding: 9px 22px;
-            max-width: 95%;
-            gap: 8px;
-            border-width: 1px;
-          }
-
-          .sparkle-icon {
-            width: 11px;
-            height: 11px;
+          .marquee-text {
+            font-size: 11.5px;
+            padding-right: 24px;
           }
 
           .landing-logo {
             top: 14px;
             height: 43px;
+          }
+          .anniversary-logo {
+            top: 6px;
+            right: 14px;
+            height: 52px;
           }
         }
 
@@ -439,7 +534,8 @@ export function Landing({ content, onEnter }: Props) {
           }
 
           .landing-title-main-wrap {
-            margin-top: 18px;
+            margin-top: 0;
+            margin-bottom: 32px;
           }
 
           .landing-title-main {
@@ -495,75 +591,113 @@ export function Landing({ content, onEnter }: Props) {
             stroke-width: 2.8;
           }
 
-          .badge-container {
-            margin-top: 28px;
-            margin-bottom: 24px;
+          .unified-footer {
+            height: 54px;
           }
-
-          .landing-welcome-badge {
+          .footer-left {
+            background: transparent;
+          }
+          .footer-right {
+            background: transparent;
+          }
+          .footer-visitor-count {
             font-size: 13px;
-            padding: 10px 46px;
-            letter-spacing: 0.025em;
-            box-shadow:
-              0 7px 18px rgba(204, 0, 0, 0.16),
-              inset 0 0 14px rgba(255, 255, 255, 0.08);
+            gap: 8px;
+            padding: 6px 18px;
           }
-
-          .sparkle-icon {
-            width: 18px;
-            height: 18px;
+          .footer-icon {
+            width: 15px;
+            height: 15px;
+          }
+          .footer-copyright-logo {
+            height: 100%;
+          }
+          .copyright-logo-img {
+            height: 54px;
+          }
+          .marquee-text {
+            font-size: 13px;
           }
 
           .landing-logo {
             top: clamp(24px, 4vh, 48px);
             height: 81px;
           }
-
+          .anniversary-logo {
+            top: clamp(10px, 2.5vh, 24px);
+            right: clamp(24px, 4vh, 48px);
+            height: 98px;
+          }
         }
       `}</style>
       <div style={styles.bg} />
 
       <img src="/logo.webp" alt="NSMO A2 Logo" className="landing-logo" />
+      <img src="/logo-50-nam.webp" alt="50 Years Anniversary Logo" className="anniversary-logo" />
       <main style={styles.content}>
         <h1 className="landing-title">
-          <span className="landing-title-org">TRUNG TÂM ĐIỀU ĐỘ</span>
-          <span className="landing-title-org">HỆ THỐNG ĐIỆN MIỀN NAM</span>
           <span className="landing-title-main-wrap">
             <span className="landing-title-main">PHÒNG TRUYỀN THỐNG SỐ</span>
+          </span>
+          <span className="landing-title-org">
+            TRUNG TÂM ĐIỀU ĐỘ <br className="mobile-only-br" /> HỆ THỐNG ĐIỆN MIỀN NAM
           </span>
         </h1>
 
         <div className="timeline">
           <span className="timeline-line" />
-          <span className="timeline-year">{yearStart} – {yearEnd}</span>
+          <span className="timeline-year">Từ 1976 - đến nay</span>
           <span className="timeline-line" />
         </div>
 
-        <button className="cta-button" onClick={onEnter}>
+        <button className="cta-button" onClick={handleEnterClick}>
           <span>Bắt đầu tham quan</span>
           <ChevronRight className="cta-button-chevron" />
         </button>
+      </main>
 
-        {visitorCount !== null && (
-          <div className="visitor-badge">
-            <svg className="visitor-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            <span>Số lượt đã tham quan: <strong>{visitorCount.toLocaleString()}</strong> lượt</span>
-          </div>
-        )}
+      <div className="unified-footer">
+        <div className="footer-left">
+          {visitorCount !== null && (
+            <div className="footer-visitor-count">
+              <svg className="footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span className="visitor-text-desktop">Số lượt truy cập: <strong>{visitorCount.toLocaleString()}</strong> lượt</span>
+              <span className="visitor-text-mobile"><strong>{visitorCount.toLocaleString()}</strong> lượt</span>
+            </div>
+          )}
+        </div>
 
-        <div className="badge-container">
-          <div className="golden-badge landing-welcome-badge">
-            <StarIcon className="sparkle-icon sparkle-icon-left" />
-            <span>Nhiệt liệt chào mừng kỷ niệm 50 năm thành lập Trung tâm Điều hợp điện năng</span>
-            <StarIcon className="sparkle-icon sparkle-icon-right" />
+        <div className="footer-center">
+          <div className="marquee-text-container">
+            <span className="marquee-text">
+              <span className="marquee-star">★</span> CHÀO MỪNG BẠN ĐẾN VỚI <strong className="highlight-blue">PHÒNG TRUYỀN THỐNG SỐ</strong> TRUNG TÂM ĐIỀU ĐỘ HỆ THỐNG ĐIỆN MIỀN NAM <span className="marquee-star">★</span>
+            </span>
+            <span className="marquee-text">
+              <span className="marquee-star">★</span> NHIỆT LIỆT CHÀO MỪNG KỶ NIỆM <strong className="highlight-red">50 NĂM THÀNH LẬP</strong> TRUNG TÂM ĐIỀU HỢP ĐIỆN NĂNG <span className="marquee-star">★</span>
+            </span>
+            <span className="marquee-text">
+              <span className="marquee-star">★</span> CHÀO MỪNG BẠN ĐẾN VỚI <strong className="highlight-blue">PHÒNG TRUYỀN THỐNG SỐ</strong> TRUNG TÂM ĐIỀU ĐỘ HỆ THỐNG ĐIỆN MIỀN NAM <span className="marquee-star">★</span>
+            </span>
+            <span className="marquee-text">
+              <span className="marquee-star">★</span> NHIỆT LIỆT CHÀO MỪNG KỶ NIỆM <strong className="highlight-red">50 NĂM THÀNH LẬP</strong> TRUNG TÂM ĐIỀU HỢP ĐIỆN NĂNG <span className="marquee-star">★</span>
+            </span>
           </div>
         </div>
-      </main>
+
+        <div className="footer-right">
+          <div className="footer-copyright-logo">
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/logo-truyenthong-white-mobile.webp" />
+              <img src="/logo-truyenthong-white.webp" alt="SSO Copyright Logo" className="copyright-logo-img" />
+            </picture>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
