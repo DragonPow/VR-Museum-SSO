@@ -321,6 +321,7 @@ function UploadModal({ periods, onClose, onDone }: {
   const [images, setImages] = useState<PendingUploadImage[]>([])
   const [formViewerImageId, setFormViewerImageId] = useState<string>('')
   const [formThumbnailImageId, setFormThumbnailImageId] = useState<string>('')
+  const [formDetailImageIds, setFormDetailImageIds] = useState<string[]>([])
   const [step, setStep] = useState<UploadStep>('form')
   const [uploadProgress, setUploadProgress] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -372,6 +373,7 @@ function UploadModal({ periods, onClose, onDone }: {
       }
       return updated
     })
+    setFormDetailImageIds((prev) => [...prev, ...newImages.map((img) => img.id)])
 
     const firstFile = fileList[0]
     if (fileList.length === 1 && images.length === 0 && firstFile && !form.title) {
@@ -413,6 +415,7 @@ function UploadModal({ periods, onClose, onDone }: {
       }
       return nextImages
     })
+    setFormDetailImageIds((prev) => prev.filter((x) => x !== id))
   }
 
   const updateImageCaption = (id: string, caption: string) => {
@@ -577,7 +580,7 @@ function UploadModal({ periods, onClose, onDone }: {
         documentKey: itemId,
         thumbnailImageId: formThumbnailImageId || images[0]?.id || 'photo1',
         viewerImageId: formViewerImageId || images[0]?.id || 'photo1',
-        detailImageIds: uploadedImages.map((img) => img.id),
+        detailImageIds: uploadedImages.map((img) => img.id).filter((id) => formDetailImageIds.includes(id)),
         images: uploadedImages,
         mediaType: form.contentType,
         ...(form.contentType === 'youtube' ? { embedUrl: normalizeYouTubeUrl(form.embedUrl) } : {}),
@@ -588,9 +591,9 @@ function UploadModal({ periods, onClose, onDone }: {
         } : {}),
         ...(hasLinks ? { externalLinks: finalLinks } : {}),
         imageBgPreset: form.imageBgPreset,
-      ...(form.audioUrl.trim() ? { audioUrl: form.audioUrl.trim() } : {}),
-      audioVolume: clampAudioVolumeInput(form.audioVolume),
-      audioLoop: form.audioLoop,
+        ...(form.audioUrl.trim() ? { audioUrl: form.audioUrl.trim() } : {}),
+        audioVolume: clampAudioVolumeInput(form.audioVolume),
+        audioLoop: form.audioLoop,
       }
 
       setStep('done')
@@ -822,6 +825,22 @@ function UploadModal({ periods, onClose, onDone }: {
                         onChange={(e) => updateImageCaption(img.id, e.target.value)}
                         disabled={busy}
                       />
+                      <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#9a9080', fontSize: '12px', marginTop: '2px', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          style={{ cursor: 'pointer' }}
+                          checked={formDetailImageIds.includes(img.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormDetailImageIds((prev) => [...prev, img.id])
+                            } else {
+                              setFormDetailImageIds((prev) => prev.filter((id) => id !== img.id))
+                            }
+                          }}
+                          disabled={busy}
+                        />
+                        Hiển thị trong chi tiết (Detail)
+                      </label>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button
                           type="button"
@@ -914,6 +933,7 @@ function EditModal({ item, periods, onClose, onSave }: {
   const initialImages = item.images?.length > 0 ? item.images : [{ id: item.viewerImageId || 'photo1' }]
   const [images, setImages] = useState<DocumentImage[]>(initialImages)
   const [removedImageIds, setRemovedImageIds] = useState<string[]>([])
+  const [formDetailImageIds, setFormDetailImageIds] = useState<string[]>(Array.isArray(item.detailImageIds) ? item.detailImageIds : [])
   const [mediaBusy, setMediaBusy] = useState('')
   const [mediaError, setMediaError] = useState('')
   const replaceMainRef = useRef<HTMLInputElement>(null)
@@ -954,6 +974,7 @@ function EditModal({ item, periods, onClose, onSave }: {
         }
       }
       setImages((prev) => [...prev, ...added])
+      setFormDetailImageIds((prev) => [...prev, ...added.map((img) => img.id)])
     } catch (err) {
       setMediaError(String(err))
     } finally {
@@ -970,6 +991,7 @@ function EditModal({ item, periods, onClose, onSave }: {
       setRemovedImageIds((prev) => [...prev, id])
     }
     setImages((prev) => prev.filter((image) => image.id !== id || image.id === form.viewerImageId || image.id === form.thumbnailImageId))
+    setFormDetailImageIds((prev) => prev.filter((x) => x !== id))
   }
 
   const handleMoveImage = (index: number, direction: 'up' | 'down') => {
@@ -1021,17 +1043,17 @@ function EditModal({ item, periods, onClose, onSave }: {
       periodId: form.periodId,
       priority: form.priority || 0,
       imageBgPreset: form.imageBgPreset,
-      ...(form.audioUrl.trim() ? { audioUrl: form.audioUrl.trim() } : {}),
-      audioVolume: clampAudioVolumeInput(form.audioVolume),
-      audioLoop: form.audioLoop,
       summary: form.summary.trim(),
       body: form.body.trim(),
       tags: splitTags(form.tags),
       source: form.source.trim(),
       thumbnailImageId: form.thumbnailImageId || images[0]?.id || 'photo1',
       viewerImageId: form.viewerImageId || images[0]?.id || 'photo1',
-      detailImageIds: images.map((image) => image.id),
+      detailImageIds: formDetailImageIds.filter((id) => images.some((img) => img.id === id)),
       images,
+      audioUrl: form.audioUrl.trim() || null,
+      audioVolume: clampAudioVolumeInput(form.audioVolume),
+      audioLoop: form.audioLoop,
     }
 
     const clearField = (key: keyof DocumentItem) => {
@@ -1297,6 +1319,21 @@ function EditModal({ item, periods, onClose, onSave }: {
                   <div style={styles.mediaFields}>
                     <div style={styles.mediaKind}>{image.id === form.viewerImageId ? 'Ảnh viewer' : image.id === form.thumbnailImageId ? 'Ảnh thumbnail' : 'Ảnh phụ'}</div>
                     <input style={styles.input} value={image.caption ?? ''} placeholder="Caption" onChange={(e) => updateImage(image.id, { caption: e.target.value })} />
+                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#9a9080', fontSize: '12px', marginTop: '2px', userSelect: 'none' }}>
+                      <input
+                        type="checkbox"
+                        style={{ cursor: 'pointer' }}
+                        checked={formDetailImageIds.includes(image.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormDetailImageIds((prev) => [...prev, image.id])
+                          } else {
+                            setFormDetailImageIds((prev) => prev.filter((id) => id !== image.id))
+                          }
+                        }}
+                      />
+                      Hiển thị trong chi tiết (Detail)
+                    </label>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button
                         style={{

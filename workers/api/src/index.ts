@@ -188,7 +188,7 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
   if (method === 'GET' && pathname === '/api/visitor-count') {
     try {
       const stats = await getVisitorStats(env.DB)
-      return json({ count: stats.totalUv })
+      return json({ count: stats.totalPv })
     } catch (err) {
       return json({ error: `D1 query failed: ${err}` }, 500)
     }
@@ -235,7 +235,8 @@ async function getVisitorStats(db: D1Database) {
   const pvRes = await db.prepare(
     "SELECT COUNT(*) as count FROM visitor_logs"
   ).first<{ count: number }>()
-  const totalPv = pvRes?.count ?? 0
+  const initTotal = 1028
+  const totalPv = (pvRes?.count ?? 0) + initTotal
 
   const uvRes = await db.prepare(
     "SELECT COUNT(DISTINCT visitor_id) as count FROM visitor_logs"
