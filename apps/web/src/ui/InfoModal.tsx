@@ -133,9 +133,9 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
             )
             const imageUrls = getDocumentImages(item)
             const isIframeOrYoutube = (item.mediaType === 'youtube' || item.mediaType === 'iframe') && item.embedUrl
-            const preset = item.imageBgPreset ?? 'dark'
-            const bgColor = BG_COLORS[preset] ?? BG_COLORS.dark
-            const captionColor = CAPTION_COLORS[preset] ?? CAPTION_COLORS.dark
+            const preset = item.imageBgPreset ?? 'transparent'
+            const bgColor = BG_COLORS[preset] ?? BG_COLORS.transparent
+            const captionColor = CAPTION_COLORS[preset] ?? CAPTION_COLORS.transparent
 
             return (
               <div key={item.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -301,7 +301,7 @@ function ExternalLinkIcon() {
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: { position: 'fixed', inset: 0, background: 'rgba(8,47,109,0.42)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '18px', backdropFilter: 'blur(4px)' },
-  panel: { display: 'flex', background: '#f8fbff', border: `1px solid ${brand.line}`, borderRadius: '10px', width: '100%', maxHeight: '92vh', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 70px rgba(8,47,109,0.3)' },
+  panel: { display: 'flex', background: '#eef7ff', border: `1px solid ${brand.line}`, borderRadius: '10px', width: '100%', maxHeight: '92vh', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 70px rgba(8,47,109,0.3)' },
   panelWithText: { maxWidth: '1240px' },
   panelImageOnly: { maxWidth: '1180px' },
   panelCompact: { overflowY: 'auto', overflowX: 'hidden' },
@@ -319,7 +319,7 @@ const styles: Record<string, React.CSSProperties> = {
   imageCompact: { maxHeight: 'none', width: '100%' },
   caption: { color: 'rgba(255,255,255,0.78)', fontSize: '12px', textAlign: 'center' },
   yearBadge: { position: 'absolute', bottom: '14px', left: '16px', background: 'rgba(255,255,255,0.92)', border: `1px solid ${brand.line}`, color: brand.blue, borderRadius: '6px', padding: '4px 11px', fontSize: '13px', fontWeight: 800 },
-  body: { flex: 1, minWidth: 0, padding: '34px 34px 32px', background: 'linear-gradient(180deg,#ffffff,#eef7ff)' },
+  body: { flex: 1, minWidth: 0, padding: '34px 34px 32px', background: '#eef7ff' },
   bodyCompact: { flex: '0 0 auto', overflowY: 'visible' },
   bodySticky: { position: 'sticky', top: 0, alignSelf: 'flex-start', maxHeight: '92vh', overflowY: 'auto' },
   kicker: { fontSize: '11px', color: brand.blue, textTransform: 'uppercase', fontWeight: 900, letterSpacing: 0, marginBottom: '10px' },

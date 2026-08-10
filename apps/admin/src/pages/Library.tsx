@@ -337,7 +337,7 @@ function UploadModal({ periods, onClose, onDone }: {
     priority: 0, summary: '', body: '', tags: '', source: '',
     embedUrl: '', externalUrl: '', externalLabel: '',
     externalLinks: [] as ExternalLink[],
-    imageBgPreset: 'dark' as ImageBgPreset,
+    imageBgPreset: 'transparent' as ImageBgPreset,
   })
 
   const handleFiles = (files: FileList | File[]) => {
@@ -749,10 +749,10 @@ function UploadModal({ periods, onClose, onDone }: {
             </FormField>
             <FormField label="Màu nền hiển thị chi tiết" style={{ gridColumn: '1 / -1' }}>
               <select style={styles.input} value={form.imageBgPreset} onChange={(e) => setForm((f) => ({ ...f, imageBgPreset: e.target.value as ImageBgPreset }))}>
-                <option value="dark">Tối (Mặc định)</option>
+                <option value="transparent">Trong suốt / Trắng nền (Mặc định)</option>
+                <option value="dark">Tối (Navy đen)</option>
                 <option value="light">Sáng (Màu khói)</option>
                 <option value="warm">Ấm (Màu kem ngà)</option>
-                <option value="transparent">Trong suốt / Trắng nền</option>
               </select>
             </FormField>
             <FormField label="Mô tả ngắn" style={{ gridColumn: '1 / -1' }}>
@@ -879,7 +879,7 @@ function EditModal({ item, periods, onClose, onSave }: {
     externalLinks: item.externalLinks ?? [] as ExternalLink[],
     thumbnailImageId: item.thumbnailImageId,
     viewerImageId: item.viewerImageId,
-    imageBgPreset: (item.imageBgPreset ?? 'dark') as ImageBgPreset,
+    imageBgPreset: (item.imageBgPreset ?? 'transparent') as ImageBgPreset,
   })
   const initialImages = item.images?.length > 0 ? item.images : [{ id: item.viewerImageId || 'photo1' }]
   const [images, setImages] = useState<DocumentImage[]>(initialImages)
@@ -1206,10 +1206,10 @@ function EditModal({ item, periods, onClose, onSave }: {
             </FormField>
             <FormField label="Màu nền hiển thị chi tiết" style={{ gridColumn: '1 / -1' }}>
               <select style={styles.input} value={form.imageBgPreset} onChange={(e) => setForm((f) => ({ ...f, imageBgPreset: e.target.value as ImageBgPreset }))}>
-                <option value="dark">Tối (Mặc định)</option>
+                <option value="transparent">Trong suốt / Trắng nền (Mặc định)</option>
+                <option value="dark">Tối (Navy đen)</option>
                 <option value="light">Sáng (Màu khói)</option>
                 <option value="warm">Ấm (Màu kem ngà)</option>
-                <option value="transparent">Trong suốt / Trắng nền</option>
               </select>
             </FormField>
             <FormField label="Mô tả ngắn" style={{ gridColumn: '1 / -1' }}>
