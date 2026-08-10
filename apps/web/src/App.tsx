@@ -1,9 +1,11 @@
 import { useState, Component } from 'react'
 import type { ReactNode } from 'react'
+import type { ContentIndex } from '@vm/shared'
 import { useContentIndex } from './content/useContentIndex.js'
 import { Landing } from './pages/Landing.js'
 import { Tour } from './pages/Tour.js'
 import { brand } from './ui/theme.js'
+import { AudioProvider, useMuseumAudio } from '@vm/viewer'
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   override state = { error: null }
@@ -43,8 +45,26 @@ export function App() {
 
   const { data: content } = state
 
+  return (
+    <AudioProvider>
+      <AppView view={view} setView={setView} content={content} />
+    </AudioProvider>
+  )
+}
+
+function AppView({ view, setView, content }: { view: View; setView: (view: View) => void; content: ContentIndex }) {
+  const { setMuted } = useMuseumAudio()
+
   if (view === 'landing') {
-    return <Landing content={content} onEnter={() => setView('tour')} />
+    return (
+      <Landing
+        content={content}
+        onEnter={() => {
+          setMuted(false)
+          setView('tour')
+        }}
+      />
+    )
   }
 
   return (

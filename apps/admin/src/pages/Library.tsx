@@ -11,6 +11,11 @@ const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$
 const assetUrl = (documentKey?: string | null, imageId?: string | null, variant: 'thumb' | 'wall' | 'full' = 'thumb') =>
   resolveDocumentImageVariantUrl(documentKey, imageId, variant, { assetBaseUrl: ASSET_BASE_URL, assetVersion: import.meta.env.VITE_ASSET_VERSION ?? '' }) ?? undefined
 
+function clampAudioVolumeInput(value: number | null | undefined, fallback = 1.0): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
+  return Math.max(0, Math.min(1, value))
+}
+
 type UploadStep = 'form' | 'resizing' | 'uploading' | 'done' | 'error'
 type ContentItemType = 'image' | 'youtube' | 'iframe' | 'external'
 
@@ -338,6 +343,9 @@ function UploadModal({ periods, onClose, onDone }: {
     embedUrl: '', externalUrl: '', externalLabel: '',
     externalLinks: [] as ExternalLink[],
     imageBgPreset: 'transparent' as ImageBgPreset,
+    audioUrl: '',
+    audioVolume: 1.0,
+    audioLoop: false,
   })
 
   const handleFiles = (files: FileList | File[]) => {
@@ -476,6 +484,9 @@ function UploadModal({ periods, onClose, onDone }: {
       } : {}),
       ...(hasLinks ? { externalLinks: finalLinks } : {}),
       imageBgPreset: form.imageBgPreset,
+      ...(form.audioUrl.trim() ? { audioUrl: form.audioUrl.trim() } : {}),
+      audioVolume: clampAudioVolumeInput(form.audioVolume),
+      audioLoop: form.audioLoop,
     }
 
     const validationResult = DocumentItemSchema.safeParse(tempItem)
@@ -577,6 +588,9 @@ function UploadModal({ periods, onClose, onDone }: {
         } : {}),
         ...(hasLinks ? { externalLinks: finalLinks } : {}),
         imageBgPreset: form.imageBgPreset,
+      ...(form.audioUrl.trim() ? { audioUrl: form.audioUrl.trim() } : {}),
+      audioVolume: clampAudioVolumeInput(form.audioVolume),
+      audioLoop: form.audioLoop,
       }
 
       setStep('done')
@@ -767,6 +781,19 @@ function UploadModal({ periods, onClose, onDone }: {
             <FormField label="Nguồn / Tác giả" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
             </FormField>
+            <FormField label="File âm thanh tư liệu (Audio URL)" style={{ gridColumn: '1 / -1' }}>
+              <input style={styles.input} placeholder="VD: /content/audio/example.mp3 (không bắt buộc)" value={form.audioUrl} onChange={(e) => setForm((f) => ({ ...f, audioUrl: e.target.value }))} />
+            </FormField>
+            <FormField label="Âm lượng âm thanh (0.0 đến 1.0)">
+              <input style={styles.input} type="number" min="0" max="1" step="0.1" value={form.audioVolume} onChange={(e) => setForm((f) => {
+                const next = Number(e.target.value)
+                return { ...f, audioVolume: clampAudioVolumeInput(next, f.audioVolume) }
+              })} />
+            </FormField>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1', cursor: 'pointer', color: '#eae6df', fontSize: 13, marginTop: 4 }}>
+              <input type="checkbox" checked={form.audioLoop} onChange={(e) => setForm((f) => ({ ...f, audioLoop: e.target.checked }))} />
+              Tự động lặp lại (Loop) file âm thanh tư liệu này
+            </label>
           </div>
 
           {images.length > 0 && (
@@ -880,6 +907,9 @@ function EditModal({ item, periods, onClose, onSave }: {
     thumbnailImageId: item.thumbnailImageId,
     viewerImageId: item.viewerImageId,
     imageBgPreset: (item.imageBgPreset ?? 'transparent') as ImageBgPreset,
+    audioUrl: item.audioUrl ?? '',
+    audioVolume: item.audioVolume ?? 1.0,
+    audioLoop: item.audioLoop ?? false,
   })
   const initialImages = item.images?.length > 0 ? item.images : [{ id: item.viewerImageId || 'photo1' }]
   const [images, setImages] = useState<DocumentImage[]>(initialImages)
@@ -991,6 +1021,9 @@ function EditModal({ item, periods, onClose, onSave }: {
       periodId: form.periodId,
       priority: form.priority || 0,
       imageBgPreset: form.imageBgPreset,
+      ...(form.audioUrl.trim() ? { audioUrl: form.audioUrl.trim() } : {}),
+      audioVolume: clampAudioVolumeInput(form.audioVolume),
+      audioLoop: form.audioLoop,
       summary: form.summary.trim(),
       body: form.body.trim(),
       tags: splitTags(form.tags),
@@ -1007,6 +1040,11 @@ function EditModal({ item, periods, onClose, onSave }: {
 
     if (!form.year.trim()) {
       clearField('year')
+    }
+
+    if (!form.audioUrl.trim()) {
+      clearField('audioUrl')
+      clearField('audioLoop')
     }
 
     if (form.contentType === 'youtube') {
@@ -1224,6 +1262,19 @@ function EditModal({ item, periods, onClose, onSave }: {
             <FormField label="Nguồn" style={{ gridColumn: '1 / -1' }}>
               <input style={styles.input} value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
             </FormField>
+            <FormField label="File âm thanh tư liệu (Audio URL)" style={{ gridColumn: '1 / -1' }}>
+              <input style={styles.input} placeholder="VD: /content/audio/example.mp3 (không bắt buộc)" value={form.audioUrl} onChange={(e) => setForm((f) => ({ ...f, audioUrl: e.target.value }))} />
+            </FormField>
+            <FormField label="Âm lượng âm thanh (0.0 đến 1.0)">
+              <input style={styles.input} type="number" min="0" max="1" step="0.1" value={form.audioVolume} onChange={(e) => setForm((f) => {
+                const next = Number(e.target.value)
+                return { ...f, audioVolume: clampAudioVolumeInput(next, f.audioVolume) }
+              })} />
+            </FormField>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1', cursor: 'pointer', color: '#eae6df', fontSize: 13, marginTop: 4 }}>
+              <input type="checkbox" checked={form.audioLoop} onChange={(e) => setForm((f) => ({ ...f, audioLoop: e.target.checked }))} />
+              Tự động lặp lại (Loop) file âm thanh tư liệu này
+            </label>
           </div>
 
           <div style={styles.mediaPanel}>

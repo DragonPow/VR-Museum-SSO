@@ -108,6 +108,10 @@ export interface Room {
   viewpoints: Viewpoint[]
   slots: Slot[]
   portals: RoomPortal[]
+  ambientAudioUrl?: string | null | undefined
+  ambientAudioUrls?: string[] | undefined
+  ambientAudioLoop?: boolean | undefined
+  ambientAudioVolume?: number | undefined
 }
 
 export interface DocumentImage {
@@ -154,6 +158,9 @@ export interface DocumentItem {
   source: string
   priority: number
   imageBgPreset?: ImageBgPreset
+  audioUrl?: string | null | undefined
+  audioVolume?: number | undefined
+  audioLoop?: boolean | undefined
 }
 
 export interface TextureAsset {

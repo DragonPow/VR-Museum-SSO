@@ -13,6 +13,7 @@ import {
   shouldUseFallback,
   preloadUrls,
   isBackdropSlotId,
+  useMuseumAudio,
 } from '@vm/viewer'
 import { useMuseumStore, useCurrentRoomStub } from '../store.js'
 import { useRoom } from '../content/useRoom.js'
@@ -48,6 +49,16 @@ export function Tour({ content, onBack }: Props) {
     navigationMode,
     setNavigationMode,
   } = useMuseumStore()
+
+  const {
+    muted,
+    setMuted,
+    playAmbientPlaylist,
+    stopAmbient,
+    playItemPlaylist,
+    stopItemAudio,
+    stopAll,
+  } = useMuseumAudio()
 
   const { gyroEnabled, toggleGyro } = useGyroToggle()
   const isMobile = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent)
@@ -139,6 +150,59 @@ export function Tour({ content, onBack }: Props) {
     }
   }, [roomState.status, activeViewpointId, setActiveViewpoint, roomState])
 
+  // 1. Play ambient audio when room changes
+  useEffect(() => {
+    if (roomState.status === 'ok') {
+      const { room } = buildRoomDataProps(roomState.data, content.textures)
+      const ambientUrls = room.ambientAudioUrls?.length
+        ? room.ambientAudioUrls
+        : room.ambientAudioUrl
+          ? [room.ambientAudioUrl]
+          : []
+      if (ambientUrls.length > 0) {
+        playAmbientPlaylist(ambientUrls.map((url) => ({
+          url,
+          loop: room.ambientAudioLoop ?? true,
+          volume: room.ambientAudioVolume ?? 0.25,
+        })))
+        return
+      }
+    }
+    stopAmbient()
+  }, [
+    roomState.status,
+    roomState.status === 'ok' ? roomState.data.id : null,
+    roomState.status === 'ok' ? roomState.data.ambientAudioUrl : null,
+    roomState.status === 'ok' ? roomState.data.ambientAudioUrls?.join('\\n') : null,
+    roomState.status === 'ok' ? roomState.data.ambientAudioLoop : null,
+    roomState.status === 'ok' ? roomState.data.ambientAudioVolume : null,
+    content.textures
+  ])
+
+  // 2. Play item audio playlist when document details are opened
+  useEffect(() => {
+    const playlist = selectedDocuments
+      .filter((doc) => doc.audioUrl)
+      .map((doc) => ({
+        url: doc.audioUrl!,
+        volume: doc.audioVolume,
+        loop: doc.audioLoop,
+      }))
+
+    if (playlist.length > 0) {
+      playItemPlaylist(playlist)
+    } else {
+      stopItemAudio()
+    }
+  }, [selectedSlotId, selectedDocuments])
+
+  // 3. Stop all audio when page unmounts (leaving tour page)
+  useEffect(() => {
+    return () => {
+      stopAll()
+    }
+  }, [])
+
   if (!currentRoomId || !roomStub) return null
 
   const handleSlotSelect = (slotId: string, documents: DocumentIndexItem[]) => {
@@ -182,6 +246,7 @@ export function Tour({ content, onBack }: Props) {
   if (!activeViewpointId) return <RoomLoadingScreen />
 
   const { room, documents, textures } = buildRoomDataProps(roomState.data, content.textures)
+
 
   const currentSlot = room.slots.find((s) => s.id === selectedSlotId)
   const currentZone = currentSlot?.zone
@@ -239,6 +304,23 @@ export function Tour({ content, onBack }: Props) {
 
       {/* Top-right action buttons */}
       <div style={topRightContainer}>
+        {/* Âm thanh */}
+        <button
+          style={{
+            ...homeBtn,
+            background: muted ? 'rgba(255, 255, 255, 0.45)' : brand.blue,
+            borderColor: muted ? glassPanel.borderColor : brand.blueDark,
+            color: muted ? brand.blue : '#ffffff',
+            boxShadow: muted ? '0 4px 12px rgba(8,47,109,0.15)' : '0 4px 12px rgba(16,80,160,0.35)',
+          }}
+          onClick={() => setMuted(!muted)}
+          title={muted ? "Bật âm thanh" : "Tắt âm thanh"}
+          aria-label={muted ? "Bật âm thanh" : "Tắt âm thanh"}
+        >
+          {muted ? <MutedIcon /> : <VolumeIcon />}
+          <span>{muted ? 'Bật âm' : 'Âm thanh'}</span>
+        </button>
+
         {/* Hướng dẫn */}
         <button style={homeBtn} onClick={() => setShowGuide(true)} title="Hướng dẫn sử dụng" aria-label="Hướng dẫn sử dụng">
           <HelpIcon />
@@ -356,6 +438,26 @@ function HelpIcon() {
       <circle cx="12" cy="12" r="10" />
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
       <line x1="12" y1="17" x2="12.01" y2="17" strokeWidth="3" />
+    </svg>
+  )
+}
+
+function MutedIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M11 5L6 9H2v6h4l5 4V5z" />
+      <line x1="23" y1="9" x2="17" y2="15" />
+      <line x1="17" y1="9" x2="23" y2="15" />
+    </svg>
+  )
+}
+
+function VolumeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M11 5L6 9H2v6h4l5 4V5z" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
     </svg>
   )
 }

@@ -3,6 +3,7 @@ import type { DocumentImage, DocumentItem, ImageBgPreset } from '@vm/shared'
 import { resolveDocumentImageVariantUrl } from '@vm/shared'
 import { MarkdownText } from './MarkdownText.js'
 import { brand } from './theme.js'
+import { useMuseumAudio } from '@vm/viewer'
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 
@@ -83,6 +84,7 @@ function getDocumentImages(item: DocumentItem): Array<DocumentImage & { url: str
 
 export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext }: Props) {
   const [compact, setCompact] = useState(isCompactViewport)
+  const { isItemAudioPlaying } = useMuseumAudio()
 
   useEffect(() => {
     const on = () => setCompact(isCompactViewport())
@@ -220,6 +222,23 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
                     >
                       <div style={styles.kicker}>{item.externalUrl ? hostLabel(item.externalUrl) : 'Tư liệu'}</div>
                       <h2 style={styles.title}>{item.title}</h2>
+                      {item.audioUrl && (
+                        <div style={styles.narrationWidget}>
+                          <span style={styles.narrationLabel}>
+                            {isItemAudioPlaying ? (
+                              <>
+                                <span style={styles.playingIcon}>🔊</span>
+                                <span>Đang phát âm thanh tư liệu...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span style={styles.pausedIcon}>🔈</span>
+                                <span>Âm thanh tư liệu sẵn có (tự động phát)</span>
+                              </>
+                            )}
+                          </span>
+                        </div>
+                      )}
                       {item.summary && <p style={styles.lead}>{item.summary}</p>}
                       {item.body && <MarkdownText text={item.body} style={{ marginTop: '14px' }} />}
                       {item.tags.length > 0 && (
@@ -339,5 +358,28 @@ const styles: Record<string, React.CSSProperties> = {
   edgePageBtnLeft: { left: '24px' },
   edgePageBtnRight: { right: '24px' },
   edgePageBtnDisabled: { opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none', borderColor: '#d2dcf0', color: '#8fa0be' },
+  narrationWidget: {
+    margin: '12px 0',
+    padding: '8px 12px',
+    background: 'rgba(16, 80, 160, 0.06)',
+    border: '1px solid rgba(16, 80, 160, 0.12)',
+    borderRadius: '6px',
+    display: 'inline-flex',
+  },
+  narrationLabel: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '13px',
+    fontWeight: 700,
+    color: brand.blue,
+  },
+  playingIcon: {
+    display: 'inline-block',
+  },
+  pausedIcon: {
+    display: 'inline-block',
+    opacity: 0.7,
+  },
 }
 

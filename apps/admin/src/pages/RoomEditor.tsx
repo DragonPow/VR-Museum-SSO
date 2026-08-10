@@ -12,6 +12,11 @@ type EditMode = 'none' | 'place-portal'
 const EDIT_BOUNDS: RoomBounds = { minX: -30, maxX: 30, minZ: -30, maxZ: 30 }
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 
+function clampAudioVolumeInput(value: number | null | undefined, fallback = 0.25): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
+  return Math.max(0, Math.min(1, value))
+}
+
 class SceneErrorBoundary extends React.Component<
   { resetKey: string; children: React.ReactNode; fallback: (message: string) => React.ReactNode },
   { error: string | null }
@@ -177,6 +182,9 @@ export function RoomEditor() {
   const [lightmapUrlInput, setLightmapUrlInput] = useState('')
   const [roomTitleInput, setRoomTitleInput] = useState('')
   const [modelOffsetInput, setModelOffsetInput] = useState<[number, number, number]>([0, 0, 0])
+  const [ambientAudioUrlInput, setAmbientAudioUrlInput] = useState('')
+  const [ambientAudioLoopInput, setAmbientAudioLoopInput] = useState(true)
+  const [ambientAudioVolumeInput, setAmbientAudioVolumeInput] = useState(0.25)
 
   const cameraStateRef = useRef<CameraState | null>(null)
   const modelFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -216,6 +224,17 @@ export function RoomEditor() {
   useEffect(() => {
     setModelOffsetInput(room.modelOffset ?? [0, 0, 0])
   }, [room.id, room.modelOffset])
+
+  useEffect(() => {
+    const ambientUrls = room.ambientAudioUrls?.length
+      ? room.ambientAudioUrls
+      : room.ambientAudioUrl
+        ? [room.ambientAudioUrl]
+        : []
+    setAmbientAudioUrlInput(ambientUrls.join('\n'))
+    setAmbientAudioLoopInput(room.ambientAudioLoop ?? true)
+    setAmbientAudioVolumeInput(room.ambientAudioVolume ?? 0.25)
+  }, [room.id, room.ambientAudioUrl, room.ambientAudioUrls, room.ambientAudioLoop, room.ambientAudioVolume])
 
   const currentVpId = activeVpId || room.entryViewpointId || room.viewpoints[0]?.id || '__none'
 
@@ -390,6 +409,19 @@ export function RoomEditor() {
     updateRoom(room.id, { lightmapUrl: nextUrl || null })
   }
 
+  const handleApplyAmbientAudio = () => {
+    const nextUrls = ambientAudioUrlInput
+      .split(/\r?\n/)
+      .map((url) => url.trim())
+      .filter(Boolean)
+    updateRoom(room.id, {
+      ambientAudioUrl: undefined,
+      ambientAudioUrls: nextUrls.length > 0 ? nextUrls : undefined,
+      ambientAudioLoop: ambientAudioLoopInput,
+      ambientAudioVolume: clampAudioVolumeInput(ambientAudioVolumeInput),
+    })
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div style={styles.root}>
@@ -533,6 +565,60 @@ export function RoomEditor() {
               <button style={styles.btnCancel} onClick={handleClearModelOffset}>
                 Xóa offset
               </button>
+            </div>
+          </Section>
+
+          <Section title="Âm thanh phòng">
+            <label style={styles.label}>Nhạc nền (mỗi dòng một URL)</label>
+            <textarea
+              style={{ ...styles.input, minHeight: 82, resize: 'vertical' }}
+              value={ambientAudioUrlInput}
+              onChange={(e) => setAmbientAudioUrlInput(e.target.value)}
+              placeholder={['/content/audio/truyenthong-ambient-1.mp3', '/content/audio/truyenthong-ambient-2.mp3'].join('\n')}
+            />
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '6px 0' }}>
+              <label style={{ ...styles.label, margin: 0, display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={ambientAudioLoopInput}
+                  onChange={(e) => setAmbientAudioLoopInput(e.target.checked)}
+                />
+                Lặp liên tục (Loop)
+              </label>
+            </div>
+            <label style={styles.label}>Âm lượng (0.0 đến 1.0)</label>
+            <input
+              style={styles.input}
+              type="number"
+              min="0"
+              max="1"
+              step="0.05"
+              value={ambientAudioVolumeInput}
+              onChange={(e) => {
+                const next = Number(e.target.value)
+                setAmbientAudioVolumeInput(clampAudioVolumeInput(next, ambientAudioVolumeInput))
+              }}
+            />
+            <div style={styles.inlineActions}>
+              <button style={styles.btnPrimary} onClick={handleApplyAmbientAudio}>
+                Lưu âm thanh
+              </button>
+              {(room.ambientAudioUrl || room.ambientAudioUrls?.length) && (
+                <button
+                  style={styles.btnCancel}
+                  onClick={() => {
+                    setAmbientAudioUrlInput('')
+                    updateRoom(room.id, {
+                      ambientAudioUrl: undefined,
+                      ambientAudioUrls: undefined,
+                      ambientAudioLoop: undefined,
+                      ambientAudioVolume: undefined
+                    })
+                  }}
+                >
+                  Xóa
+                </button>
+              )}
             </div>
           </Section>
 

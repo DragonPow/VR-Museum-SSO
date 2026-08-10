@@ -88,7 +88,7 @@ export function documentUrlsForId(documentKey: string): string[] {
     return [`${CONTENT_SOURCE.assetBaseUrl}/content/documents/${safeId}/document.json`]
   }
   if (CONTENT_SOURCE.mode === 'local') {
-    return [`/api/documents/${safeId}`, `/content/documents/${safeId}/document.json`]
+    return [`/content/documents/${safeId}/document.json`, `/api/documents/${safeId}`]
   }
   return [joinBase(`content/documents/${safeId}/document.json`)]
 }

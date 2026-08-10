@@ -15,6 +15,7 @@ const Vec2Schema = z.object({ w: z.number().positive(), h: z.number().positive()
 const NonEmptyString = z.string().min(1)
 const UrlString = z.string().url().or(z.string().startsWith('/'))
 const HexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a hex color like #FF0000')
+const AudioVolumeSchema = z.number().min(0).max(1)
 
 export const PeriodSchema = z.object({
   id: NonEmptyString,
@@ -95,6 +96,10 @@ export const RoomSchema = z.object({
   viewpoints: z.array(ViewpointSchema),
   slots: z.array(SlotSchema),
   portals: z.array(RoomPortalSchema).default([]),
+  ambientAudioUrl: UrlString.nullable().optional(),
+  ambientAudioUrls: z.array(UrlString).optional(),
+  ambientAudioLoop: z.boolean().optional(),
+  ambientAudioVolume: AudioVolumeSchema.optional(),
 })
 
 export const DocumentImageSchema = z.object({
@@ -138,6 +143,9 @@ export const DocumentItemSchema = z.object({
   source: z.string(),
   priority: z.number().int().min(0),
   imageBgPreset: z.enum(['dark', 'light', 'warm', 'transparent']).optional(),
+  audioUrl: UrlString.nullable().optional(),
+  audioVolume: AudioVolumeSchema.optional(),
+  audioLoop: z.boolean().optional(),
 })
 
 export const TextureAssetSchema = z.object({

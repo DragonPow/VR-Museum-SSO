@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updatedAt": "2026-07-27T15:39:45.769Z",
+  "updatedAt": "2026-08-08T06:55:47.860Z",
   "periods": [
     {
       "id": "period-1975-1985",
@@ -28,6 +28,12 @@
       "ceilingTextureId": null,
       "lightingPreset": "neutral",
       "entryViewpointId": "vp-entry",
+      "ambientAudioUrls": [
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+      ],
+      "ambientAudioLoop": true,
+      "ambientAudioVolume": 0.25,
       "viewpoints": [
         {
           "id": "vp-entry",
