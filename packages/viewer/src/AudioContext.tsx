@@ -11,6 +11,8 @@ interface AudioContextType {
   setMuted: (muted: boolean) => void
   playAmbient: (url: string, options?: { loop?: boolean | undefined; volume?: number | undefined } | undefined) => void
   playAmbientPlaylist: (items: PlaylistItem[]) => void
+  pauseAmbient: () => void
+  resumeAmbient: () => void
   stopAmbient: () => void
   playItemAudio: (url: string, options?: { volume?: number | undefined; loop?: boolean | undefined } | undefined) => void
   playItemPlaylist: (items: PlaylistItem[]) => void
@@ -67,6 +69,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   const unlockedRef = useRef(false)
   const isItemAudioPlayingRef = useRef(false)
   const isAmbientPlayingRef = useRef(false)
+  const isAmbientPausedRef = useRef(false)
 
   const ambientUrlRef = useRef<string | null>(null)
   const ambientTargetVolumeRef = useRef<number>(0.25)
@@ -132,9 +135,14 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     ambientTargetVolumeRef.current = volume
     prepareAudioSource(ambient, item.url)
     ambient.loop = playlist.length === 1 && Boolean(item.loop)
-    ambient.volume = isItemAudioPlayingRef.current ? 0 : volume
+    ambient.volume = (isItemAudioPlayingRef.current || isAmbientPausedRef.current) ? 0 : volume
 
     setAmbientPlaying(true)
+    if (isAmbientPausedRef.current) {
+      ambient.pause()
+      return
+    }
+
     ambient.play().catch(err => {
       console.warn('Ambient play failed/blocked:', err)
     })
@@ -174,7 +182,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
     if (!item) {
       setItemAudioPlaying(false)
-      resumeAmbient()
+      resumeAmbientPlayback()
       return
     }
 
@@ -199,7 +207,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
     if (playlist.length === 0) {
       setItemAudioPlaying(false)
-      resumeAmbient()
+      resumeAmbientPlayback()
       return
     }
 
@@ -223,7 +231,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
 
     setItemAudioPlaying(false)
-    resumeAmbient()
+    resumeAmbientPlayback()
   }
 
   useEffect(() => {
@@ -260,7 +268,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (itemAudioRef.current) itemAudioRef.current.muted = value
     if (!value) {
       unlockAudio()
-      resumeAmbient()
+      resumeAmbientPlayback()
     }
   }
 
@@ -308,7 +316,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       if (current) {
         ambientTargetVolumeRef.current = clampAudioVolume(current.volume, ambientTargetVolumeRef.current)
       }
-      resumeAmbient()
+      resumeAmbientPlayback()
       return
     }
 
@@ -318,7 +326,18 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     playCurrentAmbientItem()
   }
 
+  const pauseAmbient = () => {
+    isAmbientPausedRef.current = true
+    const ambient = ambientAudioRef.current
+    if (!ambient || !isAmbientPlayingRef.current) return
+
+    fadeVolume(ambient, 0, 250, () => {
+      ambient.pause()
+    })
+  }
+
   const stopAmbient = () => {
+    isAmbientPausedRef.current = false
     const ambient = ambientAudioRef.current
     if (!ambient) return
 
@@ -353,10 +372,12 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     setItemAudioPlaying(false)
     playlistRef.current = []
     playlistIndexRef.current = 0
-    resumeAmbient()
+    resumeAmbientPlayback()
   }
 
-  const resumeAmbient = () => {
+  const resumeAmbientPlayback = () => {
+    if (isAmbientPausedRef.current) return
+
     const ambient = ambientAudioRef.current
     if (ambient && isAmbientPlayingRef.current && ambientUrlRef.current) {
       fadeVolume(ambient, ambientTargetVolumeRef.current, 400)
@@ -364,6 +385,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         console.warn('Failed to resume ambient play:', err)
       })
     }
+  }
+
+  const resumeAmbient = () => {
+    isAmbientPausedRef.current = false
+    resumeAmbientPlayback()
   }
 
   const stopAll = () => {
@@ -384,6 +410,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         setMuted,
         playAmbient,
         playAmbientPlaylist,
+        pauseAmbient,
+        resumeAmbient,
         stopAmbient,
         playItemAudio,
         playItemPlaylist,

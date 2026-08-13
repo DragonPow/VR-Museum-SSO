@@ -54,6 +54,8 @@ export function Tour({ content, onBack }: Props) {
     muted,
     setMuted,
     playAmbientPlaylist,
+    pauseAmbient,
+    resumeAmbient,
     stopAmbient,
     playItemPlaylist,
     stopItemAudio,
@@ -181,6 +183,13 @@ export function Tour({ content, onBack }: Props) {
 
   // 2. Play item audio playlist when document details are opened
   useEffect(() => {
+    const hasYoutubeEmbed = selectedDocuments.some((doc) => doc.mediaType === 'youtube' && Boolean(doc.embedUrl))
+    if (hasYoutubeEmbed) {
+      stopItemAudio()
+      pauseAmbient()
+      return
+    }
+
     const playlist = selectedDocuments
       .filter((doc) => doc.audioUrl)
       .map((doc) => ({
@@ -190,9 +199,11 @@ export function Tour({ content, onBack }: Props) {
       }))
 
     if (playlist.length > 0) {
+      resumeAmbient()
       playItemPlaylist(playlist)
     } else {
       stopItemAudio()
+      resumeAmbient()
     }
   }, [selectedSlotId, selectedDocuments])
 
