@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -85,7 +85,7 @@ function makeTiledFloorMaterial(
     return new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   }
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
-  ;(mat as any).extensions = { derivatives: true }
+    ; (mat as any).extensions = { derivatives: true }
   const hasNor = !!tileNor
   mat.onBeforeCompile = (shader) => {
     // Sample Marble021 in world space so tile seams stay perpendicular to the walls.
@@ -128,7 +128,7 @@ function makeTiledFloorMaterial(
       '  float L = dot(lit.rgb, vec3(0.2126, 0.7152, 0.0722));',
       '  float light = clamp(L / uRef, 0.74, 1.04);',
       '  vec3 col = tileCol * light * diffuse;',
-      '  col = mix(col, uGroutColor * light, grout * 0.35);',
+      '  col = mix(col, uGroutColor * light, grout * 0.0);  // VM: grout off for carpet (was 0.35)',
     ]
     if (hasNor) {
       shader.uniforms.uTileNor = { value: tileNor }
@@ -170,7 +170,7 @@ function makeWallMaterial(
   const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
   const hasBump = !!normalTex
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uLift = { value: 0.4 } // 1.0 = tÆ°á»ng/tráº§n mÃ u kem pháº³ng (bá» háº³n biáº¿n thiÃªn atlas: háº¿t seam/bleed/vá»‡t). Háº¡ vá» ~0.85 náº¿u muá»‘n giá»¯ chÃºt bÃ³ng bake.
+    shader.uniforms.uLift = { value: 0.5 } // 1.0 = tÆ°á»ng/tráº§n mÃ u kem pháº³ng (bá» háº³n biáº¿n thiÃªn atlas: háº¿t seam/bleed/vá»‡t). Háº¡ vá» ~0.85 náº¿u muá»‘n giá»¯ chÃºt bÃ³ng bake.
     shader.uniforms.uCream = { value: new THREE.Color(1.0, 0.955, 0.875) }
     const commonLines = ['#include <common>', 'uniform float uLift;', 'uniform vec3 uCream;']
     const mapLines = [
@@ -362,7 +362,7 @@ function makeOriginalLitMaterial(original: THREE.Material | undefined): THREE.Ma
   result.side = THREE.DoubleSide
   result.depthWrite = true
   if ('toneMapped' in result) {
-    ;(result as THREE.Material & { toneMapped?: boolean }).toneMapped = true
+    ; (result as THREE.Material & { toneMapped?: boolean }).toneMapped = true
   }
   result.needsUpdate = true
   return result
@@ -1007,8 +1007,14 @@ export function RoomModel({
           // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) Ã¢â‚¬â€ a soft warm
           // off-white, not stark white. Gentle brighten + faint warm, keep the grain.
           // Boss preference: brighter/whiter than the Blender taupe Ã¢â‚¬â€ fresh warm-cream white.
-          const wallTint = new THREE.Color(0.72, 0.71, 0.69)
-          const floorTint = new THREE.Color(0.92, 0.90, 0.84)
+          const wallTint = new THREE.Color(1.12, 1.07, 0.99)
+          // Ceiling (TT_Ceiling) is already near-white in the bake (emission ~2.0). The full
+          // wall lift pushes it past 1.0 -> flat pure white, losing the soft gradient. Give it
+          // its own gentler tint so it stays bright but keeps variation instead of clipping.
+          const ceilingTint = new THREE.Color(0.72, 0.71, 0.69)
+          const isCeilingMat = (m?: THREE.Material | null) =>
+            m != null && m.name != null && /ceiling|top/i.test(m.name)
+          const floorTint = new THREE.Color(0.94, 0.97, 1.0) // VM: lifted for carpet (was 0.92,0.90,0.84)
           const isTileMat = (m?: THREE.Material | null) =>
             m != null && m.name != null && /tile/i.test(m.name)
           // Coloured accent surfaces (red niche, accent walls, gold/red titles) must NOT
@@ -1084,7 +1090,9 @@ export function RoomModel({
                 ? new THREE.MeshBasicMaterial({ map: atlas, color: accentTint, side: THREE.DoubleSide, toneMapped: false })
                 : USE_CLEAN_WALL_SHADER
                   ? makeCleanWall(m)
-                  : makeWallMaterial(atlas, wallTint, wallNorTex)
+                  : isCeilingMat(m)
+                    ? makeWallMaterial(atlas, ceilingTint, wallNorTex)
+                    : makeWallMaterial(atlas, wallTint, wallNorTex)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
           // fails on the 2nd pass and the floor slot gets overwritten with the plain

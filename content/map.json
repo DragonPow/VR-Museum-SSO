@@ -1,15 +1,81 @@
 {
   "zones": [
-    { "id": 9, "displayId": 1, "name": "Khu 9", "title": "Khu trưng bày trung tâm", "desc": "Đang cập nhật tư liệu" },
-    { "id": 11, "displayId": 2, "name": "Khu 11", "title": "Biên niên sử", "desc": "Tái hiện các mốc son lịch sử từ lúc thành lập đến nay" },
-    { "id": 1, "displayId": 3, "name": "Khu 1", "title": "Giai đoạn 1", "desc": "Đặt nền móng và những bước trưởng thành đầu tiên" },
-    { "id": 2, "displayId": 4, "name": "Khu 2", "title": "Giai đoạn 2", "desc": "Thời kỳ đổi mới và đồng bộ lưới điện miền Nam" },
-    { "id": 3, "displayId": 5, "name": "Khu 3", "title": "Giai đoạn 3", "desc": "Hiện đại hóa điều độ hệ thống điện SCADA/EMS" },
-    { "id": 4, "displayId": 6, "name": "Khu 4", "title": "Giai đoạn 4", "desc": "Chuyển đổi số toàn diện và tầm nhìn tương lai" },
-    { "id": 5, "displayId": 7, "name": "Khu 5", "title": "Lãnh đạo Trung tâm", "desc": "Chân dung các thế hệ lãnh đạo qua các thời kỳ" },
-    { "id": 6, "displayId": 8, "name": "Khu 6", "title": "Thành tích tiêu biểu", "desc": "Huân chương, cờ thi đua và bằng khen cao quý" },
-    { "id": 7, "displayId": 9, "name": "Khu 7", "title": "Hoạt động phong rào", "desc": "Các phong trào đoàn thể, thể thao và văn hóa nổi bật" },
-    { "id": 8, "displayId": 10, "name": "Khu 8", "title": "Hiện vật lịch sử", "desc": "Các hiện vật truyền thống được lưu giữ trang trọng" },
-    { "id": 10, "displayId": 11, "name": "Khu 10", "title": "Truyền thông số", "desc": "Hình ảnh các hoạt động và sự kiện tiêu biểu" }
+    {
+      "id": 9,
+      "displayId": 1,
+      "name": "Khu 9",
+      "title": "Khu trưng bày trung tâm",
+      "desc": "Cửa vào chính phòng truyền thống"
+    },
+    {
+      "id": 11,
+      "displayId": 2,
+      "name": "Khu 11",
+      "title": "Biên niên sử",
+      "desc": "Tóm tắt lại toàn bộ lịch sử, thông tin các phòng ở trung tâm từ khi thành lập đến nay"
+    },
+    {
+      "id": 1,
+      "displayId": 3,
+      "name": "Khu 1",
+      "title": "Giai đoạn 1",
+      "desc": "Giai đoạn đầu tiên, đặt nền móng cơ sở cho toàn trung tâm"
+    },
+    {
+      "id": 2,
+      "displayId": 4,
+      "name": "Khu 2",
+      "title": "Giai đoạn 2",
+      "desc": "Thời kỳ đổi mới và đồng bộ lưới điện miền Nam"
+    },
+    {
+      "id": 3,
+      "displayId": 5,
+      "name": "Khu 3",
+      "title": "Giai đoạn 3",
+      "desc": "Triển khai các mô hình, hiện đại hóa điều độ hệ thống điện SCADA/EMS"
+    },
+    {
+      "id": 4,
+      "displayId": 6,
+      "name": "Khu 4",
+      "title": "Giai đoạn 4",
+      "desc": "Giai đoạn chuyển đổi số mạnh mẽ, toàn diện và tầm nhìn tương lai"
+    },
+    {
+      "id": 5,
+      "displayId": 7,
+      "name": "Khu 5",
+      "title": "Lãnh đạo Trung tâm",
+      "desc": "Chân dung các thế hệ lãnh đạo của Trung tâm qua các thời kỳ"
+    },
+    {
+      "id": 6,
+      "displayId": 8,
+      "name": "Khu 6",
+      "title": "Thành tích tiêu biểu",
+      "desc": "Huân chương, cờ thi đua và bằng khen cao quý"
+    },
+    {
+      "id": 7,
+      "displayId": 9,
+      "name": "Khu 7",
+      "title": "Hoạt động phong rào",
+      "desc": "Các phong trào đoàn thể, thể thao và văn hóa nổi bật"
+    },
+    {
+      "id": 8,
+      "displayId": 10,
+      "name": "Khu 8",
+      "title": "Hiện vật lịch sử",
+      "desc": "Các hiện vật truyền thống được lưu giữ trang trọng"
+    },
+    {
+      "id": 10,
+      "displayId": 11,
+      "name": "Khu 10",
+      "title": "Truyền thông số",
+      "desc": "Hình ảnh các hoạt động và sự kiện tiêu biểu, những hoạt động truyền thông của trung tâm"
+    }
   ]
 }
