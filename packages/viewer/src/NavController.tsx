@@ -778,24 +778,29 @@ export function NavController({
 
       {/* Walk-here indicator: ring + inner dot, appears at cursor position on floor */}
       <group ref={indicatorRef} visible={false}>
-        {/* Outer ring */}
+        {/* Glow aura */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.04, 0.38, 40]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.12} depthWrite={false} />
+        </mesh>
+        {/* Outer ring — white */}
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.18, 0.26, 40]} />
-          <meshBasicMaterial color="#f0d060" transparent opacity={0.85} depthWrite={false} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.85} depthWrite={false} />
         </mesh>
-        {/* Inner filled circle */}
+        {/* Inner filled circle — brand blue */}
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <circleGeometry args={[0.12, 32]} />
-          <meshBasicMaterial color="#f0d060" transparent opacity={0.25} depthWrite={false} />
+          <meshBasicMaterial color="#1050a0" transparent opacity={0.35} depthWrite={false} />
         </mesh>
-        {/* Crosshair lines */}
+        {/* Crosshair lines — white */}
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[0.28, 0.03]} />
-          <meshBasicMaterial color="#f0d060" transparent opacity={0.6} depthWrite={false} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.7} depthWrite={false} />
         </mesh>
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[0.03, 0.28]} />
-          <meshBasicMaterial color="#f0d060" transparent opacity={0.6} depthWrite={false} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.7} depthWrite={false} />
         </mesh>
       </group>
     </>
