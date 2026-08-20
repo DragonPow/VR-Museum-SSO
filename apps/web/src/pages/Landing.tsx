@@ -566,7 +566,7 @@ export function Landing({ content, onEnter }: Props) {
             height: 58px;
             font-size: 17px;
             padding: 0 42px;
-            margin-top: 26px;
+            margin-top: 28px;
             border-radius: 14px;
             gap: 20px;
             background: linear-gradient(180deg, #166ecc 0%, #07539a 100%);
@@ -734,5 +734,6 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'relative', zIndex: 1,
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     textAlign: 'center', padding: 'clamp(20px, 6vw, 32px) 14px', width: '100%', maxWidth: '1120px', boxSizing: 'border-box',
+    transform: 'translateY(-36px)',
   },
 }

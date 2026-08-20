@@ -19,8 +19,8 @@ Chỉ collection **`TruyenThong`** (+ `TT_Titles`) là thật.
 - Ánh sáng/bóng/GI được **bake sẵn** (Cycles) vào **atlas** (`*_combined.webp`,
   `*_props.webp`). Web hiển thị **unlit 1:1** bằng `MeshBasicMaterial` (`toneMapped:false`),
   sample qua **UV2 (TEXCOORD_1)**. → web = giống hệt bake, không tính sáng lại.
-- **Màu/độ sáng tinh chỉnh (dado, độ sáng tường) = CODE viewer**, KHÔNG phải bake.
-  (Ví dụ `ATLAS_BRIGHTEN`, và khối `TT_Dado` trong `RoomModel.tsx`.)
+- **Màu/độ sáng tinh chỉnh (dado, độ sáng tường) = CODE viewer**, KHÔNG phải bake
+  (ví dụ khối `TT_Dado` và các shader material trong `RoomModel.tsx`).
 
 ### 0.2 Atlas KHÔNG phải tất cả — còn lớp detail chạy bằng shader
 Atlas chỉ mang **ánh sáng**. **Vân bề mặt** được chồng thêm trong `RoomModel.tsx` bằng

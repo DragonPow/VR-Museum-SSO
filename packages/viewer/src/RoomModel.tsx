@@ -7,10 +7,6 @@ import type { RoomBounds } from './NavController.js'
 
 export const VM_SLOT_PREFIX = 'VM_Slot_'
 
-/** Zone-title pill meshes baked into the GLB (TT_TitlePill_K* + TT_TitlePill_Text_K*).
- *  Rendered from Blender-authored GLB geometry/materials for a consistent plaque look. */
-export const TITLE_PILL_PREFIX = 'TT_TitlePill_'
-
 const VM_SLOT_ID_RE = /^VM_Slot_K\d+_[A-Z0-9]+_\d{2}/i
 
 function canonicalSlotId(name: string): string | null {
@@ -28,13 +24,19 @@ function isGlbZoneTitleMesh(name: string): boolean {
   return /^TT_TitlePill_(?:Text_)?K(?:[1-4]|7|8)(?:\b|[_.])/i.test(name)
 }
 
-function isHiddenZoneTitleMesh(name: string): boolean {
-  return /^TT_TitlePill_(?:Text_)?K5(?:\b|[_.])/i.test(name)
+// Increment when visibility/collider extraction changes so Fast Refresh cannot keep
+// a stale cloned scene or stale obstacle array from the previous implementation.
+const ROOM_MODEL_EXTRACTION_REVISION = 6
+
+/** Solid scene meshes the visitor must not walk through. Matched by substring so
+ * three.js' `_1`/`_2` duplicate-name suffixes still hit. */
+const COLLIDER_NAME_HINTS = ['CenterBlock', 'Niche_Plinth', 'K9_WoodFeature_BackPanel']
+
+function isColliderMeshName(name: string): boolean {
+  return COLLIDER_NAME_HINTS.some((hint) => name.includes(hint))
+    || (name.includes('Display_Case_') && name.includes('_Base'))
 }
 
-/** Architecture meshes the visitor must not walk through. Matched by substring so
- *  three.js' `_1`/`_2` duplicate-name suffixes still hit. */
-const COLLIDER_NAME_HINTS = ['CenterBlock', 'Display_Case', 'VM_Display', 'Niche_Plinth', 'K9_WoodFeature', 'TT_Right_Alcove']
 /** Push walkable boundary this far (m) outside the mesh footprint Ã¢â‚¬â€ keeps the camera
  *  a comfortable distance from the wall instead of clipping right into it. */
 const COLLIDER_MARGIN = 0.5
@@ -42,9 +44,6 @@ const COLLIDER_MARGIN = 0.5
 // dividers use this shared margin to stay readable up close while keeping the
 // camera from clipping through thin walls and exposing their outside faces.
 const INTERIOR_WALL_COLLIDER_MARGIN = 0.08
-/** Small brightness lift on the baked atlas so the web reads as bright as the Blender
- *  (AgX) viewport instead of the slightly duller Reinhard bake. */
-const ATLAS_BRIGHTEN = 1.08
 const K9_GOLD_BASE = new THREE.Color('#d4a13a')
 const K9_GOLD_NEAR = new THREE.Color('#e4b646')
 const K9_GOLD_EMISSIVE = new THREE.Color('#70420b')
@@ -161,6 +160,86 @@ function makeTiledFloorMaterial(
  * the shell reads bright & fresh like the Blender (Eevee) view, instead of the duller
  * grey of the raw Reinhard-tonemapped Cycles bake. Pure shader, no re-bake.
  */
+
+/**
+ * Wall material (tiled): Simple Tiles projected from world space so tile lines stay
+ * square on every wall regardless of skewed UV0, with real grout relief from the tile
+ * normal. The baked atlas only supplies soft room light (L). No re-bake needed.
+ */
+function makeTiledWallMaterial(
+  map: THREE.Texture,
+  tileDiff: THREE.Texture | null,
+  tileNor: THREE.Texture | null,
+  tint: THREE.Color,
+): THREE.MeshBasicMaterial {
+  if (!tileDiff) {
+    return makeWallMaterial(map, tint, tileNor)
+  }
+  const mat = new THREE.MeshBasicMaterial({ map, color: tint, side: THREE.DoubleSide, toneMapped: false })
+    ; (mat as any).extensions = { derivatives: true }
+  const hasNor = !!tileNor
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTileDiff = { value: tileDiff }
+    shader.uniforms.uRef = { value: 0.89 }
+    shader.uniforms.uTileSize = { value: 2.8 }
+    shader.uniforms.uBright = { value: 1.5 }
+    shader.uniforms.uLines = { value: 0.5 }
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vVMWorld;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\n  vVMWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;')
+    const commonLines = [
+      '#include <common>',
+      'varying vec3 vVMWorld;',
+      'uniform sampler2D uTileDiff;',
+      'uniform float uRef;',
+      'uniform float uTileSize;',
+      'uniform float uBright;',
+      'uniform float uLines;',
+    ]
+    const body = [
+      '#ifdef USE_MAP',
+      '  vec4 lit = texture2D( map, vMapUv );',
+      '#else',
+      '  vec4 lit = vec4(0.7);',
+      '#endif',
+      '{',
+      '  vec3 dxw = dFdx(vVMWorld);',
+      '  vec3 dyw = dFdy(vVMWorld);',
+      '  vec3 an = abs(normalize(cross(dxw, dyw)));',
+      '  vec2 wuv;',
+      '  if (an.z > an.x && an.z > an.y) { wuv = vVMWorld.xy; }',
+      '  else if (an.x > an.y) { wuv = vec2(vVMWorld.y, vVMWorld.z); }',
+      '  else { wuv = vec2(vVMWorld.x, vVMWorld.z); }',
+      '  wuv /= uTileSize;',
+      '  vec3 tileFlat = texture2D(uTileDiff, wuv, 16.0).rgb;',
+      '  vec3 tileCol = mix(tileFlat, texture2D(uTileDiff, wuv).rgb, uLines);',
+      '  float L = dot(lit.rgb, vec3(0.2126, 0.7152, 0.0722));',
+      '  float light = clamp(1.0 + (L / uRef - 1.0) * 1.6, 0.72, 1.18);',
+      '  vec3 col = tileCol * light * diffuse * uBright;',
+    ]
+    if (hasNor) {
+      shader.uniforms.uTileNor = { value: tileNor }
+      shader.uniforms.uBumpStrength = { value: 0.9 }
+      shader.uniforms.uLightDir = { value: new THREE.Vector2(-0.45, 0.7) }
+      commonLines.push('uniform sampler2D uTileNor;', 'uniform float uBumpStrength;', 'uniform vec2 uLightDir;')
+      body.push(
+        '  vec3 tn = texture2D(uTileNor, wuv).xyz * 2.0 - 1.0;',
+        '  float shade = 1.0 + (tn.x * uLightDir.x + tn.y * uLightDir.y) * uBumpStrength;',
+        '  col *= mix(1.0, clamp(shade, 0.72, 1.28), uLines);',
+      )
+    }
+    body.push(
+      '  diffuseColor.rgb = col;',
+      '}',
+    )
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', commonLines.join('\n'))
+      .replace('#include <map_fragment>', body.join('\n'))
+  }
+  mat.customProgramCacheKey = () => (hasNor ? 'vm-tilewall-world-v1' : 'vm-tilewall-nonor-v1')
+  return mat
+}
+
 
 function makeWallMaterial(
   map: THREE.Texture,
@@ -286,7 +365,6 @@ function makeWarmWoodMaterial(mat: THREE.Material | null | undefined, fallback =
 function applyWarmWoodMaterial(obj: THREE.Mesh): void {
   const originals = originalMaterialsFor(obj)
   const materialFor = (original: THREE.Material | undefined) => {
-    const name = original?.name ?? ''
     const fallback = HONOR_DARK_WOOD_COLOR
     return makeWarmWoodMaterial(original, fallback)
   }
@@ -368,31 +446,22 @@ function makeOriginalLitMaterial(original: THREE.Material | undefined): THREE.Ma
   return result
 }
 
-function applyOriginalLitMaterial(obj: THREE.Mesh): void {
-  const originals = originalMaterialsFor(obj)
-  obj.material = Array.isArray(obj.material)
-    ? obj.material.map((_mat, index) => makeOriginalLitMaterial(originals[index] ?? originals[0]))
-    : makeOriginalLitMaterial(originals[0])
-}
-function applyK9ContactShadowMaterial(obj: THREE.Mesh): void {
+function makeK9WoodMaterial(original: THREE.Material | undefined, overrideMap: THREE.Texture | null): THREE.Material {
+  const originalMap = getMaterialMap(original)
+  const map = overrideMap ?? originalMap
+  if (map && overrideMap && originalMap) {
+    map.wrapS = originalMap.wrapS
+    map.wrapT = originalMap.wrapT
+    map.offset.copy(originalMap.offset)
+    map.repeat.copy(originalMap.repeat)
+    map.center.copy(originalMap.center)
+    map.rotation = originalMap.rotation
+    map.flipY = originalMap.flipY
+    map.channel = originalMap.channel
+    map.needsUpdate = true
+  }
   const mat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color('#2b160d'),
-    transparent: true,
-    opacity: 0.14,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-    toneMapped: false,
-  })
-  mat.polygonOffset = true
-  mat.polygonOffsetFactor = 1
-  mat.polygonOffsetUnits = 1
-  obj.material = mat
-  obj.renderOrder = 4
-}
-function makeK9WoodMaterial(original: THREE.Material | undefined): THREE.Material {
-  const mat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color('#f0c6a8'),
-    map: getMaterialMap(original),
+    map,
     side: THREE.DoubleSide,
     toneMapped: false,
   })
@@ -400,43 +469,26 @@ function makeK9WoodMaterial(original: THREE.Material | undefined): THREE.Materia
   return mat
 }
 
-function makeK9FrameMaterial(original: THREE.Material | undefined, color: string): THREE.Material {
+function makeK9TitleMaterial(original: THREE.Material | undefined): THREE.Material {
   const mat = new THREE.MeshStandardMaterial({
-    color,
-    metalness: 0.02,
-    roughness: 0.72,
-    emissive: new THREE.Color(color),
-    emissiveIntensity: 0.08,
+    color: '#d4a13a',
+    metalness: 0.5,
+    roughness: 0.42,
+    emissive: K9_GOLD_EMISSIVE.clone(),
+    emissiveIntensity: 0.06,
     side: THREE.DoubleSide,
   })
   mat.name = original?.name ?? ''
   mat.toneMapped = false
+  mat.envMapIntensity = 1.05
   return mat
 }
 
-function makeK9GoldMaterial(original: THREE.Material | undefined, title = false): THREE.Material {
-  const mat = new THREE.MeshStandardMaterial({
-    color: title ? '#d4a13a' : '#b88428',
-    metalness: title ? 0.5 : 0.7,
-    roughness: title ? 0.42 : 0.28,
-    emissive: title ? K9_GOLD_EMISSIVE.clone() : new THREE.Color('#3c2608'),
-    emissiveIntensity: title ? 0.06 : 0.14,
-    side: THREE.DoubleSide,
-  })
-  mat.name = original?.name ?? ''
-  mat.toneMapped = false
-  mat.envMapIntensity = title ? 1.05 : 1.7
-  return mat
-}
-
-function applyK9FeatureMaterial(obj: THREE.Mesh): void {
+function applyK9FeatureMaterial(obj: THREE.Mesh, wallMap: THREE.Texture | null): void {
   const originals = originalMaterialsFor(obj)
   const materialFor = (original: THREE.Material | undefined) => {
-    if (obj.name.includes('BackPanel')) return makeK9WoodMaterial(original)
-    if (obj.name.includes('Title_Line')) return makeK9GoldMaterial(original, true)
-    if (obj.name.includes('Thin_Brass_Inlay')) return makeK9GoldMaterial(original, false)
-    if (obj.name.includes('Inner_Recess_Sidewall')) return makeK9FrameMaterial(original, '#2f2119')
-    return makeK9FrameMaterial(original, '#5b3f31')
+    if (obj.name.includes('BackPanel')) return makeK9WoodMaterial(original, wallMap)
+    return makeK9TitleMaterial(original)
   }
 
   obj.material = Array.isArray(obj.material)
@@ -454,13 +506,6 @@ function applyLitOriginalSlotMaterials(obj: THREE.Mesh, hiddenMaterialNames = ne
   obj.material = Array.isArray(obj.material)
     ? obj.material.map((_mat, index) => materialFor(originals[index] ?? originals[0]))
     : materialFor(originals[0])
-}
-
-
-function applyInvisibleMaterials(obj: THREE.Mesh): void {
-  obj.material = Array.isArray(obj.material)
-    ? obj.material.map((mat) => makeInvisibleMaterial(mat?.name ?? ''))
-    : makeInvisibleMaterial((obj.material as THREE.Material | undefined)?.name ?? '')
 }
 
 
@@ -541,7 +586,7 @@ export function RoomModel({
   lightmapUrl,
 }: Props) {
   const gltf = useGLTF(url) as { scene: THREE.Group }
-  const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene])
+  const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene, ROOM_MODEL_EXTRACTION_REVISION])
   const invalidate = useThree((s) => s.invalidate)
   const camera = useThree((s) => s.camera)
   const k9TitleGoldMaterialsRef = useRef<THREE.MeshStandardMaterial[]>([])
@@ -694,6 +739,72 @@ export function RoomModel({
     }
   }, [floorTileUrl, invalidate])
 
+  // Wall tile color (Simple Tiles) - full-res, world-projected in the wall shader.
+  const wallTileUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_walltile') : null
+  const [wallTileTex, setWallTileTex] = useState<THREE.Texture | null>(null)
+  useEffect(() => {
+    if (!wallTileUrl) {
+      setWallTileTex(null)
+      return
+    }
+    let cancelled = false
+    new THREE.TextureLoader().load(
+      wallTileUrl,
+      (tex) => {
+        if (cancelled) {
+          tex.dispose()
+          return
+        }
+        tex.wrapS = THREE.RepeatWrapping
+        tex.wrapT = THREE.RepeatWrapping
+        tex.colorSpace = THREE.SRGBColorSpace
+        tex.anisotropy = 8
+        tex.needsUpdate = true
+        setWallTileTex(tex)
+        invalidate()
+      },
+      undefined,
+      () => { },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [wallTileUrl, invalidate])
+
+  const k9WallUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_k9_wall') : null
+  const [k9WallTex, setK9WallTex] = useState<THREE.Texture | null>(null)
+  useEffect(() => {
+    if (!k9WallUrl) {
+      setK9WallTex(null)
+      return
+    }
+    let cancelled = false
+    new THREE.TextureLoader().load(
+      k9WallUrl,
+      (tex) => {
+        if (cancelled) {
+          tex.dispose()
+          return
+        }
+        tex.flipY = false
+        tex.wrapS = THREE.RepeatWrapping
+        tex.wrapT = THREE.RepeatWrapping
+        tex.colorSpace = THREE.SRGBColorSpace
+        tex.anisotropy = 8
+        tex.needsUpdate = true
+        setK9WallTex(tex)
+        invalidate()
+      },
+      undefined,
+      () => {
+        /* K9 wall texture is optional; fall back to the GLB material map. */
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [k9WallUrl, invalidate])
+
   const wallNorUrl = lightmapUrl ? lightmapUrl.replace('_combined', '_wall_nor') : null
   const [wallNorTex, setWallNorTex] = useState<THREE.Texture | null>(null)
   useEffect(() => {
@@ -792,36 +903,17 @@ export function RoomModel({
       if (!isSlot) {
         if (isCanvas) { obj.visible = false; return }
 
-        if (isHiddenZoneTitleMesh(obj.name)) {
-          obj.visible = false
-          return
-        }
         if (isGlbZoneTitleMesh(obj.name)) {
           applyOriginalUnlitMaterial(obj)
           return
         }
-        // Blue dado (skirting): render as a flat UNLIT colour so it matches the baked
-        // walls and stays light like the Blender view, instead of a dark, lighting-
-        // dependent PBR band. Colour comes from the mesh's own material.
         if (obj.name.startsWith('TT_Dado')) {
-          // Capture the ORIGINAL base colour ONCE. This effect re-runs when the async
-          // lightmap atlases arrive (and twice under <StrictMode> in dev), so reading
-          // the LIVE material every time would re-soften an already-softened colour Ã¢â‚¬â€
-          // compounding the desaturation by a different amount in dev vs prod, which is
-          // why the dado looked paler on localhost than on the deploys. Always derive
-          // from the stored base colour so the result is identical everywhere (1 pass).
-          // Rich royal-blue skirting to match the reference render (raw NSMO_Blue_Dado
-          // reads pale and the earlier desaturation washed it out further). Flat UNLIT
-          // colour so it is identical everywhere in one pass.
-          const DADO_BLUE = new THREE.Color('#0057a8')
-          obj.material = new THREE.MeshBasicMaterial({
-            color: DADO_BLUE, side: THREE.DoubleSide, toneMapped: false,
-          })
+          obj.visible = false
           return
         }
         // Solid architecture (e.g. the freestanding center block) becomes a walkable
         // obstacle so the camera can't pass through it.
-        if (COLLIDER_NAME_HINTS.some((h) => obj.name.includes(h))) {
+        if (isColliderMeshName(obj.name)) {
           const box = new THREE.Box3().setFromObject(obj)
           const margin = obj.name.includes('CenterBlock')
             ? INTERIOR_WALL_COLLIDER_MARGIN
@@ -906,10 +998,6 @@ export function RoomModel({
           obj.material = redMat
           return
         }
-        if (obj.name === 'TT_Niche_Glass') {
-          obj.visible = false
-          return
-        }
         if (obj.name.startsWith('TT_Display_Case_') && obj.name.endsWith('_Glass')) {
           const glassMat = new THREE.MeshBasicMaterial({
             color: new THREE.Color('#d7e8ee'),
@@ -932,13 +1020,9 @@ export function RoomModel({
           return
         }
         if (obj.name.startsWith('TT_K9_WoodFeature_')) {
-          if (obj.name.includes('Contact_Shadow')) {
-            applyK9ContactShadowMaterial(obj)
-            return
-          }
           obj.castShadow = true
           obj.receiveShadow = true
-          applyK9FeatureMaterial(obj)
+          applyK9FeatureMaterial(obj, k9WallTex)
           if (obj.name.includes('Title_Line')) {
             const glowBias = obj.name.includes('Title_Line_2') ? 2.85 : 0.45
             const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
@@ -1007,7 +1091,7 @@ export function RoomModel({
           // Calibrated to the Blender wall texture avg (sRGB ~0.88/0.87/0.86) Ã¢â‚¬â€ a soft warm
           // off-white, not stark white. Gentle brighten + faint warm, keep the grain.
           // Boss preference: brighter/whiter than the Blender taupe Ã¢â‚¬â€ fresh warm-cream white.
-          const wallTint = new THREE.Color(1.12, 1.07, 0.99)
+          const wallTint = new THREE.Color(1.0, 1.0, 1.0)
           // Ceiling (TT_Ceiling) is already near-white in the bake (emission ~2.0). The full
           // wall lift pushes it past 1.0 -> flat pure white, losing the soft gradient. Give it
           // its own gentler tint so it stays bright but keeps variation instead of clipping.
@@ -1086,13 +1170,15 @@ export function RoomModel({
           const makeShell = (m?: THREE.Material | null) =>
             isTileMat(m)
               ? makeTiledFloorMaterial(atlas, floorTileTex, floorNorTex, floorTint)
-              : isAccentMat(m)
-                ? new THREE.MeshBasicMaterial({ map: atlas, color: accentTint, side: THREE.DoubleSide, toneMapped: false })
-                : USE_CLEAN_WALL_SHADER
-                  ? makeCleanWall(m)
-                  : isCeilingMat(m)
-                    ? makeWallMaterial(atlas, ceilingTint, wallNorTex)
-                    : makeWallMaterial(atlas, wallTint, wallNorTex)
+              : m?.name?.includes('WoodFeature_Rosewood')
+                ? new THREE.MeshBasicMaterial({ color: new THREE.Color('#6e2a1e'), side: THREE.DoubleSide, toneMapped: false })
+                : isAccentMat(m)
+                  ? new THREE.MeshBasicMaterial({ map: atlas, color: accentTint, side: THREE.DoubleSide, toneMapped: false })
+                  : USE_CLEAN_WALL_SHADER
+                    ? makeCleanWall(m)
+                    : isCeilingMat(m)
+                      ? makeWallMaterial(atlas, ceilingTint, null)
+                      : makeTiledWallMaterial(atlas, wallTileTex, wallNorTex, wallTint)
           // This effect re-runs when each async atlas arrives, so the replacement
           // materials must KEEP the original slot name -- otherwise the /tile/ check
           // fails on the 2nd pass and the floor slot gets overwritten with the plain
@@ -1242,10 +1328,6 @@ export function RoomModel({
       k9TitleBox.getCenter(k9GlowTargetRef.current)
     }
 
-    // K6 runtime glass overlay disabled: the generated transparent plane caused
-    // overdraw artifacts. The GLB currently does not include a stable TT_Niche_Glass
-    // mesh, so keep K6 stable until the glass is fixed at export/Blender level.
-
     const extracted: ExtractedSlot[] = []
     const haveCenter = isFinite(archMinX) && isFinite(archMinZ)
     const cx = haveCenter ? (archMinX + archMaxX) / 2 : 0
@@ -1317,7 +1399,8 @@ export function RoomModel({
     if (isFinite(archMinX) && isFinite(archMinZ)) {
       boundsCbRef.current?.({ minX: archMinX, maxX: archMaxX, minZ: archMinZ, maxZ: archMaxZ })
     }
-  }, [scene, knownIds, bakedAtlas, propsAtlas, floorTileTex, wallNorTex, floorNorTex])
+    invalidate()
+  }, [scene, knownIds, bakedAtlas, propsAtlas, floorTileTex, wallNorTex, floorNorTex, wallTileTex, k9WallTex, invalidate])
 
   return (
     <primitive

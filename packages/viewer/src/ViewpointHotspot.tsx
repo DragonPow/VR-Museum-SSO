@@ -16,6 +16,7 @@ export function ViewpointHotspot({ viewpoint, onClick }: Props) {
   const rippleRef = useRef<THREE.Mesh>(null)
   const diamondRef = useRef<THREE.Mesh>(null)
   const glowRef = useRef<THREE.Mesh>(null)
+  const connectorRef = useRef<THREE.Mesh>(null)
   const { invalidate } = useThree()
 
   // Frame loop for animations + distance-adaptive scale
@@ -78,6 +79,14 @@ export function ViewpointHotspot({ viewpoint, onClick }: Props) {
       diamondRef.current.rotation.y += delta * 1.5
       diamondRef.current.rotation.x = Math.sin(clock.getElapsedTime() * 1.5) * 0.15
       diamondRef.current.position.y = 0.35 + Math.sin(clock.getElapsedTime() * 2.5) * 0.04
+
+      if (connectorRef.current) {
+        const connectorBottom = 0.1
+        const connectorTop = diamondRef.current.position.y - 0.085
+        const connectorHeight = Math.max(0.04, connectorTop - connectorBottom)
+        connectorRef.current.position.y = connectorBottom + connectorHeight / 2
+        connectorRef.current.scale.y = connectorHeight
+      }
     }
   })
 
@@ -145,8 +154,8 @@ export function ViewpointHotspot({ viewpoint, onClick }: Props) {
       {/* ── FLOATING 3D INDICATOR ── */}
       
       {/* Vertical connector line — white, taller */}
-      <mesh position={[0, 0.17, 0]}>
-        <cylinderGeometry args={[0.005, 0.005, 0.5, 8]} />
+      <mesh ref={connectorRef} position={[0, 0.1825, 0]} scale={[1, 0.165, 1]}>
+        <cylinderGeometry args={[0.005, 0.005, 1, 8]} />
         <meshBasicMaterial color="#ffffff" transparent opacity={0.5} depthWrite={false} />
       </mesh>
 
