@@ -678,13 +678,13 @@ export function Landing({ content, onEnter }: Props) {
               <span className="marquee-star">★</span> CHÀO MỪNG BẠN ĐẾN VỚI <strong className="highlight-blue">PHÒNG TRUYỀN THỐNG SỐ</strong> TRUNG TÂM ĐIỀU ĐỘ HỆ THỐNG ĐIỆN MIỀN NAM <span className="marquee-star">★</span>
             </span>
             <span className="marquee-text">
-              <span className="marquee-star">★</span> NHIỆT LIỆT CHÀO MỪNG KỶ NIỆM <strong className="highlight-red">50 NĂM THÀNH LẬP</strong> TRUNG TÂM ĐIỀU HỢP ĐIỆN NĂNG <span className="marquee-star">★</span>
+              <span className="marquee-star">★</span> <strong className="highlight-red">NHIỆT LIỆT CHÀO MỪNG KỶ NIỆM 50 NĂM THÀNH LẬP</strong> TRUNG TÂM ĐIỀU HỢP ĐIỆN NĂNG <span className="marquee-star">★</span>
             </span>
             <span className="marquee-text">
               <span className="marquee-star">★</span> CHÀO MỪNG BẠN ĐẾN VỚI <strong className="highlight-blue">PHÒNG TRUYỀN THỐNG SỐ</strong> TRUNG TÂM ĐIỀU ĐỘ HỆ THỐNG ĐIỆN MIỀN NAM <span className="marquee-star">★</span>
             </span>
             <span className="marquee-text">
-              <span className="marquee-star">★</span> NHIỆT LIỆT CHÀO MỪNG KỶ NIỆM <strong className="highlight-red">50 NĂM THÀNH LẬP</strong> TRUNG TÂM ĐIỀU HỢP ĐIỆN NĂNG <span className="marquee-star">★</span>
+              <span className="marquee-star">★</span> <strong className="highlight-red">NHIỆT LIỆT CHÀO MỪNG KỶ NIỆM 50 NĂM THÀNH LẬP</strong> TRUNG TÂM ĐIỀU HỢP ĐIỆN NĂNG <span className="marquee-star">★</span>
             </span>
           </div>
         </div>
