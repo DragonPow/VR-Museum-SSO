@@ -18,17 +18,11 @@ import {
 type FilterTab = 'all' | 'order' | 'pending' | 'approved' | 'rejected'
 type OrderViewMode = 'list' | 'grid'
 
-const DEFAULT_EVENTS: GuestbookEvent[] = [
-  { id: 'ev_main_50th', name: 'Lễ Kỷ Niệm 50 Năm', color: '#c8a85a', description: 'Lời chúc chung cho ngày lễ chính 50 năm' },
-  { id: 'ev_alumni', name: 'Ngày Hội Cựu Cán Bộ', color: '#3b82f6', description: 'Lời chúc từ các thế hệ cán bộ hưu trí, cựu nhân viên' },
-  { id: 'ev_partners', name: 'Đối Tác & Khách Quý', color: '#10b981', description: 'Lời chúc từ các đối tác chiến lược và đại biểu' },
-  { id: 'ev_genz', name: 'Thanh Niên & Khối Trẻ', color: '#ec4899', description: 'Lời chúc từ Đoàn thanh niên và thế hệ trẻ' },
-]
-
 export function GuestbookManager() {
   const [notes, setNotes] = useState<GuestbookNote[]>([])
-  const [events, setEvents] = useState<GuestbookEvent[]>(DEFAULT_EVENTS)
+  const [events, setEvents] = useState<GuestbookEvent[]>([])
   const [loading, setLoading] = useState(true)
+
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<FilterTab>('all')
   const [orderViewMode, setOrderViewMode] = useState<OrderViewMode>('list')
