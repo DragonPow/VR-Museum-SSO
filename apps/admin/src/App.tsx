@@ -11,6 +11,7 @@ import { Publish } from './pages/Publish.js'
 import { Rooms } from './pages/Rooms.js'
 import { RoomEditor } from './pages/RoomEditor.js'
 import { Settings } from './pages/Settings.js'
+import { GuestbookManager } from './pages/GuestbookManager.js'
 
 export function App() {
   const init = useDraftStore((s) => s.init)
@@ -25,16 +26,18 @@ export function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/guestbook" element={<GuestbookManager />} />
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/rooms/:id" element={<RoomEditor />} />
           <Route path="/library" element={<Library />} />
           <Route path="/assign" element={<Assign />} />
           <Route path="/preview" element={<Preview />} />
-          <Route path="/publish" element={<Publish />} />
-          <Route path="/rooms" element={<Rooms />} />
-          <Route path="/rooms/:id" element={<RoomEditor />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/publish" element={<Publish />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
     </BrowserRouter>
   )
 }
+

@@ -9,6 +9,8 @@
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "dev:admin": "pnpm --filter admin dev",
+    "dev:api": "pnpm --filter api-worker dev",
+
     "build": "pnpm --filter @vm/shared build && pnpm --filter @vm/viewer build && pnpm --filter web build && pnpm --filter admin build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",

@@ -4,6 +4,7 @@ import { useDraftStore } from '../store.js'
 const NAV = [
   { to: '/',         label: 'Dashboard',         icon: '🏠' },
   { to: '/analytics',label: 'Thống kê truy cập', icon: '📊' },
+  { to: '/guestbook',label: 'Duyệt lưu bút',     icon: '✍️' },
   { to: '/rooms',    label: 'Quản lý phòng',     icon: '🚪' },
   { to: '/library',  label: 'Thư viện ảnh',      icon: '🖼' },
   { to: '/assign',   label: 'Gán ảnh vào slot',  icon: '📌' },
@@ -11,6 +12,7 @@ const NAV = [
   { to: '/settings', label: 'Cấu hình ảnh',      icon: '⚙️' },
   { to: '/publish',  label: 'Xuất bản',          icon: '🚀' },
 ]
+
 
 interface Props {
   children: React.ReactNode

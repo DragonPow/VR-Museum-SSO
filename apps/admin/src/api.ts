@@ -1,5 +1,6 @@
 import { splitContentForPublish } from '@vm/shared'
-import type { Content } from '@vm/shared'
+import type { Content, GuestbookNote, GuestbookNoteStatus, GuestbookEvent } from '@vm/shared'
+
 
 const BASE = import.meta.env.VITE_API_URL ?? ''
 
@@ -227,3 +228,120 @@ export async function getVisitorStats(): Promise<VisitorStats> {
   const res = await apiFetch('/api/stats')
   return res.json() as Promise<VisitorStats>
 }
+
+export async function getGuestbookNotes(all = true, status?: string): Promise<GuestbookNote[]> {
+  const params = new URLSearchParams()
+  if (all) params.set('all', 'true')
+  if (status) params.set('status', status)
+  const query = params.toString() ? `?${params.toString()}` : ''
+  const res = await apiFetch(`/api/guestbook${query}`)
+  const data = (await res.json()) as { notes: GuestbookNote[] }
+  return data.notes ?? []
+}
+
+
+
+export async function moderateGuestbookNote(id: string, status: GuestbookNoteStatus): Promise<void> {
+  await apiFetch('/api/guestbook/moderate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status }),
+  })
+}
+
+export async function deleteGuestbookNote(id: string): Promise<void> {
+  await apiFetch(`/api/guestbook?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function toggleGuestbookPin(id: string, isPinned: boolean): Promise<void> {
+  await apiFetch('/api/guestbook/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, isPinned }),
+  })
+}
+
+export async function toggleGuestbookVisibility(id: string, isVisible: boolean): Promise<void> {
+  await apiFetch('/api/guestbook/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, isVisible }),
+  })
+}
+
+export async function setGuestbookPriority(id: string, priority: number): Promise<void> {
+  await apiFetch('/api/guestbook/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, priority }),
+  })
+}
+
+export async function setGuestbookEvent(id: string, eventTag: string | null): Promise<void> {
+  await apiFetch('/api/guestbook/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, eventTag }),
+  })
+}
+
+export async function updateGuestbookNote(
+  id: string,
+  updates: { content?: string; signature?: string | null; priority?: number; eventTag?: string | null; isPinned?: boolean; isVisible?: boolean }
+): Promise<void> {
+  await apiFetch('/api/guestbook/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...updates }),
+  })
+}
+
+
+export async function getGuestbookEvents(): Promise<GuestbookEvent[]> {
+  const res = await apiFetch('/api/guestbook/events')
+  const data = (await res.json()) as { events: GuestbookEvent[] }
+  return data.events ?? []
+}
+
+export async function saveGuestbookEvent(event: Partial<GuestbookEvent> & { name: string }): Promise<{ ok: boolean; eventId: string }> {
+  const res = await apiFetch('/api/guestbook/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(event),
+  })
+  return res.json() as Promise<{ ok: boolean; eventId: string }>
+}
+
+export async function deleteGuestbookEvent(id: string): Promise<void> {
+  await apiFetch(`/api/guestbook/events?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function bulkModerateGuestbookNotes(
+  ids: string[],
+  action: 'approve' | 'reject' | 'delete' | 'hide' | 'show' | 'pin' | 'unpin' | 'priority' | 'set_event',
+  priority?: number,
+  eventTag?: string | null
+): Promise<void> {
+  await apiFetch('/api/guestbook/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, action, priority, eventTag }),
+  })
+}
+
+export async function reorderGuestbookNotes(items: { id: string; priority: number }[]): Promise<void> {
+  await apiFetch('/api/guestbook/reorder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  })
+}
+
+
+
+
+

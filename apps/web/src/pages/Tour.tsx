@@ -25,6 +25,8 @@ import { ScreenControls } from '../ui/ScreenControls.js'
 import { Gallery2D } from './Gallery2D.js'
 import { brand, glassPanel } from '../ui/theme.js'
 import { GuideModal } from '../ui/GuideModal.js'
+import { GuestbookWall } from '../ui/guestbook/GuestbookWall.js'
+
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 
@@ -72,6 +74,8 @@ export function Tour({ content, onBack }: Props) {
   const [showTooltip, setShowTooltip] = useState(isMobile)
   const [showPulse, setShowPulse] = useState(isMobile)
   const [showGuide, setShowGuide] = useState(true)
+  const [showGuestbook, setShowGuestbook] = useState(false)
+
 
   // Auto-hide hints after 6 seconds
   useEffect(() => {
@@ -338,6 +342,24 @@ export function Tour({ content, onBack }: Props) {
           <span>Hướng dẫn</span>
         </button>
 
+        {/* Lưu bút */}
+        <button
+          style={{
+            ...homeBtn,
+            background: showGuestbook ? brand.blue : glassPanel.background,
+            borderColor: showGuestbook ? brand.blueDark : glassPanel.borderColor,
+            color: showGuestbook ? '#ffffff' : brand.blue,
+            boxShadow: showGuestbook ? '0 4px 12px rgba(16,80,160,0.35)' : '0 4px 12px rgba(8,47,109,0.15)',
+          }}
+          onClick={() => setShowGuestbook(true)}
+          title="Mở Sổ Lưu Bút 50 Năm"
+          aria-label="Sổ Lưu Bút"
+        >
+          <PenIcon />
+          <span>Lưu bút</span>
+        </button>
+
+
         {/* Di chuyển */}
         <button
           style={{
@@ -438,9 +460,26 @@ export function Tour({ content, onBack }: Props) {
           sceneReady={sceneReady}
         />
       )}
+
+      {/* Guestbook 2D Wall */}
+      {showGuestbook && (
+        <GuestbookWall onClose={() => setShowGuestbook(false)} />
+      )}
     </div>
   )
 }
+
+function PenIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 19l7-7 3 3-7 7-3-3z" />
+      <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+      <path d="M2 2l7.586 7.586" />
+      <circle cx="11" cy="11" r="2" />
+    </svg>
+  )
+}
+
 
 
 function HelpIcon() {
