@@ -172,23 +172,33 @@ export const useDraftStore = create<DraftStore>()(
       addDocument: (document) =>
         set((s) => {
           if (!s.content) return s
-          return { content: { ...s.content, documents: [...s.content.documents, document] }, dirty: true }
+          const documents = [...s.content.documents, document]
+          return {
+            content: {
+              ...s.content,
+              documents,
+              documentIndex: documents.map(documentIndexFromDocument),
+            },
+            dirty: true,
+          }
         }),
 
       updateDocument: (id, patch) =>
         set((s) => {
           if (!s.content) return s
+          const documents = s.content.documents.map((it) => {
+            if (it.id !== id) return it
+            const next = { ...it, ...patch }
+            Object.entries(patch).forEach(([key, value]) => {
+              if (value === undefined) delete (next as Record<string, unknown>)[key]
+            })
+            return next
+          })
           return {
             content: {
               ...s.content,
-              documents: s.content.documents.map((it) => {
-                if (it.id !== id) return it
-                const next = { ...it, ...patch }
-                Object.entries(patch).forEach(([key, value]) => {
-                  if (value === undefined) delete (next as Record<string, unknown>)[key]
-                })
-                return next
-              }),
+              documents,
+              documentIndex: documents.map(documentIndexFromDocument),
             },
             dirty: true,
           }
@@ -197,10 +207,12 @@ export const useDraftStore = create<DraftStore>()(
       removeDocument: (id) =>
         set((s) => {
           if (!s.content) return s
+          const documents = s.content.documents.filter((it) => it.id !== id)
           return {
             content: {
               ...s.content,
-              documents: s.content.documents.filter((it) => it.id !== id),
+              documents,
+              documentIndex: documents.map(documentIndexFromDocument),
               rooms: s.content.rooms.map((r) => ({
                 ...r,
                 slots: r.slots.map((sl) => ({ ...sl, documentIds: (sl.documentIds ?? []).filter((documentId) => documentId !== id) })),

@@ -65,11 +65,7 @@ export function documentIndexFromDocument(document: DocumentItem): DocumentIndex
 
 export function getContentDocumentIndex(content: Content): DocumentIndexItem[] {
   if (content.documents.length === 0) return content.documentIndex
-  const existing = new Map(content.documentIndex.map((document) => [document.id, document]))
-  return content.documents.map((document) => ({
-    ...documentIndexFromDocument(document),
-    viewerImageId: existing.get(document.id)?.viewerImageId ?? document.viewerImageId,
-  }))
+  return content.documents.map(documentIndexFromDocument)
 }
 
 export function roomDataFromContent(content: Content, room: Room): RoomData {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parseContent, parseAndValidateContent, ContentValidationError } from './validate.js'
+import { getContentDocumentIndex } from './defaultContent.js'
 
 const VALID_CONTENT = {
   version: '1',
@@ -155,5 +156,25 @@ describe('parseAndValidateContent', () => {
       ],
     }
     expect(() => parseAndValidateContent(bad)).toThrow(/unknown document/)
+  })
+})
+
+describe('getContentDocumentIndex', () => {
+  it('uses updated viewerImageId from documents instead of stale documentIndex', () => {
+    const contentWithStaleIndex = {
+      ...VALID_CONTENT,
+      documentIndex: [
+        { id: 'doc1', documentKey: 'doc1', mediaType: 'image' as const, viewerImageId: 'photo1_old' },
+      ],
+      documents: [
+        {
+          ...VALID_CONTENT.documents[0]!,
+          viewerImageId: 'photo2_new',
+        },
+      ],
+    }
+
+    const index = getContentDocumentIndex(contentWithStaleIndex as any)
+    expect(index[0]?.viewerImageId).toBe('photo2_new')
   })
 })
