@@ -158,6 +158,8 @@ function localContentPlugin() {
       })
 
       server.middlewares.use('/content', async (req: any, res: any, next: any) => {
+
+
         try {
           const pathname = decodeURIComponent((req.url ?? '/').split('?')[0] ?? '/')
           const filePath = resolve(contentRoot, `.${pathname}`)

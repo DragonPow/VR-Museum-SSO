@@ -157,15 +157,61 @@ export function Library() {
   const addDocument = useDraftStore((s) => s.addDocument)
   const updateDocument = useDraftStore((s) => s.updateDocument)
   const removeDocument = useDraftStore((s) => s.removeDocument)
+  const ensureDocumentLoaded = useDraftStore((s) => s.ensureDocumentLoaded)
 
   const [showUpload, setShowUpload] = useState(false)
   const [search, setSearch] = useState('')
   const [periodFilter, setPeriodFilter] = useState('')
   const [editId, setEditId] = useState<string | null>(null)
+  const [loadingEdit, setLoadingEdit] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 24
 
+  useEffect(() => {
+    if (editId && content) {
+      const loaded = content.documents.find((it) => it.id === editId)
+      if (!loaded) {
+        setLoadingEdit(true)
+        ensureDocumentLoaded(editId).finally(() => setLoadingEdit(false))
+      }
+    }
+  }, [editId, content, ensureDocumentLoaded])
+
   if (!content) return <div style={styles.empty}>Đang tải...</div>
+
+  const allDocumentItems = useMemo(() => {
+    const items: DocumentItem[] = []
+    const seenIds = new Set<string>()
+
+    for (const doc of content.documents) {
+      seenIds.add(doc.id)
+      items.push(doc)
+    }
+
+    for (const idx of content.documentIndex) {
+      if (!seenIds.has(idx.id)) {
+        seenIds.add(idx.id)
+        items.push({
+          id: idx.id,
+          documentKey: idx.documentKey,
+          title: idx.title || 'Tư liệu chưa đặt tên',
+          ...(idx.year != null ? { year: idx.year } : {}),
+          periodId: idx.periodId || '',
+          summary: '',
+          body: '',
+          tags: idx.tags || [],
+          mediaType: idx.mediaType,
+          thumbnailImageId: idx.thumbnailImageId || idx.viewerImageId || 'photo1',
+          viewerImageId: idx.viewerImageId || 'photo1',
+          detailImageIds: [idx.viewerImageId || 'photo1'],
+          images: [{ id: idx.viewerImageId || 'photo1' }],
+          source: idx.source || '',
+          priority: 0,
+        })
+      }
+    }
+    return items
+  }, [content.documents, content.documentIndex])
 
   const assignCount = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -179,7 +225,7 @@ export function Library() {
     return [...content.periods].sort((a, b) => a.order - b.order)
   }, [content.periods])
 
-  const filtered = content.documents.filter((it) => {
+  const filtered = allDocumentItems.filter((it) => {
     const typeLabel = getDocumentTypeLabel(it).toLowerCase()
     const query = search.toLowerCase()
     const matchSearch = !search ||
@@ -203,7 +249,7 @@ export function Library() {
       <div style={styles.toolbar}>
         <div>
           <h2 style={styles.title}>Thư viện tư liệu</h2>
-          <p style={styles.sub}>{content.documents.length} tư liệu · {Object.values(assignCount).reduce((a, b) => a + b, 0)} lần gán</p>
+          <p style={styles.sub}>{allDocumentItems.length} tư liệu · {Object.values(assignCount).reduce((a, b) => a + b, 0)} lần gán</p>
         </div>
         <button style={styles.uploadBtn} onClick={() => setShowUpload(true)}>
           + Thêm tư liệu
@@ -231,7 +277,7 @@ export function Library() {
 
       {filtered.length === 0 ? (
         <div style={styles.empty}>
-          {content.documents.length === 0
+          {allDocumentItems.length === 0
             ? 'Chưa có tư liệu nào. Nhấn "Thêm tư liệu" để bắt đầu.'
             : 'Không tìm thấy tư liệu phù hợp.'}
         </div>
@@ -265,7 +311,15 @@ export function Library() {
         />
       )}
 
-      {editItem && (
+      {loadingEdit && (
+        <div style={styles.overlay}>
+          <div style={{ padding: '30px 40px', background: '#0f0a06', border: '1px solid #3a2e1e', borderRadius: '12px', color: '#c8a85a', fontSize: '14px' }}>
+            ⏳ Đang tải chi tiết tư liệu...
+          </div>
+        </div>
+      )}
+
+      {editItem && !loadingEdit && (
         <EditModal
           item={editItem}
           periods={sortedPeriods}

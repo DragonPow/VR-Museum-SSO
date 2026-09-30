@@ -1,9 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DEFAULT_CONTENT, documentIndexFromDocument } from '@vm/shared'
-import { loadDraftContent, loadStaticContent } from './contentSource.js'
-import type { Content, DocumentItem, Period, Room, Viewpoint, RoomPortal, SlotNameplate, ExternalLink } from '@vm/shared'
-
+import { loadDraftContent, loadStaticContent, fetchDocumentDetail } from './contentSource.js'
+import type { Content, DocumentItem, Period, Room, Viewpoint, RoomPortal, SlotNameplate, ExternalLink, SlotType } from '@vm/shared'
 
 function documentKeyFromLegacyItem(item: Record<string, unknown>): string {
   for (const field of ['wallTextureUrl', 'fullUrl', 'thumbUrl']) {
@@ -103,10 +102,11 @@ interface DraftStore {
 
   init: () => Promise<void>
   loadContent: (c: Content) => void
+  ensureDocumentLoaded: (id: string) => Promise<DocumentItem | null>
   addDocument: (document: DocumentItem) => void
   updateDocument: (id: string, patch: Partial<DocumentItem>) => void
   removeDocument: (id: string) => void
-  assignDocuments: (roomId: string, slotId: string, documentIds: string[], nameplate?: SlotNameplate, fitMode?: 'cover' | 'contain') => void
+  assignDocuments: (roomId: string, slotId: string, documentIds: string[], nameplate?: SlotNameplate, fitMode?: 'cover' | 'contain', slotType?: SlotType, guestbookEventId?: string) => void
   markClean: () => void
   reset: () => void
   updateSettings: (settings: any) => void
@@ -169,6 +169,31 @@ export const useDraftStore = create<DraftStore>()(
 
       loadContent: (content) => set({ content: normalizeContentShape(content), dirty: false }),
 
+      ensureDocumentLoaded: async (id: string) => {
+        const s = get()
+        if (!s.content) return null
+        const existing = s.content.documents.find((d) => d.id === id || d.documentKey === id)
+        if (existing) return existing
+        const indexItem = s.content.documentIndex.find((d) => d.id === id || d.documentKey === id)
+        const key = indexItem?.documentKey ?? id
+        const fetched = await fetchDocumentDetail(key)
+        if (fetched) {
+          set((state) => {
+            if (!state.content) return state
+            if (state.content.documents.some((d) => d.id === fetched.id)) return state
+            const documents = [...state.content.documents, fetched]
+            return {
+              content: {
+                ...state.content,
+                documents,
+              },
+            }
+          })
+          return fetched
+        }
+        return null
+      },
+
       addDocument: (document) =>
         set((s) => {
           if (!s.content) return s
@@ -222,7 +247,7 @@ export const useDraftStore = create<DraftStore>()(
           }
         }),
 
-      assignDocuments: (roomId, slotId, documentIds, nameplate, fitMode) =>
+      assignDocuments: (roomId, slotId, documentIds, nameplate, fitMode, slotType, guestbookEventId) =>
         set((s) => {
           if (!s.content) return s
           return {
@@ -236,6 +261,14 @@ export const useDraftStore = create<DraftStore>()(
                       slots: r.slots.map((sl) => {
                         if (sl.id !== slotId) return sl
                         const nextSlot = { ...sl, documentIds }
+                        if (slotType) {
+                          nextSlot.type = slotType
+                        }
+                        if (guestbookEventId) {
+                          nextSlot.guestbookEventId = guestbookEventId
+                        } else {
+                          delete nextSlot.guestbookEventId
+                        }
                         if (nameplate) {
                           nextSlot.nameplate = nameplate
                         } else {

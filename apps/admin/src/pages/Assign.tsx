@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
-import type { Slot, DocumentItem } from '@vm/shared'
+import type { Slot, DocumentItem, GuestbookEvent, SlotType } from '@vm/shared'
 import { resolveDocumentImageVariantUrl } from '@vm/shared'
 import { useDraftStore } from '../store.js'
+import { getGuestbookEvents } from '../api.js'
 
 const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL ?? '').replace(/\/+$/, '')
 const thumbUrl = (document?: DocumentItem | null) =>
@@ -90,12 +91,23 @@ export function Assign() {
   const ITEMS_PER_PAGE = 24
   const [expandedZones, setExpandedZones] = useState<Record<string, boolean>>({})
 
+  // Slot type & guestbook event states
+  const [slotType, setSlotType] = useState<SlotType>('image')
+  const [guestbookEventId, setGuestbookEventId] = useState<string>('')
+  const [availableEvents, setAvailableEvents] = useState<GuestbookEvent[]>([])
+
   // Nameplate states
   const [nameplateEnabled, setNameplateEnabled] = useState(false)
   const [nameplateRole, setNameplateRole] = useState('')
   const [nameplatePrimary, setNameplatePrimary] = useState('')
   const [nameplateSecondary, setNameplateSecondary] = useState('')
   const [fitMode, setFitMode] = useState<'cover' | 'contain'>('cover')
+
+  useEffect(() => {
+    getGuestbookEvents().then((evts) => {
+      if (Array.isArray(evts)) setAvailableEvents(evts)
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     setExpandedZones({})
@@ -110,15 +122,49 @@ export function Assign() {
 
   if (!content) return <div style={styles.center}>Đang tải...</div>
 
+  const allDocumentItems = useMemo(() => {
+    const items: DocumentItem[] = []
+    const seenIds = new Set<string>()
+
+    for (const doc of content.documents) {
+      seenIds.add(doc.id)
+      items.push(doc)
+    }
+
+    for (const idx of content.documentIndex) {
+      if (!seenIds.has(idx.id)) {
+        seenIds.add(idx.id)
+        items.push({
+          id: idx.id,
+          documentKey: idx.documentKey,
+          title: idx.title || 'Tư liệu chưa đặt tên',
+          ...(idx.year != null ? { year: idx.year } : {}),
+          periodId: idx.periodId || '',
+          summary: '',
+          body: '',
+          tags: idx.tags || [],
+          mediaType: idx.mediaType,
+          thumbnailImageId: idx.thumbnailImageId || idx.viewerImageId || 'photo1',
+          viewerImageId: idx.viewerImageId || 'photo1',
+          detailImageIds: [idx.viewerImageId || 'photo1'],
+          images: [{ id: idx.viewerImageId || 'photo1' }],
+          source: idx.source || '',
+          priority: 0,
+        })
+      }
+    }
+    return items
+  }, [content.documents, content.documentIndex])
+
   const documentMap = useMemo(
-    () => Object.fromEntries(content.documents.map((it) => [it.id, it])),
-    [content.documents],
+    () => Object.fromEntries(allDocumentItems.map((it) => [it.id, it])),
+    [allDocumentItems],
   )
 
   const selectedRoom = content.rooms.find((r) => r.id === selectedRoomId)
 
   const pickerDocuments = useMemo(() => {
-    let documents = content.documents
+    let documents = allDocumentItems
     if (search) documents = documents.filter((it) =>
       it.title.toLowerCase().includes(search.toLowerCase()) ||
       (it.year != null && String(it.year).toLowerCase().includes(search.toLowerCase())) ||
@@ -127,7 +173,7 @@ export function Assign() {
     )
     if (periodFilter) documents = documents.filter((it) => it.periodId === periodFilter)
     return documents
-  }, [content.documents, search, periodFilter])
+  }, [allDocumentItems, search, periodFilter])
 
   const pickerTotalPages = Math.ceil(pickerDocuments.length / ITEMS_PER_PAGE)
   const displayedPickerDocs = useMemo(() => {
@@ -137,6 +183,8 @@ export function Assign() {
   const openPicker = (slot: Slot) => {
     setPickerSlot(slot)
     setDraftIds(slot.documentIds ?? [])
+    setSlotType(slot.type ?? 'image')
+    setGuestbookEventId(slot.guestbookEventId ?? '')
     // Auto-enable nameplate if slot has one, or it's a K5 Slot
     const hasNameplate = !!slot.nameplate
     const isK5 = /^VM_Slot_K5_CD_\d{2}$/i.test(slot.name || slot.id)
@@ -206,7 +254,8 @@ export function Assign() {
         nameplate.role = rol
       }
     }
-    assignDocuments(selectedRoom.id, pickerSlot.id, draftIds, nameplate, fitMode)
+    const finalEventId = slotType === 'guestbook' ? (guestbookEventId.trim() || undefined) : undefined
+    assignDocuments(selectedRoom.id, pickerSlot.id, draftIds, nameplate, fitMode, slotType, finalEventId)
     setPickerSlot(null)
     setSearch('')
     setPeriodFilter('')
@@ -414,6 +463,39 @@ export function Assign() {
               )}
             </div>
 
+            {/* Cấu hình Loại Slot */}
+            <div style={{ ...styles.fitModeSection, borderBottom: '1px solid #2a1e10', padding: '12px 24px', background: 'rgba(0,0,0,0.15)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', color: '#c8a85a', fontWeight: 600, fontSize: '13px', flexWrap: 'wrap' }}>
+                <span>Chức năng / Loại Slot:</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', userSelect: 'none', color: '#f0e8d8', fontWeight: 400 }}>
+                  <input type="radio" name="slotType" checked={slotType === 'image'} onChange={() => setSlotType('image')} />
+                  🖼️ Frame Ảnh thông thường
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', userSelect: 'none', color: '#f0e8d8', fontWeight: 400 }}>
+                  <input type="radio" name="slotType" checked={slotType === 'guestbook'} onChange={() => setSlotType('guestbook')} />
+                  📌 Bảng Lưu Bút Sự Kiện
+                </label>
+              </div>
+
+              {slotType === 'guestbook' && (
+                <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(200,168,90,0.08)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(200,168,90,0.2)' }}>
+                  <span style={{ fontSize: '12px', color: '#c8a85a', fontWeight: 600, whiteSpace: 'nowrap' }}>Gắn Sự kiện lưu bút:</span>
+                  <select
+                    value={guestbookEventId}
+                    onChange={(e) => setGuestbookEventId(e.target.value)}
+                    style={{ flex: 1, padding: '6px 10px', background: '#1a1208', border: '1px solid #3a2e1e', borderRadius: '6px', color: '#f0e8d8', fontSize: '13px', outline: 'none' }}
+                  >
+                    <option value="">-- Tất cả lưu bút (không lọc event) --</option>
+                    {availableEvents.map((evt) => (
+                      <option key={evt.id} value={evt.id}>
+                        {evt.name} ({evt.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
             {/* Cấu hình chế độ hiển thị Fit Mode */}
             <div style={styles.fitModeSection}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', color: '#c8a85a', fontWeight: 600, fontSize: '13px' }}>
@@ -438,7 +520,7 @@ export function Assign() {
             </div>
 
             <div style={styles.pickerGrid}>
-              {content.documents.length === 0 && <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>Chưa có tư liệu nào. Hãy thêm tư liệu trước.</div>}
+              {allDocumentItems.length === 0 && <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>Chưa có tư liệu nào. Hãy thêm tư liệu trước.</div>}
               {displayedPickerDocs.map((document) => {
                 const active = draftIds.includes(document.id)
                 return (
@@ -453,7 +535,7 @@ export function Assign() {
                   </div>
                 )
               })}
-              {pickerDocuments.length === 0 && content.documents.length > 0 && <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>Không tìm thấy tư liệu phù hợp.</div>}
+              {pickerDocuments.length === 0 && allDocumentItems.length > 0 && <div style={{ ...styles.center, gridColumn: '1 / -1', padding: '40px' }}>Không tìm thấy tư liệu phù hợp.</div>}
             </div>
 
             <Pagination current={pickerPage} total={pickerTotalPages} onChange={setPickerPage} />
@@ -518,6 +600,11 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
           <div style={styles.slotEmpty}><span style={styles.slotEmptyIcon}>+</span></div>
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>
+            {slot.type === 'guestbook' && (
+              <div style={{ fontSize: '11px', color: '#eab308', marginTop: '4px', fontWeight: 600 }}>
+                📌 Bảng Lưu Bút {slot.guestbookEventId ? `(Event: ${slot.guestbookEventId})` : ''}
+              </div>
+            )}
             {slot.nameplate && (
               <div style={styles.slotNameplateBadge}>
                 📛 Bảng tên: {slot.nameplate.role ? `[${slot.nameplate.role}] ` : ''}{slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}

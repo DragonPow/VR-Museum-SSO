@@ -5,6 +5,7 @@ import { SceneCanvas, RoomScene } from '@vm/viewer'
 import type { RoomBounds, CameraState } from '@vm/viewer'
 import { uploadModel } from '../api.js'
 import { nanoid } from '../util/nanoid.js'
+import { getContentDocumentIndex } from '@vm/shared'
 import type { Viewpoint, RoomPortal } from '@vm/shared'
 
 type EditMode = 'none' | 'place-portal'
@@ -205,7 +206,7 @@ export function RoomEditor() {
       </div>
     )
 
-  const documents = Object.fromEntries(content.documents.map((it) => [it.id, it]))
+  const documents = Object.fromEntries(getContentDocumentIndex(content).map((it) => [it.id, it]))
   const textures = Object.fromEntries(content.textures.map((t) => [t.id, t.url]))
 
   useEffect(() => {

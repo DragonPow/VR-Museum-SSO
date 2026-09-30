@@ -275,7 +275,10 @@ function ActionCard({ icon, title, desc, btnLabel, primary, danger, disabled, on
 }
 
 function findBrokenDocumentRefs(content: Content) {
-  const documentIds = new Set(content.documents.map((document) => document.id))
+  const documentIds = new Set([
+    ...content.documents.map((document) => document.id),
+    ...content.documentIndex.map((document) => document.id),
+  ])
   return content.rooms.flatMap((room) =>
     room.slots.flatMap((slot) =>
       (slot.documentIds ?? [])
@@ -341,7 +344,7 @@ function getSummary(content: Content) {
   return {
     periods: content.periods.length,
     rooms: content.rooms.length,
-    items: content.documents.length,
+    items: content.documentIndex.length || content.documents.length,
     total: allSlots.length,
     assigned: allSlots.filter((s) => (s.documentIds ?? []).length > 0).length,
     brokenRefs: findBrokenDocumentRefs(content).length,

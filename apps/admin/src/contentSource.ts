@@ -1,5 +1,5 @@
 import { parseContent, parseDocumentItem } from '@vm/shared'
-import type { Content } from '@vm/shared'
+import type { Content, DocumentItem } from '@vm/shared'
 
 type ContentMode = 'local' | 'github' | 'cloudflare' | 'static'
 
@@ -69,19 +69,20 @@ function documentUrlFor(contentUrl: string, id: string): string {
   return `/content/documents/${safeId}/document.json`
 }
 
-async function hydrateSplitContent(content: Content, contentUrl: string): Promise<Content> {
-  if (content.documents.length > 0 || content.documentIndex.length === 0) return content
-  const settled = await Promise.allSettled(
-    content.documentIndex.map(async (document) => {
-      const res = await fetch(documentUrlFor(contentUrl, document.documentKey), { cache: 'no-store' })
-      if (!res.ok) throw new Error(`${document.id}: HTTP ${res.status}`)
-      return parseDocumentItem(await res.json())
-    }),
-  )
-  const documents = settled
-    .filter((result): result is PromiseFulfilledResult<Content['documents'][number]> => result.status === 'fulfilled')
-    .map((result) => result.value)
-  return { ...content, documents }
+export async function fetchDocumentDetail(documentKey: string): Promise<DocumentItem | null> {
+  try {
+    let url = `/content/documents/${encodeURIComponent(documentKey)}/document.json`
+    if (ADMIN_CONTENT_SOURCE.mode === 'cloudflare' && ADMIN_CONTENT_SOURCE.assetBaseUrl) {
+      url = `${ADMIN_CONTENT_SOURCE.assetBaseUrl}/content/documents/${encodeURIComponent(documentKey)}/document.json`
+    } else if (ADMIN_CONTENT_SOURCE.mode === 'local') {
+      url = `/api/documents/${encodeURIComponent(documentKey)}`
+    }
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) return null
+    return parseDocumentItem(await res.json())
+  } catch {
+    return null
+  }
 }
 
 async function fetchContent(url: string): Promise<Content | null> {
@@ -89,13 +90,11 @@ async function fetchContent(url: string): Promise<Content | null> {
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) return null
     const content = parseContent(await res.json())
-    const hydrated = await hydrateSplitContent(content, url)
     if (url.endsWith('/api/draft')) {
       const totalSlots = content.rooms.reduce((sum, room) => sum + room.slots.length, 0)
-      const splitDocumentsMissing = content.documentIndex.length > 0 && content.documents.length === 0 && hydrated.documents.length === 0
-      if (totalSlots === 0 || splitDocumentsMissing) return null
+      if (totalSlots === 0) return null
     }
-    return hydrated
+    return content
   } catch {
     return null
   }

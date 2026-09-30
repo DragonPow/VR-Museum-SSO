@@ -13,7 +13,7 @@ export function Dashboard() {
 
   const totalSlots = content.rooms.flatMap((r) => r.slots).length
   const assignedSlots = content.rooms.flatMap((r) => r.slots).filter((s) => (s.documentIds ?? []).length > 0).length
-  const totalItems = content.documents.length
+  const totalItems = content.documentIndex.length || content.documents.length
   const progress = totalSlots > 0 ? Math.round((assignedSlots / totalSlots) * 100) : 0
 
   const stats = [
