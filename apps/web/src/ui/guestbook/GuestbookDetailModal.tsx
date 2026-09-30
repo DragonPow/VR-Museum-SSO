@@ -7,6 +7,7 @@ const COLOR_THEMES: Record<string, {
   innerBorder: string
   text: string
   sigColor: string
+  dateColor: string
   badgeBg: string
   shadow: string
 }> = {
@@ -16,6 +17,7 @@ const COLOR_THEMES: Record<string, {
     innerBorder: 'rgba(212, 175, 55, 0.4)',
     text: '#2c2214',
     sigColor: '#854d0e',
+    dateColor: '#92400e',
     badgeBg: 'linear-gradient(135deg, #d4af37, #b8860b)',
     shadow: 'rgba(184, 134, 11, 0.25)',
   },
@@ -25,6 +27,7 @@ const COLOR_THEMES: Record<string, {
     innerBorder: 'rgba(16, 80, 160, 0.25)',
     text: '#0f2942',
     sigColor: '#1050a0',
+    dateColor: '#1e40af',
     badgeBg: 'linear-gradient(135deg, #1050a0, #082f6d)',
     shadow: 'rgba(16, 80, 160, 0.25)',
   },
@@ -34,6 +37,7 @@ const COLOR_THEMES: Record<string, {
     innerBorder: 'rgba(180, 60, 90, 0.25)',
     text: '#3b121e',
     sigColor: '#9f1239',
+    dateColor: '#be123c',
     badgeBg: 'linear-gradient(135deg, #be123c, #881337)',
     shadow: 'rgba(190, 18, 60, 0.25)',
   },
@@ -43,6 +47,7 @@ const COLOR_THEMES: Record<string, {
     innerBorder: 'rgba(20, 90, 50, 0.25)',
     text: '#0d2e1b',
     sigColor: '#15803d',
+    dateColor: '#166534',
     badgeBg: 'linear-gradient(135deg, #15803d, #14532d)',
     shadow: 'rgba(21, 128, 61, 0.25)',
   },
@@ -52,6 +57,7 @@ const COLOR_THEMES: Record<string, {
     innerBorder: 'rgba(100, 116, 139, 0.25)',
     text: '#1e293b',
     sigColor: '#334155',
+    dateColor: '#475569',
     badgeBg: 'linear-gradient(135deg, #475569, #1e293b)',
     shadow: 'rgba(0, 0, 0, 0.25)',
   },
@@ -105,13 +111,12 @@ export function GuestbookDetailModal({ note, onClose }: Props) {
             </p>
           </div>
 
-
           {/* Gold Decorative Divider */}
           <div style={styles.goldDivider} />
 
           {/* Footer with date & signature */}
           <div style={styles.footer}>
-            <div style={styles.date}>
+            <div style={{ ...styles.date, color: theme.dateColor }}>
               {new Date(note.createdAt).toLocaleDateString('vi-VN', {
                 day: '2-digit',
                 month: '2-digit',
@@ -243,9 +248,13 @@ const styles: Record<string, React.CSSProperties> = {
     paddingTop: '8px',
   },
   date: {
-    fontSize: '12px',
-    opacity: 0.65,
+    fontSize: '12.5px',
+    fontWeight: 600,
+    opacity: 0.95,
     fontFamily: '"Be Vietnam Pro", sans-serif',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
   },
   signature: {
     fontSize: '19px',

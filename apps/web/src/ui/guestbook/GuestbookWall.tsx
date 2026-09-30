@@ -3,6 +3,7 @@ import type { GuestbookNote } from '@vm/shared'
 import { GuestbookNoteThumb } from './GuestbookNoteThumb.js'
 import { GuestbookDetailModal } from './GuestbookDetailModal.js'
 import { GuestbookFormModal } from './GuestbookFormModal.js'
+import { getOrCreateVisitorId, getMyLocalNotes, syncMyLocalNotesWithPublic, deleteMyLocalNote } from './myWishesStorage.js'
 
 interface Props {
   onClose: () => void
@@ -25,15 +26,24 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
   const [myNoteIds, setMyNoteIds] = useState<Set<string>>(new Set())
   const [visitorId, setVisitorId] = useState<string>('')
 
+  // New Tab & Local Wishes state
+  const [activeTab, setActiveTab] = useState<'wall' | 'my_wishes'>('wall')
+  const [myNotes, setMyNotes] = useState<GuestbookNote[]>([])
+  const [myStatusFilter, setMyStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
-  // Load user's visitor ID & submitted note IDs from localStorage
-  const loadMyNotes = () => {
+  // Load user's visitor ID & local wishes
+  const loadMyNotes = (currentPublicNotes: GuestbookNote[] = notes) => {
     try {
-      const vId = localStorage.getItem('visitor_id') || ''
+      const vId = getOrCreateVisitorId()
       setVisitorId(vId)
-      const stored = JSON.parse(localStorage.getItem('vm_my_guestbook_notes') || '[]') as string[]
-      setMyNoteIds(new Set(stored))
+      if (currentPublicNotes.length > 0) {
+        syncMyLocalNotesWithPublic(currentPublicNotes)
+      }
+      const local = getMyLocalNotes()
+      setMyNotes(local)
+      setMyNoteIds(new Set(local.map((n) => n.id)))
     } catch {
       setMyNoteIds(new Set())
     }
@@ -47,15 +57,19 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
       const res = await fetch(`${API_BASE}/api/guestbook?page=1&limit=12&sort=${mode}${eventQuery}`)
       if (res.ok) {
         const data = (await res.json()) as { notes: GuestbookNote[]; hasMore?: boolean }
-        setNotes(data.notes || [])
+        const publicList = data.notes || []
+        setNotes(publicList)
         setHasMore(Boolean(data.hasMore))
+        loadMyNotes(publicList)
       } else {
         setNotes([])
         setHasMore(false)
+        loadMyNotes([])
       }
     } catch {
       setNotes([])
       setHasMore(false)
+      loadMyNotes([])
     } finally {
       setLoading(false)
     }
@@ -74,7 +88,9 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
           setNotes((prev) => {
             const existingIds = new Set(prev.map((n) => n.id))
             const newUnique = data.notes.filter((n) => !existingIds.has(n.id))
-            return [...prev, ...newUnique]
+            const combined = [...prev, ...newUnique]
+            syncMyLocalNotesWithPublic(combined)
+            return combined
           })
           setPage(nextPage)
           setHasMore(Boolean(data.hasMore))
@@ -89,7 +105,6 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
     }
   }
 
-
   const handleSortChange = (mode: 'priority' | 'newest' | 'random') => {
     setSortMode(mode)
     void fetchInitialNotes(mode)
@@ -102,7 +117,7 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
 
   // Infinite Scroll IntersectionObserver
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || loadingMore || loading) return
+    if (!loadMoreRef.current || !hasMore || loadingMore || loading || activeTab !== 'wall') return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -115,7 +130,7 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
 
     observer.observe(loadMoreRef.current)
     return () => observer.disconnect()
-  }, [hasMore, loadingMore, loading, page, searchQuery, sortMode, eventId])
+  }, [hasMore, loadingMore, loading, page, searchQuery, sortMode, eventId, activeTab])
 
   // Close on Escape if no modal open
   useEffect(() => {
@@ -128,7 +143,7 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onClose, selectedNote, showForm])
 
-  // Filter notes according to search
+  // Filter public notes according to search
   const filteredNotes = useMemo(() => {
     if (!searchQuery.trim()) return notes
     const q = searchQuery.toLowerCase()
@@ -139,7 +154,7 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
     })
   }, [notes, searchQuery])
 
-  // Separate pinned (central focus) and regular notes
+  // Separate pinned (central focus) and regular notes for public wall
   const pinnedNotes = useMemo(() => {
     return filteredNotes.filter((n) => Boolean(n.isPinned))
   }, [filteredNotes])
@@ -147,6 +162,23 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
   const regularNotes = useMemo(() => {
     return filteredNotes.filter((n) => !n.isPinned)
   }, [filteredNotes])
+
+  // Status counters for My Wishes
+  const pendingCount = useMemo(() => myNotes.filter((n) => n.status === 'pending').length, [myNotes])
+  const approvedCount = useMemo(() => myNotes.filter((n) => n.status === 'approved').length, [myNotes])
+  const rejectedCount = useMemo(() => myNotes.filter((n) => n.status === 'rejected').length, [myNotes])
+
+  const filteredMyNotes = useMemo(() => {
+    let list = myNotes
+    if (myStatusFilter !== 'all') {
+      list = list.filter((n) => (n.status ?? 'approved') === myStatusFilter)
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter((n) => n.content.toLowerCase().includes(q) || (n.signature ?? '').toLowerCase().includes(q))
+    }
+    return list
+  }, [myNotes, myStatusFilter, searchQuery])
 
   const isNoteMine = (note: GuestbookNote) => {
     if (visitorId && note.authorId && note.authorId === visitorId) return true
@@ -169,47 +201,110 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
           </div>
         </div>
 
+        {/* Tab Switcher */}
+        <div style={styles.tabContainer}>
+          <button
+            style={{
+              ...styles.tabBtn,
+              ...(activeTab === 'wall' ? styles.tabBtnActive : {}),
+            }}
+            onClick={() => setActiveTab('wall')}
+          >
+            🖼️ Tường lưu bút
+          </button>
+          <button
+            style={{
+              ...styles.tabBtn,
+              ...(activeTab === 'my_wishes' ? styles.tabBtnActive : {}),
+            }}
+            onClick={() => setActiveTab('my_wishes')}
+          >
+            👤 Lời chúc của tôi
+            {myNotes.length > 0 && <span style={styles.tabBadge}>{myNotes.length}</span>}
+          </button>
+        </div>
+
         {/* Sort & Filter Controls */}
         <div style={styles.controlsGroup}>
-          {/* Sort Pills */}
-          <div style={styles.sortPills}>
-            <button
-              style={{
-                ...styles.sortPill,
-                ...(sortMode === 'priority' ? styles.sortPillActive : {}),
-              }}
-              onClick={() => handleSortChange('priority')}
-              title="Xem các lời chúc tiêu biểu được ghim & ưu tiên"
-            >
-              🌟 Tiêu biểu
-            </button>
-            <button
-              style={{
-                ...styles.sortPill,
-                ...(sortMode === 'newest' ? styles.sortPillActive : {}),
-              }}
-              onClick={() => handleSortChange('newest')}
-              title="Xem các lời chúc mới gửi gần đây"
-            >
-              ⏳ Mới nhất
-            </button>
-            <button
-              style={{
-                ...styles.sortPill,
-                ...(sortMode === 'random' ? styles.sortPillActive : {}),
-              }}
-              onClick={() => handleSortChange('random')}
-              title="Khám phá ngẫu nhiên các lời chúc khác nhau"
-            >
-              🎲 Ngẫu nhiên
-            </button>
-          </div>
+          {activeTab === 'wall' ? (
+            <div style={styles.sortPills}>
+              <button
+                style={{
+                  ...styles.sortPill,
+                  ...(sortMode === 'priority' ? styles.sortPillActive : {}),
+                }}
+                onClick={() => handleSortChange('priority')}
+                title="Xem các lời chúc tiêu biểu được ghim & ưu tiên"
+              >
+                🌟 Tiêu biểu
+              </button>
+              <button
+                style={{
+                  ...styles.sortPill,
+                  ...(sortMode === 'newest' ? styles.sortPillActive : {}),
+                }}
+                onClick={() => handleSortChange('newest')}
+                title="Xem các lời chúc mới gửi gần đây"
+              >
+                ⏳ Mới nhất
+              </button>
+              <button
+                style={{
+                  ...styles.sortPill,
+                  ...(sortMode === 'random' ? styles.sortPillActive : {}),
+                }}
+                onClick={() => handleSortChange('random')}
+                title="Khám phá ngẫu nhiên các lời chúc khác nhau"
+              >
+                🎲 Ngẫu nhiên
+              </button>
+            </div>
+          ) : (
+            <div style={styles.sortPills}>
+              <button
+                style={{
+                  ...styles.sortPill,
+                  ...(myStatusFilter === 'all' ? styles.sortPillActive : {}),
+                }}
+                onClick={() => setMyStatusFilter('all')}
+              >
+                Tất cả ({myNotes.length})
+              </button>
+              <button
+                style={{
+                  ...styles.sortPill,
+                  ...(myStatusFilter === 'pending' ? styles.sortPillActive : {}),
+                }}
+                onClick={() => setMyStatusFilter('pending')}
+              >
+                ⏳ Đang chờ ({pendingCount})
+              </button>
+              <button
+                style={{
+                  ...styles.sortPill,
+                  ...(myStatusFilter === 'approved' ? styles.sortPillActive : {}),
+                }}
+                onClick={() => setMyStatusFilter('approved')}
+              >
+                ✅ Đã duyệt ({approvedCount})
+              </button>
+              <button
+                style={{
+                  ...styles.sortPill,
+                  ...(myStatusFilter === 'rejected' ? styles.sortPillActive : {}),
+                }}
+                onClick={() => setMyStatusFilter('rejected')}
+              >
+                ❌ Từ chối ({rejectedCount})
+              </button>
+            </div>
+          )}
 
           {/* Search bar */}
           <div style={styles.searchWrapper}>
             <input
               type="text"
-              placeholder="🔍 Tìm lời chúc hoặc người ký..."
+              placeholder="🔍 Tìm lời chúc..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={styles.searchInput}
@@ -230,58 +325,90 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
         </div>
       </header>
 
-      {/* Main Wall Content Area */}
+      {/* Main Content Area */}
       <div style={styles.wallContainer}>
-        {loading ? (
-          <div style={styles.centerBox}>
-            <div style={styles.spinner} />
-            <p style={{ color: '#64748b', fontSize: '14px', marginTop: '12px' }}>Đang dán lời chúc lên tường...</p>
-          </div>
-        ) : filteredNotes.length === 0 ? (
-          <div style={styles.centerBox}>
-            <p style={{ color: '#64748b', fontSize: '15px' }}>
-              {searchQuery ? `Không tìm thấy lời chúc nào với từ khóa "${searchQuery}"` : 'Chưa có lời chúc nào trên tường.'}
-            </p>
-          </div>
-        ) : (
-          <div style={styles.wallBody}>
-            {/* Pinned Notes Showcase (Centered Hero Focus) */}
-            {pinnedNotes.length > 0 && (
-              <div style={styles.pinnedRow}>
-                {pinnedNotes.map((note) => (
-                  <GuestbookNoteThumb
-                    key={note.id}
-                    note={note}
-                    isMine={isNoteMine(note)}
-                    onClick={() => setSelectedNote(note)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Community Notes (Clean 4-column balanced flow) */}
-            {regularNotes.length > 0 && (
-              <div style={styles.notesGrid}>
-                {regularNotes.map((note) => (
-                  <GuestbookNoteThumb
-                    key={note.id}
-                    note={note}
-                    isMine={isNoteMine(note)}
-                    onClick={() => setSelectedNote(note)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Infinite Scroll Trigger Sentinel */}
-            <div ref={loadMoreRef} style={styles.sentinel}>
-              {loadingMore && (
-                <div style={styles.loadingMoreBox}>
-                  <div style={styles.smallSpinner} />
-                  <span style={{ fontSize: '13px', color: '#64748b' }}>Đang nạp thêm lời chúc...</span>
+        {activeTab === 'wall' ? (
+          loading ? (
+            <div style={styles.centerBox}>
+              <div style={styles.spinner} />
+              <p style={{ color: '#64748b', fontSize: '14px', marginTop: '12px' }}>Đang dán lời chúc lên tường...</p>
+            </div>
+          ) : filteredNotes.length === 0 ? (
+            <div style={styles.centerBox}>
+              <p style={{ color: '#64748b', fontSize: '15px' }}>
+                {searchQuery ? `Không tìm thấy lời chúc nào với từ khóa "${searchQuery}"` : 'Chưa có lời chúc nào trên tường.'}
+              </p>
+            </div>
+          ) : (
+            <div style={styles.wallBody}>
+              {/* Pinned Notes Showcase */}
+              {pinnedNotes.length > 0 && (
+                <div style={styles.pinnedRow}>
+                  {pinnedNotes.map((note) => (
+                    <GuestbookNoteThumb
+                      key={note.id}
+                      note={note}
+                      isMine={isNoteMine(note)}
+                      onClick={() => setSelectedNote(note)}
+                    />
+                  ))}
                 </div>
               )}
+
+              {/* Community Notes */}
+              {regularNotes.length > 0 && (
+                <div style={styles.notesGrid}>
+                  {regularNotes.map((note) => (
+                    <GuestbookNoteThumb
+                      key={note.id}
+                      note={note}
+                      isMine={isNoteMine(note)}
+                      onClick={() => setSelectedNote(note)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Infinite Scroll Trigger Sentinel */}
+              <div ref={loadMoreRef} style={styles.sentinel}>
+                {loadingMore && (
+                  <div style={styles.loadingMoreBox}>
+                    <div style={styles.smallSpinner} />
+                    <span style={{ fontSize: '13px', color: '#64748b' }}>Đang nạp thêm lời chúc...</span>
+                  </div>
+                )}
+              </div>
             </div>
+          )
+        ) : (
+          /* My Wishes View */
+          <div style={styles.wallBody}>
+            {filteredMyNotes.length === 0 ? (
+              <div style={styles.centerBox}>
+                <p style={{ color: '#64748b', fontSize: '15px' }}>
+                  {myNotes.length === 0
+                    ? 'Bạn chưa viết lời chúc nào. Hãy bấm nút dưới đây để để lại cảm nghĩ nhé!'
+                    : 'Không có lời chúc nào khớp với bộ lọc này.'}
+                </p>
+                {myNotes.length === 0 && (
+                  <button style={{ ...styles.writeBtn, marginTop: '14px' }} onClick={() => setShowForm(true)}>
+                    ✍️ Viết lời chúc ngay
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div style={styles.notesGrid}>
+                {filteredMyNotes.map((note) => (
+                  <GuestbookNoteThumb
+                    key={note.id}
+                    note={note}
+                    isMine={true}
+                    showStatusBadge={true}
+                    onClick={() => setSelectedNote(note)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -304,10 +431,13 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
         <GuestbookFormModal
           eventTag={eventId}
           onClose={() => setShowForm(false)}
-          onSuccess={() => {
+          onSuccess={(opts) => {
             setShowForm(false)
             loadMyNotes()
             void fetchInitialNotes()
+            if (opts?.viewMyWishes) {
+              setActiveTab('my_wishes')
+            }
           }}
         />
       )}
@@ -364,6 +494,61 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '12px',
     color: '#7a6e5d',
+  },
+  tabContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    background: 'rgba(0, 0, 0, 0.05)',
+    padding: '4px',
+    borderRadius: '24px',
+    border: '1px solid rgba(0, 0, 0, 0.08)',
+  },
+  tabBtn: {
+    border: 'none',
+    background: 'transparent',
+    color: '#64748b',
+    fontSize: '13.5px',
+    fontWeight: 600,
+    padding: '6px 16px',
+    borderRadius: '20px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  tabBtnActive: {
+    background: '#ffffff',
+    color: '#0f2e54',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    fontWeight: 700,
+  },
+  tabBadge: {
+    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    color: '#ffffff',
+    fontSize: '11px',
+    fontWeight: 800,
+    padding: '2px 7px',
+    borderRadius: '10px',
+    lineHeight: '1',
+  },
+  myWishesBanner: {
+    width: '100%',
+    maxWidth: '1260px',
+    margin: '0 auto 12px',
+    background: 'rgba(255, 255, 255, 0.75)',
+    backdropFilter: 'blur(8px)',
+    border: '1px solid rgba(200, 168, 90, 0.3)',
+    borderRadius: '12px',
+    padding: '12px 18px',
+    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.03)',
+  },
+  myWishesText: {
+    margin: 0,
+    fontSize: '13px',
+    color: '#475569',
+    lineHeight: '1.5',
   },
   controlsGroup: {
     display: 'flex',

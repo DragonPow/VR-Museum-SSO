@@ -2,18 +2,9 @@ import { useState, useEffect } from 'react'
 import type { ContentIndex } from '@vm/shared'
 import { brand } from '../ui/theme.js'
 import { useMuseumAudio } from '@vm/viewer'
+import { getOrCreateVisitorId } from '../ui/guestbook/myWishesStorage.js'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
-
-function getOrCreateVisitorId(): string {
-  const key = 'visitor_id'
-  let id = localStorage.getItem(key)
-  if (!id) {
-    id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 15)
-    localStorage.setItem(key, id)
-  }
-  return id
-}
 
 interface Props {
   content: ContentIndex

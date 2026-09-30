@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import type { GuestbookNote } from '@vm/shared'
 import { brand } from '../theme.js'
+import { getOrCreateVisitorId, saveMyLocalNote } from './myWishesStorage.js'
 
 interface Props {
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (opts?: { viewMyWishes?: boolean }) => void
   eventTag?: string | undefined
 }
 
@@ -15,6 +17,7 @@ export function GuestbookFormModal({ onClose, onSuccess, eventTag }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [createdNote, setCreatedNote] = useState<GuestbookNote | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +30,7 @@ export function GuestbookFormModal({ onClose, onSuccess, eventTag }: Props) {
       setLoading(true)
       setError(null)
 
-      const visitorId = localStorage.getItem('visitor_id') || undefined
+      const visitorId = getOrCreateVisitorId()
       const res = await fetch(`${API_BASE}/api/guestbook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,29 +42,31 @@ export function GuestbookFormModal({ onClose, onSuccess, eventTag }: Props) {
         }),
       })
 
-
       const data = await res.json() as { ok?: boolean; error?: string; message?: string; noteId?: string }
 
       if (!res.ok || !data.ok) {
         throw new Error(data.error || 'Không thể gửi lưu bút lúc này. Vui lòng thử lại!')
       }
 
-      if (data.noteId) {
-        try {
-          const stored = JSON.parse(localStorage.getItem('vm_my_guestbook_notes') || '[]') as string[]
-          if (!stored.includes(data.noteId)) {
-            stored.push(data.noteId)
-            localStorage.setItem('vm_my_guestbook_notes', JSON.stringify(stored))
-          }
-        } catch {
-          // ignore localStorage errors
-        }
+      const noteId = data.noteId || `gb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+      const colorPresets: ('yellow' | 'pink' | 'green' | 'blue' | 'white')[] = ['yellow', 'pink', 'green', 'blue', 'white']
+      const randomColor = colorPresets[Math.floor(Math.random() * colorPresets.length)]!
+
+      const newNote: GuestbookNote = {
+        id: noteId,
+        content: content.trim(),
+        signature: signature.trim() || null,
+        colorPreset: randomColor,
+        rotation: Math.round((Math.random() * 10 - 5) * 10) / 10,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        eventTag: eventTag || null,
+        authorId: visitorId,
       }
 
+      saveMyLocalNote(newNote)
+      setCreatedNote(newNote)
       setSubmitted(true)
-      setTimeout(() => {
-        onSuccess()
-      }, 2000)
 
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -84,12 +89,60 @@ export function GuestbookFormModal({ onClose, onSuccess, eventTag }: Props) {
         </div>
 
         {submitted ? (
-          <div style={styles.successBox}>
-            <div style={styles.successIcon}>🎉</div>
-            <h3 style={styles.successTitle}>Cảm ơn bạn rất nhiều!</h3>
-            <p style={styles.successText}>
-              Lời nhắn của bạn đã được gửi thành công và đang chờ ban quản trị duyệt trước khi hiển thị lên tường lưu bút.
-            </p>
+          <div style={styles.successContainer}>
+            <style>{`
+              @keyframes popScale {
+                0% { transform: scale(0.6) translateY(20px); opacity: 0; }
+                60% { transform: scale(1.04) translateY(-4px); opacity: 1; }
+                100% { transform: scale(1) translateY(0); opacity: 1; }
+              }
+              @keyframes stampDrop {
+                0% { transform: scale(2.2) rotate(-30deg); opacity: 0; }
+                70% { transform: scale(0.92) rotate(-6deg); opacity: 1; }
+                100% { transform: scale(1) rotate(-8deg); opacity: 1; }
+              }
+              @keyframes pulseRing {
+                0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+                70% { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+              }
+            `}</style>
+
+            <div style={styles.paperStage}>
+              <div style={styles.successPaper}>
+                <p style={styles.successPaperContent}>"{createdNote?.content ?? content}"</p>
+                {(createdNote?.signature || signature) && (
+                  <div style={styles.successPaperSig}>— {createdNote?.signature ?? signature}</div>
+                )}
+              </div>
+
+              {/* Rubber Stamp showing pending status */}
+              <div style={styles.pendingStamp}>
+                <span style={{ fontSize: '13px' }}>⏳</span> ĐANG CHỜ DUYỆT
+              </div>
+            </div>
+
+            <div style={styles.successTextGroup}>
+              <h3 style={styles.successTitle}>Đã gửi lời chúc thành công! 🎉</h3>
+              <p style={styles.successSubtext}>
+                Lời nhắn của bạn đang nằm trong danh sách <strong>Đang chờ duyệt</strong> của Ban Quản Trị. Bạn có thể theo dõi trạng thái tại tab <strong>"Lời chúc của tôi"</strong>!
+              </p>
+            </div>
+
+            <div style={styles.successActions}>
+              <button
+                style={styles.viewMyBtn}
+                onClick={() => onSuccess({ viewMyWishes: true })}
+              >
+                👤 Xem trong "Lời chúc của tôi"
+              </button>
+              <button
+                style={styles.doneBtn}
+                onClick={() => onSuccess()}
+              >
+                ✕ Hoàn tất
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={styles.form}>
@@ -353,28 +406,117 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(16, 80, 160, 0.3)',
   },
-  successBox: {
-    padding: '40px 20px',
-    textAlign: 'center',
+  successContainer: {
+    padding: '16px 10px 10px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    gap: '20px',
+    animation: 'popScale 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+  },
+  paperStage: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: '320px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '10px 0',
+  },
+  successPaper: {
+    background: 'linear-gradient(145deg, #fffdf8 0%, #fdf6e7 100%)',
+    border: '2px solid #d4af37',
+    borderRadius: '12px',
+    padding: '20px 18px',
+    boxShadow: '0 12px 28px rgba(184, 134, 11, 0.25), 0 4px 10px rgba(0,0,0,0.06)',
+    width: '100%',
+    boxSizing: 'border-box',
+    transform: 'rotate(-2deg)',
+    display: 'flex',
+    flexDirection: 'column',
     gap: '12px',
   },
-  successIcon: {
-    fontSize: '48px',
+  successPaperContent: {
+    margin: 0,
+    fontSize: '15px',
+    lineHeight: '1.55',
+    color: '#2c2214',
+    fontFamily: '"Lora", Georgia, serif',
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  successPaperSig: {
+    textAlign: 'right',
+    fontSize: '14px',
+    fontWeight: 700,
+    color: '#854d0e',
+    fontFamily: '"Playfair Display", serif',
+  },
+  pendingStamp: {
+    position: 'absolute',
+    bottom: '-8px',
+    right: '12px',
+    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    color: '#ffffff',
+    fontSize: '12px',
+    fontWeight: 800,
+    padding: '6px 14px',
+    borderRadius: '20px',
+    boxShadow: '0 4px 14px rgba(245, 158, 11, 0.45)',
+    animation: 'stampDrop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both, pulseRing 2s infinite',
+    letterSpacing: '0.5px',
+    zIndex: 10,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    border: '2px solid #ffffff',
+  },
+  successTextGroup: {
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
   },
   successTitle: {
     margin: 0,
-    fontSize: '20px',
-    fontWeight: 700,
+    fontSize: '19px',
+    fontWeight: 800,
     color: '#0f2e54',
   },
-  successText: {
+  successSubtext: {
     margin: 0,
-    fontSize: '14px',
+    fontSize: '13px',
     color: '#475569',
-    lineHeight: '1.6',
-    maxWidth: '360px',
+    lineHeight: '1.55',
+  },
+  successActions: {
+    display: 'flex',
+    gap: '10px',
+    width: '100%',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    marginTop: '4px',
+  },
+  viewMyBtn: {
+    padding: '11px 20px',
+    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '20px',
+    fontSize: '13.5px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)',
+    transition: 'transform 0.15s ease',
+  },
+  doneBtn: {
+    padding: '11px 20px',
+    background: '#f1f5f9',
+    color: '#475569',
+    border: '1px solid #cbd5e1',
+    borderRadius: '20px',
+    fontSize: '13.5px',
+    fontWeight: 600,
+    cursor: 'pointer',
   },
 }

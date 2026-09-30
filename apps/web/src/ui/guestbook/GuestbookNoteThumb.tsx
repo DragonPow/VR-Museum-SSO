@@ -60,10 +60,11 @@ const COLOR_THEMES: Record<string, {
 interface Props {
   note: GuestbookNote
   isMine?: boolean
+  showStatusBadge?: boolean
   onClick: () => void
 }
 
-export function GuestbookNoteThumb({ note, isMine, onClick }: Props) {
+export function GuestbookNoteThumb({ note, isMine, showStatusBadge, onClick }: Props) {
   const [hovered, setHovered] = useState(false)
   const theme = COLOR_THEMES[note.colorPreset] ?? COLOR_THEMES.yellow!
   const isPinned = Boolean(note.isPinned)
@@ -73,6 +74,32 @@ export function GuestbookNoteThumb({ note, isMine, onClick }: Props) {
     month: '2-digit',
     year: 'numeric',
   })
+
+  const renderStatusBadge = () => {
+    const status = note.status ?? 'approved'
+    if (status === 'pending') {
+      return (
+        <div style={{ ...styles.myBadge, background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 3px 10px rgba(245, 158, 11, 0.45)' }}>
+          ⏳ Đang chờ duyệt
+        </div>
+      )
+    }
+    if (status === 'rejected') {
+      return (
+        <div style={{ ...styles.myBadge, background: 'linear-gradient(135deg, #f43f5e, #e11d48)', boxShadow: '0 3px 10px rgba(225, 29, 72, 0.45)' }}>
+          ❌ Từ chối
+        </div>
+      )
+    }
+    if (showStatusBadge || isMine) {
+      return (
+        <div style={{ ...styles.myBadge, background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 3px 10px rgba(16, 185, 129, 0.4)' }}>
+          ✅ Đã duyệt
+        </div>
+      )
+    }
+    return null
+  }
 
   return (
     <div
@@ -88,7 +115,6 @@ export function GuestbookNoteThumb({ note, isMine, onClick }: Props) {
           : `rotate(${note.rotation * 0.3}deg)`, // Minimal subtle stately tilt
         zIndex: hovered ? 20 : isPinned ? 10 : 1,
       }}
-
       title="Nhấn để xem chi tiết thiệp chúc mừng"
     >
       {/* Outer Card with Gold Foil Border */}
@@ -96,12 +122,22 @@ export function GuestbookNoteThumb({ note, isMine, onClick }: Props) {
         style={{
           ...styles.card,
           background: theme.bg,
-          borderColor: isMine ? '#f59e0b' : isPinned ? '#d4af37' : theme.border,
-          borderWidth: isPinned || isMine ? '2px' : '1.5px',
+          borderColor: note.status === 'pending'
+            ? '#f59e0b'
+            : note.status === 'rejected'
+            ? '#f43f5e'
+            : isMine
+            ? '#f59e0b'
+            : isPinned
+            ? '#d4af37'
+            : theme.border,
+          borderWidth: isPinned || isMine || showStatusBadge ? '2px' : '1.5px',
           boxShadow: hovered
             ? `0 24px 48px ${theme.shadow}, 0 8px 16px rgba(0,0,0,0.1)`
             : isPinned
             ? theme.glow
+            : note.status === 'pending'
+            ? `0 0 0 3px rgba(245, 158, 11, 0.35), 0 12px 28px rgba(245, 158, 11, 0.2)`
             : isMine
             ? `0 0 0 3px rgba(245, 158, 11, 0.5), 0 12px 28px rgba(245, 158, 11, 0.2)`
             : `0 8px 24px ${theme.shadow}, 0 2px 6px rgba(0,0,0,0.04)`,
@@ -114,12 +150,8 @@ export function GuestbookNoteThumb({ note, isMine, onClick }: Props) {
             borderColor: isPinned ? 'rgba(212, 175, 55, 0.5)' : theme.innerBorder,
           }}
         >
-          {/* "Lời chúc của bạn" Badge */}
-          {isMine && (
-            <div style={styles.myBadge}>
-              ✨ Lời chúc của bạn
-            </div>
-          )}
+          {/* Status Badge */}
+          {renderStatusBadge()}
 
           {/* Main Commemorative Message Content */}
           <p style={{ ...styles.content, color: theme.text }}>
