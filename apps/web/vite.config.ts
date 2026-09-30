@@ -27,6 +27,7 @@ export default defineConfig({
       name: 'serve-content',
       configureServer(server) {
         server.middlewares.use('/content', (req, res, next) => {
+
           const filePath = join(CONTENT_DIR, decodeURIComponent(req.url ?? ''))
           if (existsSync(filePath) && statSync(filePath).isFile()) {
             res.setHeader('Access-Control-Allow-Origin', '*')
@@ -34,11 +35,11 @@ export default defineConfig({
             const mime: Record<string, string> = {
               json: 'application/json',
               gltf: 'model/gltf+json',
-              glb:  'model/gltf-binary',
-              jpg:  'image/jpeg',
+              glb: 'model/gltf-binary',
+              jpg: 'image/jpeg',
               jpeg: 'image/jpeg',
-              png:  'image/png',
-              svg:  'image/svg+xml',
+              png: 'image/png',
+              svg: 'image/svg+xml',
               webp: 'image/webp',
             }
             res.setHeader('Content-Type', mime[ext] ?? 'application/octet-stream')
@@ -49,6 +50,7 @@ export default defineConfig({
         })
       },
     },
+
   ],
   resolve: {
     alias: {
@@ -72,6 +74,7 @@ export default defineConfig({
   },
   server: {
     port: Number(process.env['PORT']) || 5173,
+    allowedHosts: true,
     proxy: {
       // Worker API and uploaded media during local admin-upload tests.
       '/api': { target: 'http://localhost:8787', changeOrigin: true },

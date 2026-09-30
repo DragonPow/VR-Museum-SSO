@@ -4,11 +4,12 @@ import { brand } from '../theme.js'
 interface Props {
   onClose: () => void
   onSuccess: () => void
+  eventTag?: string | undefined
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
-export function GuestbookFormModal({ onClose, onSuccess }: Props) {
+export function GuestbookFormModal({ onClose, onSuccess, eventTag }: Props) {
   const [content, setContent] = useState('')
   const [signature, setSignature] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,13 +28,14 @@ export function GuestbookFormModal({ onClose, onSuccess }: Props) {
       setError(null)
 
       const visitorId = localStorage.getItem('visitor_id') || undefined
-      const res = await fetch(`${API_BASE}/api/guestbook/submit`, {
+      const res = await fetch(`${API_BASE}/api/guestbook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: content.trim(),
           signature: signature.trim() || undefined,
           visitorId,
+          eventTag: eventTag || undefined,
         }),
       })
 

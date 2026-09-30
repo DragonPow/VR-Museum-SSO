@@ -4,6 +4,7 @@ import {
   resolveDocumentImageVariantUrl,
   type ContentIndex,
   type DocumentIndexItem,
+  type Slot,
 } from '@vm/shared'
 import {
   SceneCanvas,
@@ -75,6 +76,7 @@ export function Tour({ content, onBack }: Props) {
   const [showPulse, setShowPulse] = useState(isMobile)
   const [showGuide, setShowGuide] = useState(true)
   const [showGuestbook, setShowGuestbook] = useState(false)
+  const [guestbookSlot, setGuestbookSlot] = useState<Slot | null>(null)
 
 
   // Auto-hide hints after 6 seconds
@@ -221,6 +223,11 @@ export function Tour({ content, onBack }: Props) {
   if (!currentRoomId || !roomStub) return null
 
   const handleSlotSelect = (slotId: string, documents: DocumentIndexItem[]) => {
+    const slot = roomState.status === 'ok' ? roomState.data.slots.find((s) => s.id === slotId) : null
+    if (slot?.type === 'guestbook') {
+      setGuestbookSlot(slot)
+      return
+    }
     void fetchDocumentDetails(documents).then((details) => selectSlot(slotId, details))
   }
 
@@ -464,6 +471,15 @@ export function Tour({ content, onBack }: Props) {
       {/* Guestbook 2D Wall */}
       {showGuestbook && (
         <GuestbookWall onClose={() => setShowGuestbook(false)} />
+      )}
+
+      {/* Guestbook Event Specific Wall */}
+      {guestbookSlot && (
+        <GuestbookWall
+          eventId={guestbookSlot.guestbookEventId}
+          eventTitle={guestbookSlot.nameplate?.primary || guestbookSlot.name}
+          onClose={() => setGuestbookSlot(null)}
+        />
       )}
     </div>
   )

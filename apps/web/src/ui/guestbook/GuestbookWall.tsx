@@ -6,11 +6,13 @@ import { GuestbookFormModal } from './GuestbookFormModal.js'
 
 interface Props {
   onClose: () => void
+  eventId?: string | undefined
+  eventTitle?: string | undefined
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
-export function GuestbookWall({ onClose }: Props) {
+export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
   const [notes, setNotes] = useState<GuestbookNote[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -41,7 +43,8 @@ export function GuestbookWall({ onClose }: Props) {
     try {
       setLoading(true)
       setPage(1)
-      const res = await fetch(`${API_BASE}/api/guestbook?page=1&limit=12&sort=${mode}`)
+      const eventQuery = eventId ? `&event=${encodeURIComponent(eventId)}` : ''
+      const res = await fetch(`${API_BASE}/api/guestbook?page=1&limit=12&sort=${mode}${eventQuery}`)
       if (res.ok) {
         const data = (await res.json()) as { notes: GuestbookNote[]; hasMore?: boolean }
         setNotes(data.notes || [])
@@ -63,7 +66,8 @@ export function GuestbookWall({ onClose }: Props) {
     try {
       setLoadingMore(true)
       const nextPage = page + 1
-      const res = await fetch(`${API_BASE}/api/guestbook?page=${nextPage}&limit=8&sort=${sortMode}`)
+      const eventQuery = eventId ? `&event=${encodeURIComponent(eventId)}` : ''
+      const res = await fetch(`${API_BASE}/api/guestbook?page=${nextPage}&limit=8&sort=${sortMode}${eventQuery}`)
       if (res.ok) {
         const data = (await res.json()) as { notes: GuestbookNote[]; hasMore?: boolean }
         if (data.notes && data.notes.length > 0) {
@@ -94,7 +98,7 @@ export function GuestbookWall({ onClose }: Props) {
   useEffect(() => {
     loadMyNotes()
     void fetchInitialNotes('priority')
-  }, [])
+  }, [eventId])
 
   // Infinite Scroll IntersectionObserver
   useEffect(() => {
@@ -111,7 +115,7 @@ export function GuestbookWall({ onClose }: Props) {
 
     observer.observe(loadMoreRef.current)
     return () => observer.disconnect()
-  }, [hasMore, loadingMore, loading, page, searchQuery, sortMode])
+  }, [hasMore, loadingMore, loading, page, searchQuery, sortMode, eventId])
 
   // Close on Escape if no modal open
   useEffect(() => {
@@ -156,8 +160,12 @@ export function GuestbookWall({ onClose }: Props) {
         <div style={styles.titleGroup}>
           <span style={styles.titleIcon}>📌</span>
           <div>
-            <h1 style={styles.title}>Tường Lưu Bút 50 Năm</h1>
-            <p style={styles.subtitle}>Nơi lưu giữ những lời chúc và tình cảm của người tham quan</p>
+            <h1 style={styles.title}>
+              {eventTitle ? `Tường Lưu Bút - ${eventTitle}` : 'Tường Lưu Bút 50 Năm'}
+            </h1>
+            <p style={styles.subtitle}>
+              {eventId ? `Nơi lưu giữ những lời chúc dành riêng cho sự kiện này` : 'Nơi lưu giữ những lời chúc và tình cảm của người tham quan'}
+            </p>
           </div>
         </div>
 
@@ -294,6 +302,7 @@ export function GuestbookWall({ onClose }: Props) {
       {/* Form Modal */}
       {showForm && (
         <GuestbookFormModal
+          eventTag={eventId}
           onClose={() => setShowForm(false)}
           onSuccess={() => {
             setShowForm(false)

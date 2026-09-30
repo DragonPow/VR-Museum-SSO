@@ -355,7 +355,7 @@ async function route(request: Request, url: URL, env: Env): Promise<Response> {
   }
 
   // POST /api/guestbook — Public user submit note
-  if (method === 'POST' && pathname === '/api/guestbook') {
+  if (method === 'POST' && (pathname === '/api/guestbook' || pathname === '/api/guestbook/submit')) {
     try {
       const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown'
 
