@@ -1,6 +1,6 @@
 export type RoomTemplate = 'hall' | 'gallery' | 'corridor' | 'honor'
 export type LightingPreset = 'warm' | 'neutral' | 'cool'
-export type SlotType = 'image' | 'cluster' | 'poster' | 'video' | 'text'
+export type SlotType = 'image' | 'cluster' | 'poster' | 'video' | 'text' | 'guestbook'
 export type FrameStyle = 'classic' | 'modern' | 'none'
 export type DocumentMediaType = 'image' | 'youtube' | 'iframe' | 'external'
 export type DocumentImageVariant = 'thumb' | 'wall' | 'full'
@@ -72,6 +72,8 @@ export interface Slot {
   nameplate?: SlotNameplate
   /** Optional layout fitting mode: 'cover' (default) or 'contain'. */
   fitMode?: 'cover' | 'contain'
+  /** Optional guestbook event ID linked to this guestbook slot. */
+  guestbookEventId?: string
 }
 
 export interface RoomPortal {
@@ -126,6 +128,12 @@ export interface DocumentIndexItem {
   documentKey: string
   mediaType: DocumentMediaType
   viewerImageId: string
+  title?: string
+  year?: string | number
+  periodId?: string
+  tags?: string[]
+  source?: string
+  thumbnailImageId?: string
 }
 
 export interface ExternalLink {

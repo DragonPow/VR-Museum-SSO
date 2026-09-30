@@ -60,6 +60,12 @@ export function documentIndexFromDocument(document: DocumentItem): DocumentIndex
     documentKey: document.documentKey,
     mediaType: document.mediaType,
     viewerImageId: document.viewerImageId,
+    title: document.title,
+    ...(document.year != null ? { year: document.year } : {}),
+    periodId: document.periodId,
+    tags: document.tags,
+    source: document.source,
+    thumbnailImageId: document.thumbnailImageId,
   }
 }
 

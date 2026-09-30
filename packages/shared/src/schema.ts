@@ -60,6 +60,7 @@ export const SlotSchema = z.object({
   viewerVariant: z.enum(VIEWER_VARIANTS).optional(),
   nameplate: SlotNameplateSchema.optional(),
   fitMode: z.enum(['cover', 'contain']).optional(),
+  guestbookEventId: z.string().optional(),
 })
 
 export const RoomPortalSchema = z.object({

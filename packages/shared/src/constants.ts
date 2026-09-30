@@ -3,7 +3,7 @@ import type { RoomTemplate, LightingPreset, QualityTier } from './types.js'
 // ─── Enums as const arrays (for zod and runtime iteration) ────────────────────
 export const ROOM_TEMPLATES: readonly RoomTemplate[] = ['hall', 'gallery', 'corridor', 'honor']
 export const LIGHTING_PRESETS: readonly LightingPreset[] = ['warm', 'neutral', 'cool']
-export const SLOT_TYPES = ['image', 'cluster', 'poster', 'video', 'text'] as const
+export const SLOT_TYPES = ['image', 'cluster', 'poster', 'video', 'text', 'guestbook'] as const
 export const FRAME_STYLES = ['classic', 'modern', 'none'] as const
 export const DOCUMENT_MEDIA_TYPES = ['image', 'youtube', 'iframe', 'external'] as const
 export const DOCUMENT_IMAGE_VARIANTS = ['thumb', 'wall', 'full'] as const

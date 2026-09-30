@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -1036,7 +1036,7 @@ export function RoomModel({
           }
           return
         }
-        if (obj.name.startsWith('TT_K5_Director_Panel_') || obj.name.startsWith('TT_K5_Director_Title_') || obj.name.startsWith('TT_K10_') || obj.name.startsWith('TT_K11_')) {
+        if (obj.name.startsWith('TT_K5_Director_Panel_') || obj.name.startsWith('TT_K5_Director_Title_') || obj.name.startsWith('TT_K10_') || obj.name.startsWith('TT_K11_') || obj.name.startsWith('TT_K12_')) {
           applyOriginalUnlitMaterial(obj)
           return
         }
@@ -1341,10 +1341,12 @@ export function RoomModel({
       if (entry.xAxis && entry.yAxis && entry.zAxis) {
         let xAxis = entry.xAxis
         let zAxis = entry.zAxis
-        if (haveCenter && zAxis.x * (entry.pos.x - cx) + zAxis.z * (entry.pos.z - cz) > 0) {
+        // K12 báo tường sits on the central block's outer (-X) face -> must face the
+        // surrounding corridor (away from room centre), like an outer wall in reverse.
+        const vmK12Outward = /^VM_Slot_K12_/i.test(id)
+        if (!vmK12Outward && haveCenter && zAxis.x * (entry.pos.x - cx) + zAxis.z * (entry.pos.z - cz) > 0) {
           xAxis = xAxis.clone().negate()
           zAxis = zAxis.clone().negate()
-          mirrorTextureX = true
         }
         const basis = new THREE.Matrix4().makeBasis(xAxis, entry.yAxis, zAxis)
         euler = new THREE.Euler().setFromRotationMatrix(basis)

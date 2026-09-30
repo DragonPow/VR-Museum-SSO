@@ -328,7 +328,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
       <mesh
         position={[0, 0, canvasZ]}
         renderOrder={isBackdrop ? 20 : 0}
-        {...(documentItem && !isBackdrop ? {
+        {...((documentItem || slot.type === 'guestbook') && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
           onPointerOut:  () => setHovered(false),
           onPointerDown: (e) => {
@@ -362,16 +362,11 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
             side={THREE.DoubleSide}
           />
         ) : (
-          // UNLIT like the room shell. A lit material here was the bug: the baked room
-          // only has ambientLight 0.32, and three r155+ divides ambient irradiance by PI
-          // (BRDF_Lambert), so every photo rendered at 0.32/PI ~= 10% albedo and then got
-          // squashed again by the global AgX tone mapping -- while the walls/floor sit at
-          // 100% (MeshBasicMaterial + toneMapped:false). Result: photos looked pitch black
-          // next to a white wall. The hero slot was already on this path and looked right.
+          // UNLIT like the room shell.
           <meshBasicMaterial
             ref={matRef as never}
             map={viewerTextureUrl ? greyTexture() : null}
-            color={viewerTextureUrl ? '#ffffff' : (isK5Portrait ? ACRYLIC_FACE_COLOR : '#d8cfbf')}
+            color={viewerTextureUrl ? '#ffffff' : (isK5Portrait ? ACRYLIC_FACE_COLOR : (slot.type === 'guestbook' ? '#f2e3c6' : '#d8cfbf'))}
             transparent={isK5Portrait && !viewerTextureUrl}
             opacity={isK5Portrait && !viewerTextureUrl ? 0.34 : 1}
             depthWrite={!(isK5Portrait && !viewerTextureUrl)}
@@ -383,6 +378,24 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           />
         )}
       </mesh>
+
+      {/* Fallback label for Guestbook slots when no custom image cover is uploaded */}
+      {slot.type === 'guestbook' && !viewerTextureUrl && (
+        <Text
+          position={[0, 0, canvasZ + 0.005]}
+          fontSize={Math.min(renderW * 0.1, 0.14)}
+          maxWidth={renderW * 0.85}
+          textAlign="center"
+          anchorX="center"
+          anchorY="middle"
+          color="#78350f"
+          renderOrder={15}
+          material-toneMapped={false}
+          material-depthWrite={false}
+        >
+          {`📌 BẢNG LƯU BÚT\n(Bấm để xem & gửi lời chúc)`}
+        </Text>
+      )}
 
       {slot.nameplate && !isBackdrop && (
         <group position={nameplateGroupPosition}>
