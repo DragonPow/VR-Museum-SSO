@@ -244,7 +244,8 @@ const styles: Record<string, React.CSSProperties> = {
   footer: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    gap: '6px 12px',
     paddingTop: '8px',
   },
   date: {
@@ -255,15 +256,17 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
+    flexShrink: 0,
   },
   signature: {
-    fontSize: '17px',
+    fontSize: '18px',
     fontWeight: 700,
     fontFamily: '"Playfair Display", "Be Vietnam Pro", serif',
     letterSpacing: '0.3px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    maxWidth: '320px',
+    wordBreak: 'break-word',
+    whiteSpace: 'normal',
+    lineHeight: '1.35',
+    textAlign: 'right',
+    marginLeft: 'auto',
   },
 }
