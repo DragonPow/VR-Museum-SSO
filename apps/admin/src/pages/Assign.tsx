@@ -597,12 +597,14 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
         </>
       ) : (
         <>
-          <div style={styles.slotEmpty}><span style={styles.slotEmptyIcon}>+</span></div>
+          <div style={styles.slotEmpty}>
+            <span style={styles.slotEmptyIcon}>{slot.type === 'guestbook' ? '📌' : '+'}</span>
+          </div>
           <div style={styles.slotInfo}>
             <div style={styles.slotName}>{slot.name}</div>
             {slot.type === 'guestbook' && (
               <div style={{ fontSize: '11px', color: '#eab308', marginTop: '4px', fontWeight: 600 }}>
-                📌 Bảng Lưu Bút {slot.guestbookEventId ? `(Event: ${slot.guestbookEventId})` : ''}
+                📌 Bảng Lưu Bút {slot.guestbookEventId ? `(${slot.guestbookEventId})` : ''}
               </div>
             )}
             {slot.nameplate && (
@@ -610,7 +612,9 @@ function SlotCard({ slot, documents, onClick }: { slot: Slot; documents: Documen
                 📛 Bảng tên: {slot.nameplate.role ? `[${slot.nameplate.role}] ` : ''}{slot.nameplate.primary}{slot.nameplate.secondary ? ` (${slot.nameplate.secondary})` : ''}
               </div>
             )}
-            <div style={styles.slotEmptyLabel}>Trống - click để gán</div>
+            <div style={styles.slotEmptyLabel}>
+              {slot.type === 'guestbook' ? 'Slot Lưu Bút (Click để chỉnh sửa / gán ảnh)' : 'Trống - click để gán'}
+            </div>
           </div>
         </>
       )}

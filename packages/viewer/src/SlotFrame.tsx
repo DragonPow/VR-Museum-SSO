@@ -22,8 +22,8 @@ interface Props {
 }
 
 const FRAME_THICKNESS = 0.04
-const FRAME_DEPTH     = 0.05   // how far the frame protrudes from the wall
-const FRAME_BASE      = 0.01   // gap between wall surface and back of frame (prevents z-fighting)
+const FRAME_DEPTH = 0.05   // how far the frame protrudes from the wall
+const FRAME_BASE = 0.01   // gap between wall surface and back of frame (prevents z-fighting)
 const FRAME_COLOR = { classic: '#8B6914', modern: '#333333', none: null }
 const NAMEPLATE_PRIMARY_COLOR = '#1f2a33'
 const NAMEPLATE_SECONDARY_COLOR = '#2f3a42'
@@ -34,7 +34,7 @@ const ACRYLIC_PIN_COLOR = '#b8b1a4'
 
 export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
-  const matRef  = useRef<THREE.MeshLambertMaterial | THREE.MeshBasicMaterial>(null)
+  const matRef = useRef<THREE.MeshLambertMaterial | THREE.MeshBasicMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
   const { invalidate } = useThree()
   const clonedTexRef = useRef<THREE.Texture | null>(null)
@@ -45,7 +45,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
   // The null guard before JSX (after all hooks) prevents any rendering.
   const position = transform?.position ?? { x: 0, y: 0, z: 0 }
   const rotation = transform?.rotation ?? { x: 0, y: 0, z: 0 }
-  const size     = transform?.size     ?? { w: 1, h: 0.8 }
+  const size = transform?.size ?? { w: 1, h: 0.8 }
   const frameColor = FRAME_COLOR[frameStyle]
   // Fixed backdrop panel (the wide hero banner): show the full-res image exactly as-is
   // — unlit, uncropped, not clickable — so it reads like a real printed panel on the wall.
@@ -196,7 +196,7 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
     ctx.shadowBlur = 0
     ctx.shadowOffsetX = 0
     ctx.shadowOffsetY = 0
-        const role = slot.nameplate.role ? slot.nameplate.role.trim().toUpperCase() : ''
+    const role = slot.nameplate.role ? slot.nameplate.role.trim().toUpperCase() : ''
     const name = slot.nameplate.primary ? slot.nameplate.primary.trim().toUpperCase() : ''
     const secondaryText = slot.nameplate.secondary ? slot.nameplate.secondary.trim() : ''
 
@@ -330,11 +330,11 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
         renderOrder={isBackdrop ? 20 : 0}
         {...((documentItem || slot.type === 'guestbook') && !isBackdrop ? {
           onPointerOver: (e) => { e.stopPropagation(); setHovered(true) },
-          onPointerOut:  () => setHovered(false),
+          onPointerOut: () => setHovered(false),
           onPointerDown: (e) => {
             pointerDownPos.current = { x: e.clientX, y: e.clientY }
           },
-          onClick:       (e) => {
+          onClick: (e) => {
             e.stopPropagation()
             if (!pointerDownPos.current) return
             const dx = e.clientX - pointerDownPos.current.x
@@ -346,8 +346,8 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
           },
         } : {
           onPointerOver: (e) => e.stopPropagation(),
-          onPointerOut:  (e) => e.stopPropagation(),
-          onClick:       (e) => e.stopPropagation(),
+          onPointerOut: (e) => e.stopPropagation(),
+          onClick: (e) => e.stopPropagation(),
         })}
       >
         <planeGeometry args={[renderW, renderH]} />
@@ -382,18 +382,19 @@ export function SlotFrame({ slot, documentItem, viewerTextureUrl, onSelect }: Pr
       {/* Fallback label for Guestbook slots when no custom image cover is uploaded */}
       {slot.type === 'guestbook' && !viewerTextureUrl && (
         <Text
-          position={[0, 0, canvasZ + 0.005]}
+          position={[0, 0, canvasZ + 0.015]}
           fontSize={Math.min(renderW * 0.1, 0.14)}
           maxWidth={renderW * 0.85}
           textAlign="center"
           anchorX="center"
           anchorY="middle"
           color="#78350f"
-          renderOrder={15}
+          renderOrder={20}
           material-toneMapped={false}
+          material-depthTest={false}
           material-depthWrite={false}
         >
-          {`📌 BẢNG LƯU BÚT\n(Bấm để xem & gửi lời chúc)`}
+          {`📌 LƯU BÚT`}
         </Text>
       )}
 
