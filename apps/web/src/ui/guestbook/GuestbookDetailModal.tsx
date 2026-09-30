@@ -257,9 +257,13 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '4px',
   },
   signature: {
-    fontSize: '19px',
+    fontSize: '17px',
     fontWeight: 700,
     fontFamily: '"Playfair Display", "Be Vietnam Pro", serif',
     letterSpacing: '0.3px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '320px',
   },
 }

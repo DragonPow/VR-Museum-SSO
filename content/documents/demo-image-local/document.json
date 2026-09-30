@@ -2,7 +2,7 @@
   "id": "demo-image-local",
   "documentKey": "demo-image-local",
   "title": "Demo slot ảnh local",
-  "year": 1985,
+  "year": "1985",
   "periodId": "period-1975-1985",
   "summary": "Slot ảnh dùng file demo trong /content/images local.",
   "body": "Ảnh này được lấy trực tiếp từ thư mục local `/content/images/photo-1985.png` để kiểm tra luồng treo ảnh lên slot cố định.",
@@ -21,8 +21,14 @@
       "id": "photo1"
     }
   ],
+  "externalUrl": "https://okok",
+  "externalLabel": "abc",
+  "externalLinks": [
+    {
+      "url": "https://okok",
+      "label": "abc"
+    }
+  ],
   "source": "Demo local",
-  "priority": 6,
-  "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-  "audioVolume": 1
+  "priority": 6
 }

@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updatedAt": "2026-08-08T06:55:47.860Z",
+  "updatedAt": "2026-09-03T02:57:14.571Z",
   "periods": [
     {
       "id": "period-1975-1985",
@@ -28,12 +28,6 @@
       "ceilingTextureId": null,
       "lightingPreset": "neutral",
       "entryViewpointId": "vp-entry",
-      "ambientAudioUrls": [
-        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
-      ],
-      "ambientAudioLoop": true,
-      "ambientAudioVolume": 0.25,
       "viewpoints": [
         {
           "id": "vp-entry",
@@ -1022,6 +1016,70 @@
           "zone": "Khu 11"
         },
         {
+          "id": "VM_Slot_K12_BD_01",
+          "roomId": "room-truyenthong",
+          "name": "K12_BD_01",
+          "type": "image",
+          "frameStyle": "none",
+          "documentIds": [
+            "item-01"
+          ],
+          "visible": true,
+          "zone": "Khu 12",
+          "fitMode": "cover"
+        },
+        {
+          "id": "VM_Slot_K12_BD_02",
+          "roomId": "room-truyenthong",
+          "name": "K12_BD_02",
+          "type": "guestbook",
+          "guestbookEventId": "k12-goc-tri-an",
+          "frameStyle": "none",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 12"
+        },
+        {
+          "id": "VM_Slot_K12_BD_03",
+          "roomId": "room-truyenthong",
+          "name": "K12_BD_03",
+          "type": "image",
+          "frameStyle": "none",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 12"
+        },
+        {
+          "id": "VM_Slot_K12_BD_04",
+          "roomId": "room-truyenthong",
+          "name": "K12_BD_04",
+          "type": "image",
+          "frameStyle": "none",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 12"
+        },
+        {
+          "id": "VM_Slot_K12_BD_05",
+          "roomId": "room-truyenthong",
+          "name": "K12_BD_05",
+          "type": "image",
+          "frameStyle": "none",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 12"
+        },
+        {
+          "id": "VM_Slot_K12_BD_06",
+          "roomId": "room-truyenthong",
+          "name": "K12_BD_06",
+          "type": "image",
+          "frameStyle": "none",
+          "documentIds": [],
+          "visible": true,
+          "zone": "Khu 12"
+        },
+        {
           "id": "VM_Slot_K6_AT_01",
           "roomId": "room-truyenthong",
           "name": "K6_AT_01",
@@ -1230,7 +1288,13 @@
           "viewerVariant": "full"
         }
       ],
-      "portals": []
+      "portals": [],
+      "ambientAudioUrls": [
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+      ],
+      "ambientAudioLoop": true,
+      "ambientAudioVolume": 0.25
     }
   ],
   "documentIndex": [

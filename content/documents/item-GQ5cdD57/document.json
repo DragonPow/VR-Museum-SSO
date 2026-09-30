@@ -1,13 +1,13 @@
 {
   "id": "item-GQ5cdD57",
+  "documentKey": "item-GQ5cdD57",
   "title": "backdrop",
   "year": 2026,
   "periodId": "period-1975-1985",
   "summary": "",
   "body": "",
   "tags": [],
-  "source": "",
-  "documentKey": "item-GQ5cdD57",
+  "mediaType": "image",
   "thumbnailImageId": "photo1",
   "viewerImageId": "photo1",
   "detailImageIds": [
@@ -19,6 +19,6 @@
       "rawExt": "png"
     }
   ],
-  "priority": 0,
-  "mediaType": "image"
+  "source": "",
+  "priority": 0
 }
