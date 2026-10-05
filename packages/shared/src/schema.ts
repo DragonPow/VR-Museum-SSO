@@ -116,6 +116,10 @@ export const DocumentIndexItemSchema = z.object({
   documentKey: NonEmptyString,
   mediaType: z.enum(DOCUMENT_MEDIA_TYPES),
   viewerImageId: NonEmptyString,
+  title: z.string().optional(),
+  year: z.union([z.string(), z.number()]).optional(),
+  periodId: z.string().optional(),
+  thumbnailImageId: z.string().optional(),
 })
 
 export const ExternalLinkSchema = z.object({

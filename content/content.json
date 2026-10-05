@@ -1299,94 +1299,153 @@
   ],
   "documentIndex": [
     {
-      "id": "item-01",
-      "documentKey": "item-01",
-      "mediaType": "image",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "item-02",
-      "documentKey": "item-02",
-      "mediaType": "image",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "item-03",
-      "documentKey": "item-03",
-      "mediaType": "image",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "item-04",
-      "documentKey": "item-04",
-      "mediaType": "image",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "item-05",
-      "documentKey": "item-05",
-      "mediaType": "image",
-      "viewerImageId": "photo1"
+      "id": "demo-external-link",
+      "documentKey": "demo-external-link",
+      "mediaType": "external",
+      "viewerImageId": "photo1",
+      "title": "Demo slot đường dẫn ngoài",
+      "year": 2026,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
     },
     {
       "id": "demo-image-local",
       "documentKey": "demo-image-local",
       "mediaType": "image",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "demo-youtube-embed",
-      "documentKey": "demo-youtube-embed",
-      "mediaType": "youtube",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "demo-external-link",
-      "documentKey": "demo-external-link",
-      "mediaType": "external",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "demo-two-page-01",
-      "documentKey": "demo-two-page-01",
-      "mediaType": "image",
-      "viewerImageId": "photo1"
-    },
-    {
-      "id": "demo-two-page-02",
-      "documentKey": "demo-two-page-02",
-      "mediaType": "image",
-      "viewerImageId": "photo1"
+      "viewerImageId": "photo1",
+      "title": "Demo slot ảnh local",
+      "year": "1985",
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
     },
     {
       "id": "demo-multi-image-page",
       "documentKey": "demo-multi-image-page",
       "mediaType": "image",
-      "viewerImageId": "photo1"
+      "viewerImageId": "photo1",
+      "title": "Demo một page có nhiều ảnh",
+      "year": 2026,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
     },
     {
-      "id": "item-mKQcJteY",
-      "documentKey": "item-mKQcJteY",
+      "id": "demo-two-page-01",
+      "documentKey": "demo-two-page-01",
       "mediaType": "image",
-      "viewerImageId": "photo1"
+      "viewerImageId": "photo1",
+      "title": "Demo tài liệu 2 trang - Trang 1",
+      "year": 1995,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
     },
     {
-      "id": "item-GQ5cdD57",
-      "documentKey": "item-GQ5cdD57",
+      "id": "demo-two-page-02",
+      "documentKey": "demo-two-page-02",
       "mediaType": "image",
-      "viewerImageId": "photo1"
+      "viewerImageId": "photo1",
+      "title": "Demo tài liệu 2 trang - Trang 2",
+      "year": 2025,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
     },
     {
-      "id": "item-le-dang-xuan-tan",
-      "documentKey": "item-le-dang-xuan-tan",
+      "id": "demo-youtube-embed",
+      "documentKey": "demo-youtube-embed",
+      "mediaType": "youtube",
+      "viewerImageId": "photo1",
+      "title": "Demo slot nhúng YouTube",
+      "year": 2024,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
+    },
+    {
+      "id": "item-01",
+      "documentKey": "item-01",
       "mediaType": "image",
-      "viewerImageId": "photo1"
+      "viewerImageId": "photo1",
+      "title": "Ngày thành lập công ty",
+      "year": 1975,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
+    },
+    {
+      "id": "item-02",
+      "documentKey": "item-02",
+      "mediaType": "image",
+      "viewerImageId": "photo1",
+      "title": "Xưởng sản xuất đầu tiên",
+      "year": 1978,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
+    },
+    {
+      "id": "item-03",
+      "documentKey": "item-03",
+      "mediaType": "image",
+      "viewerImageId": "photo1",
+      "title": "Hội nghị toàn quốc 1985",
+      "year": 1985,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
+    },
+    {
+      "id": "item-04",
+      "documentKey": "item-04",
+      "mediaType": "image",
+      "viewerImageId": "photo1",
+      "title": "Kỷ niệm 20 năm thành lập",
+      "year": 1995,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
+    },
+    {
+      "id": "item-05",
+      "documentKey": "item-05",
+      "mediaType": "image",
+      "viewerImageId": "photo1",
+      "title": "Chào mừng 50 năm",
+      "year": 2025,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
     },
     {
       "id": "item-8pUsaK5K",
       "documentKey": "item-8pUsaK5K",
       "mediaType": "image",
-      "viewerImageId": "photo-FpcnJDAE"
+      "viewerImageId": "photo-FpcnJDAE",
+      "title": "202111",
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo-FpcnJDAE"
+    },
+    {
+      "id": "item-GQ5cdD57",
+      "documentKey": "item-GQ5cdD57",
+      "mediaType": "image",
+      "viewerImageId": "photo1",
+      "title": "backdrop",
+      "year": 2026,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
+    },
+    {
+      "id": "item-le-dang-xuan-tan",
+      "documentKey": "item-le-dang-xuan-tan",
+      "mediaType": "image",
+      "viewerImageId": "photo1",
+      "title": "Lê Đặng Xuân Tân",
+      "year": "2018 - 2023",
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
+    },
+    {
+      "id": "item-mKQcJteY",
+      "documentKey": "item-mKQcJteY",
+      "mediaType": "image",
+      "viewerImageId": "photo1",
+      "title": "backdrop",
+      "year": 2026,
+      "periodId": "period-1975-1985",
+      "thumbnailImageId": "photo1"
     }
   ],
   "documents": [],

@@ -193,7 +193,7 @@ export function GuestbookWall({ onClose, eventId, eventTitle }: Props) {
           <span style={styles.titleIcon}>📌</span>
           <div>
             <h1 style={styles.title}>
-              {eventTitle ? `Tường Lưu Bút - ${eventTitle}` : 'Tường Lưu Bút 50 Năm'}
+              {eventTitle ? `Tường Lưu Bút - ${eventTitle}` : 'Tường Lưu Bút'}
             </h1>
             <p style={styles.subtitle}>
               {eventId ? `Nơi lưu giữ những lời chúc dành riêng cho sự kiện này` : 'Nơi lưu giữ những lời chúc và tình cảm của người tham quan'}

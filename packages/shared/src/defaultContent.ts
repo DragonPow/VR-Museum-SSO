@@ -63,8 +63,6 @@ export function documentIndexFromDocument(document: DocumentItem): DocumentIndex
     title: document.title,
     ...(document.year != null ? { year: document.year } : {}),
     periodId: document.periodId,
-    tags: document.tags,
-    source: document.source,
     thumbnailImageId: document.thumbnailImageId,
   }
 }

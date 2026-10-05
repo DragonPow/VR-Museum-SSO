@@ -199,13 +199,13 @@ export function Library() {
           periodId: idx.periodId || '',
           summary: '',
           body: '',
-          tags: idx.tags || [],
+          tags: [],
           mediaType: idx.mediaType,
           thumbnailImageId: idx.thumbnailImageId || idx.viewerImageId || 'photo1',
           viewerImageId: idx.viewerImageId || 'photo1',
           detailImageIds: [idx.viewerImageId || 'photo1'],
           images: [{ id: idx.viewerImageId || 'photo1' }],
-          source: idx.source || '',
+          source: '',
           priority: 0,
         })
       }

@@ -131,8 +131,6 @@ export interface DocumentIndexItem {
   title?: string
   year?: string | number
   periodId?: string
-  tags?: string[]
-  source?: string
   thumbnailImageId?: string
 }
 
