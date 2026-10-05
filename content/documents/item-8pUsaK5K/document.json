@@ -1,0 +1,24 @@
+{
+  "id": "item-8pUsaK5K",
+  "documentKey": "item-8pUsaK5K",
+  "title": "202111",
+  "periodId": "period-1975-1985",
+  "summary": "",
+  "body": "",
+  "tags": [],
+  "mediaType": "image",
+  "thumbnailImageId": "photo-FpcnJDAE",
+  "viewerImageId": "photo-FpcnJDAE",
+  "detailImageIds": [
+    "photo-FpcnJDAE"
+  ],
+  "images": [
+    {
+      "id": "photo-FpcnJDAE",
+      "caption": "202111",
+      "rawExt": "jpg"
+    }
+  ],
+  "source": "",
+  "priority": 0
+}
