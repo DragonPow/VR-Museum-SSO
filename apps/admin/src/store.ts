@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { DEFAULT_CONTENT, documentIndexFromDocument } from '@vm/shared'
+import { DEFAULT_CONTENT, documentIndexFromDocument, getContentDocumentIndex } from '@vm/shared'
 import { loadDraftContent, loadStaticContent, fetchDocumentDetail } from './contentSource.js'
-import type { Content, DocumentItem, Period, Room, Viewpoint, RoomPortal, SlotNameplate, ExternalLink, SlotType } from '@vm/shared'
+import type { Content, DocumentItem, DocumentIndexItem, Period, Room, Viewpoint, RoomPortal, SlotNameplate, ExternalLink, SlotType } from '@vm/shared'
 
 function documentKeyFromLegacyItem(item: Record<string, unknown>): string {
   for (const field of ['wallTextureUrl', 'fullUrl', 'thumbUrl']) {
@@ -75,7 +75,11 @@ function normalizeContentShape(content: Content): Content {
   return {
     ...content,
     settings,
-    documentIndex: documents.length > 0 ? documents.map(documentIndexFromDocument) : (Array.isArray(raw.documentIndex) ? raw.documentIndex as Content['documentIndex'] : []),
+    documentIndex: getContentDocumentIndex({
+      ...content,
+      documents,
+      documentIndex: Array.isArray(raw.documentIndex) ? raw.documentIndex as Content['documentIndex'] : (content.documentIndex ?? []),
+    }),
     documents,
     rooms: content.rooms.map((room) => ({
       ...room,
@@ -144,22 +148,37 @@ export const useDraftStore = create<DraftStore>()(
         const localSlotCount = local?.rooms.reduce((sum, room) => sum + room.slots.length, 0) ?? 0
         const localHasUsefulData = localSlotCount > 0
 
-        // If the browser has unsaved edits (e.g. a fresh local upload/assignment), keep
-        // them across F5. Otherwise the static seed would overwrite the just-created item.
+        // Always fetch latest base content (from Worker draft or static file)
+        const draftContent = await loadDraftContent()
+        const staticContent = draftContent ? null : await loadStaticContent()
+        const baseContent = draftContent ?? staticContent
+
+        // If the browser has unsaved edits, keep them but merge documentIndex with base content
+        // so that any items wiped out by legacy bugs are automatically recovered.
         if (local && localDirty && !localIsBootstrap && localHasUsefulData) {
-          set({ content: normalizeContentShape(local), loading: false, dirty: true })
+          const indexMap = new Map<string, DocumentIndexItem>()
+          if (baseContent) {
+            for (const idx of baseContent.documentIndex ?? []) {
+              indexMap.set(idx.id, idx)
+            }
+          }
+          for (const idx of local.documentIndex ?? []) {
+            indexMap.set(idx.id, idx)
+          }
+          const mergedLocal: Content = {
+            ...local,
+            documentIndex: Array.from(indexMap.values()),
+          }
+          set({ content: normalizeContentShape(mergedLocal), loading: false, dirty: true })
           return
         }
 
-        // Cloudflare and local-wrangler modes: Worker draft/content is the shared source.
-        const draftContent = await loadDraftContent()
         if (draftContent) {
           set({ content: normalizeContentShape(draftContent), loading: false, dirty: false })
           return
         }
 
         // Last fallback: committed static content files, then bootstrap seed.
-        const staticContent = await loadStaticContent()
         set({
           content: normalizeContentShape(staticContent ?? (localIsBootstrap ? DEFAULT_CONTENT : (local ?? DEFAULT_CONTENT))),
           loading: false,
@@ -182,10 +201,16 @@ export const useDraftStore = create<DraftStore>()(
             if (!state.content) return state
             if (state.content.documents.some((d) => d.id === fetched.id)) return state
             const documents = [...state.content.documents, fetched]
+            const documentIndex = (state.content.documentIndex ?? []).map((idx) =>
+              idx.id === fetched.id || idx.documentKey === fetched.documentKey
+                ? documentIndexFromDocument(fetched)
+                : idx
+            )
             return {
               content: {
                 ...state.content,
                 documents,
+                documentIndex,
               },
             }
           })
@@ -197,12 +222,15 @@ export const useDraftStore = create<DraftStore>()(
       addDocument: (document) =>
         set((s) => {
           if (!s.content) return s
-          const documents = [...s.content.documents, document]
+          const documents = [...s.content.documents.filter((d) => d.id !== document.id), document]
+          const existingIndex = s.content.documentIndex ?? []
+          const indexMap = new Map(existingIndex.map((idx) => [idx.id, idx]))
+          indexMap.set(document.id, documentIndexFromDocument(document))
           return {
             content: {
               ...s.content,
               documents,
-              documentIndex: documents.map(documentIndexFromDocument),
+              documentIndex: Array.from(indexMap.values()),
             },
             dirty: true,
           }
@@ -211,19 +239,27 @@ export const useDraftStore = create<DraftStore>()(
       updateDocument: (id, patch) =>
         set((s) => {
           if (!s.content) return s
+          let updatedDoc: DocumentItem | null = null
           const documents = s.content.documents.map((it) => {
             if (it.id !== id) return it
             const next = { ...it, ...patch }
             Object.entries(patch).forEach(([key, value]) => {
               if (value === undefined) delete (next as Record<string, unknown>)[key]
             })
+            updatedDoc = next
             return next
+          })
+          const documentIndex = (s.content.documentIndex ?? []).map((idx) => {
+            if (idx.id === id || (updatedDoc && idx.documentKey === updatedDoc.documentKey)) {
+              return updatedDoc ? documentIndexFromDocument(updatedDoc) : { ...idx, ...patch }
+            }
+            return idx
           })
           return {
             content: {
               ...s.content,
               documents,
-              documentIndex: documents.map(documentIndexFromDocument),
+              documentIndex,
             },
             dirty: true,
           }
@@ -233,11 +269,12 @@ export const useDraftStore = create<DraftStore>()(
         set((s) => {
           if (!s.content) return s
           const documents = s.content.documents.filter((it) => it.id !== id)
+          const documentIndex = (s.content.documentIndex ?? []).filter((it) => it.id !== id)
           return {
             content: {
               ...s.content,
               documents,
-              documentIndex: documents.map(documentIndexFromDocument),
+              documentIndex,
               rooms: s.content.rooms.map((r) => ({
                 ...r,
                 slots: r.slots.map((sl) => ({ ...sl, documentIds: (sl.documentIds ?? []).filter((documentId) => documentId !== id) })),

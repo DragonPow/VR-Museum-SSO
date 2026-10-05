@@ -70,8 +70,14 @@ export function documentIndexFromDocument(document: DocumentItem): DocumentIndex
 }
 
 export function getContentDocumentIndex(content: Content): DocumentIndexItem[] {
-  if (content.documents.length === 0) return content.documentIndex
-  return content.documents.map(documentIndexFromDocument)
+  const indexMap = new Map<string, DocumentIndexItem>()
+  for (const idx of content.documentIndex ?? []) {
+    indexMap.set(idx.id, idx)
+  }
+  for (const doc of content.documents ?? []) {
+    indexMap.set(doc.id, documentIndexFromDocument(doc))
+  }
+  return Array.from(indexMap.values())
 }
 
 export function roomDataFromContent(content: Content, room: Room): RoomData {
