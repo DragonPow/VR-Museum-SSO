@@ -376,10 +376,21 @@ function UploadModal({ periods, onClose, onDone }: {
   const [formViewerImageId, setFormViewerImageId] = useState<string>('')
   const [formThumbnailImageId, setFormThumbnailImageId] = useState<string>('')
   const [formDetailImageIds, setFormDetailImageIds] = useState<string[]>([])
+  const [previewImage, setPreviewImage] = useState<{ url: string; caption?: string } | null>(null)
   const [step, setStep] = useState<UploadStep>('form')
   const [uploadProgress, setUploadProgress] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const previewUrlsRef = useRef<string[]>([])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && previewImage) {
+        setPreviewImage(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [previewImage])
 
   useEffect(() => {
     return () => {
@@ -867,7 +878,14 @@ function UploadModal({ periods, onClose, onDone }: {
               <div style={styles.mediaGrid}>
                 {images.map((img, index) => (
                   <div key={img.id} style={styles.mediaItem}>
-                    <img src={img.previewUrl} alt={`preview ${index}`} style={styles.mediaThumb} />
+                    <div
+                      style={styles.mediaThumbWrap}
+                      onClick={() => setPreviewImage({ url: img.previewUrl, ...(img.caption ? { caption: img.caption } : {}) })}
+                      title="Click để phóng to tấm ảnh này"
+                    >
+                      <img src={img.previewUrl} alt={`preview ${index}`} style={{ ...styles.mediaThumb, cursor: 'pointer' }} />
+                      <div style={styles.adminZoomBadge}>🔍 Xem ảnh</div>
+                    </div>
                     <div style={styles.mediaFields}>
                       <div style={styles.mediaKind}>
                         {img.id === formViewerImageId ? 'Ảnh viewer' : img.id === formThumbnailImageId ? 'Ảnh thumbnail' : 'Ảnh phụ'}
@@ -956,6 +974,18 @@ function UploadModal({ periods, onClose, onDone }: {
           </button>
         </div>
       </div>
+
+      {previewImage && (
+        <div style={styles.previewOverlay} onClick={() => setPreviewImage(null)}>
+          <button style={styles.previewClose} onClick={() => setPreviewImage(null)} title="Đóng (Esc)">✕</button>
+          <div style={styles.previewContainer} onClick={(e) => e.stopPropagation()}>
+            <img src={previewImage.url} alt={previewImage.caption || ''} style={styles.previewFullImg} />
+            {previewImage.caption && (
+              <div style={styles.previewCaption}>{previewImage.caption}</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -988,10 +1018,21 @@ function EditModal({ item, periods, onClose, onSave }: {
   const [images, setImages] = useState<DocumentImage[]>(initialImages)
   const [removedImageIds, setRemovedImageIds] = useState<string[]>([])
   const [formDetailImageIds, setFormDetailImageIds] = useState<string[]>(Array.isArray(item.detailImageIds) ? item.detailImageIds : [])
+  const [previewImage, setPreviewImage] = useState<{ url: string; caption?: string } | null>(null)
   const [mediaBusy, setMediaBusy] = useState('')
   const [mediaError, setMediaError] = useState('')
   const replaceMainRef = useRef<HTMLInputElement>(null)
   const addImagesRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && previewImage) {
+        setPreviewImage(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [previewImage])
 
   const handleReplaceMainImage = async (file: File) => {
     setMediaError('')
@@ -1103,7 +1144,7 @@ function EditModal({ item, periods, onClose, onSave }: {
       source: form.source.trim(),
       thumbnailImageId: form.thumbnailImageId || images[0]?.id || 'photo1',
       viewerImageId: form.viewerImageId || images[0]?.id || 'photo1',
-      detailImageIds: formDetailImageIds.filter((id) => images.some((img) => img.id === id)),
+      detailImageIds: images.map((img) => img.id).filter((id) => formDetailImageIds.includes(id)),
       images,
       audioUrl: form.audioUrl.trim() || null,
       audioVolume: clampAudioVolumeInput(form.audioVolume),
@@ -1369,7 +1410,17 @@ function EditModal({ item, periods, onClose, onSave }: {
             <div style={styles.mediaGrid}>
               {images.map((image, index) => (
                 <div key={image.id} style={styles.mediaItem}>
-                  <img src={getDocumentImageUrl(item, image)} alt={image.alt ?? item.title} style={styles.mediaThumb} />
+                  <div
+                    style={styles.mediaThumbWrap}
+                    onClick={() => {
+                      const u = getDocumentImageUrl(item, image)
+                      if (u) setPreviewImage({ url: u, ...(image.caption ? { caption: image.caption } : {}) })
+                    }}
+                    title="Click để phóng to tấm ảnh này"
+                  >
+                    <img src={getDocumentImageUrl(item, image)} alt={image.alt ?? item.title} style={{ ...styles.mediaThumb, cursor: 'pointer' }} />
+                    <div style={styles.adminZoomBadge}>🔍 Xem ảnh</div>
+                  </div>
                   <div style={styles.mediaFields}>
                     <div style={styles.mediaKind}>{image.id === form.viewerImageId ? 'Ảnh viewer' : image.id === form.thumbnailImageId ? 'Ảnh thumbnail' : 'Ảnh phụ'}</div>
                     <input style={styles.input} value={image.caption ?? ''} placeholder="Caption" onChange={(e) => updateImage(image.id, { caption: e.target.value })} />
@@ -1434,6 +1485,18 @@ function EditModal({ item, periods, onClose, onSave }: {
           <button style={{ ...styles.submitBtn, opacity: canSave ? 1 : 0.5 }} onClick={handleSave} disabled={!canSave}>Lưu thay đổi</button>
         </div>
       </div>
+
+      {previewImage && (
+        <div style={styles.previewOverlay} onClick={() => setPreviewImage(null)}>
+          <button style={styles.previewClose} onClick={() => setPreviewImage(null)} title="Đóng (Esc)">✕</button>
+          <div style={styles.previewContainer} onClick={(e) => e.stopPropagation()}>
+            <img src={previewImage.url} alt={previewImage.caption || ''} style={styles.previewFullImg} />
+            {previewImage.caption && (
+              <div style={styles.previewCaption}>{previewImage.caption}</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1614,5 +1677,82 @@ const styles: Record<string, React.CSSProperties> = {
   },
   pageEllipsis: {
     color: '#6a5a40', padding: '0 4px', fontSize: '12px',
+  },
+  mediaThumbWrap: {
+    position: 'relative',
+    width: '120px',
+    height: '82px',
+    cursor: 'pointer',
+    flexShrink: 0,
+    borderRadius: '6px',
+    overflow: 'hidden',
+  },
+  adminZoomBadge: {
+    position: 'absolute',
+    bottom: '4px',
+    right: '4px',
+    background: 'rgba(0, 0, 0, 0.75)',
+    color: '#eae6df',
+    fontSize: '10px',
+    padding: '2px 5px',
+    borderRadius: '3px',
+    pointerEvents: 'none',
+    letterSpacing: '0.2px',
+  },
+  previewOverlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0, 0, 0, 0.88)',
+    backdropFilter: 'blur(6px)',
+    zIndex: 99999,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
+    boxSizing: 'border-box',
+    cursor: 'zoom-out',
+  },
+  previewClose: {
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    background: 'rgba(255, 255, 255, 0.2)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    color: '#ffffff',
+    borderRadius: '50%',
+    width: '40px',
+    height: '40px',
+    fontSize: '20px',
+    cursor: 'pointer',
+    zIndex: 100000,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewContainer: {
+    maxHeight: '85vh',
+    maxWidth: '90vw',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    cursor: 'default',
+  },
+  previewFullImg: {
+    maxHeight: '80vh',
+    maxWidth: '90vw',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    boxShadow: '0 16px 48px rgba(0, 0, 0, 0.7)',
+  },
+  previewCaption: {
+    marginTop: '12px',
+    color: '#eae6df',
+    fontSize: '14px',
+    background: 'rgba(0, 0, 0, 0.65)',
+    padding: '6px 16px',
+    borderRadius: '6px',
+    maxWidth: '80vw',
+    textAlign: 'center',
   },
 }

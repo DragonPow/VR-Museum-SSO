@@ -69,8 +69,23 @@ function isCompactViewport() {
 
 function getDocumentImages(item: DocumentItem): Array<DocumentImage & { url: string }> {
   const imageMap = new Map(item.images.map((image) => [image.id, image]))
-  const configured: DocumentImage[] = (item.detailImageIds.length > 0 ? item.detailImageIds : [item.viewerImageId])
-    .map((id) => imageMap.get(id) ?? { id })
+  const detailIds = item.detailImageIds.length > 0 ? item.detailImageIds : [item.viewerImageId]
+  const detailSet = new Set(detailIds)
+
+  // 1. Filter item.images preserving their exact order in Admin
+  let configured: DocumentImage[] = (item.images || []).filter((img) => detailSet.has(img.id))
+  if (configured.length === 0) {
+    configured = detailIds.map((id) => imageMap.get(id) ?? { id })
+  } else {
+    // Append any extra detailId not in item.images array if needed
+    const configuredSet = new Set(configured.map((img) => img.id))
+    for (const id of detailIds) {
+      if (!configuredSet.has(id)) {
+        configured.push(imageMap.get(id) ?? { id })
+      }
+    }
+  }
+
   const resolved: Array<DocumentImage & { url: string }> = []
   for (const image of configured) {
     const url = resolveDocumentImageVariantUrl(item.documentKey, image.id, 'full', {
@@ -84,6 +99,7 @@ function getDocumentImages(item: DocumentItem): Array<DocumentImage & { url: str
 
 export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext }: Props) {
   const [compact, setCompact] = useState(isCompactViewport)
+  const [zoomedImage, setZoomedImage] = useState<{ url: string; caption?: string; alt?: string } | null>(null)
   const { isItemAudioPlaying } = useMuseumAudio()
 
   useEffect(() => {
@@ -99,14 +115,18 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose()
+        if (zoomedImage) {
+          setZoomedImage(null)
+        } else {
+          onClose()
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [onClose])
+  }, [onClose, zoomedImage])
 
   if (documents.length === 0) return null
 
@@ -191,15 +211,27 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
                         <div style={styles.imageStack}>
                           {imageUrls.map((image) => (
                             <figure key={image.id} style={styles.figure}>
-                              <img
-                                src={image.url}
-                                alt={image.alt ?? item.title}
-                                style={{
-                                  ...styles.image,
-                                  ...(compact ? styles.imageCompact : {}),
-                                }}
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                              />
+                              <div
+                                style={styles.imageClickContainer}
+                                onClick={() => setZoomedImage({
+                                  url: image.url,
+                                  ...(image.caption ? { caption: image.caption } : {}),
+                                  ...(image.alt ? { alt: image.alt } : { alt: item.title }),
+                                })}
+                                title="Click để phóng to tấm ảnh này"
+                              >
+                                <img
+                                  src={image.url}
+                                  alt={image.alt ?? item.title}
+                                  style={{
+                                    ...styles.image,
+                                    ...(compact ? styles.imageCompact : {}),
+                                    cursor: 'zoom-in',
+                                  }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                                />
+                                <div style={styles.zoomHintBadge}>🔍 Phóng to</div>
+                              </div>
                               {image.caption && (
                                 <figcaption style={{ ...styles.caption, color: captionColor }}>
                                   {image.caption}
@@ -304,6 +336,19 @@ export function InfoModal({ documents, onClose, hasPrev, hasNext, onPrev, onNext
           ›
         </button>
       )}
+
+      {zoomedImage && (
+        <div style={styles.lightboxOverlay} onClick={() => setZoomedImage(null)}>
+          <button style={styles.lightboxClose} onClick={() => setZoomedImage(null)} title="Đóng (Esc)">✕</button>
+          <div style={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
+            <img src={zoomedImage.url} alt={zoomedImage.alt ?? ''} style={styles.lightboxImage} />
+            {zoomedImage.caption && (
+              <div style={styles.lightboxCaption}>{zoomedImage.caption}</div>
+            )}
+          </div>
+          <div style={styles.lightboxHint}>Bấm bất kỳ đâu hoặc phím Esc để đóng</div>
+        </div>
+      )}
     </div>
   )
 }
@@ -380,6 +425,92 @@ const styles: Record<string, React.CSSProperties> = {
   pausedIcon: {
     display: 'inline-block',
     opacity: 0.7,
+  },
+  imageClickContainer: {
+    position: 'relative',
+    width: '100%',
+    cursor: 'zoom-in',
+    display: 'block',
+  },
+  zoomHintBadge: {
+    position: 'absolute',
+    bottom: '8px',
+    right: '8px',
+    background: 'rgba(0, 0, 0, 0.65)',
+    color: '#ffffff',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    fontSize: '11px',
+    fontWeight: 600,
+    pointerEvents: 'none',
+    backdropFilter: 'blur(4px)',
+    letterSpacing: '0.2px',
+  },
+  lightboxOverlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0, 0, 0, 0.88)',
+    backdropFilter: 'blur(8px)',
+    zIndex: 9999,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
+    boxSizing: 'border-box',
+    cursor: 'zoom-out',
+  },
+  lightboxClose: {
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    background: 'rgba(255, 255, 255, 0.2)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    color: '#ffffff',
+    borderRadius: '50%',
+    width: '44px',
+    height: '44px',
+    fontSize: '22px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    zIndex: 10000,
+    transition: 'background 0.2s',
+  },
+  lightboxContent: {
+    maxHeight: '85vh',
+    maxWidth: '92vw',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    cursor: 'default',
+  },
+  lightboxImage: {
+    maxHeight: '80vh',
+    maxWidth: '92vw',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    boxShadow: '0 16px 50px rgba(0,0,0,0.6)',
+  },
+  lightboxCaption: {
+    marginTop: '12px',
+    color: '#ffffff',
+    fontSize: '14px',
+    textAlign: 'center',
+    background: 'rgba(0,0,0,0.6)',
+    padding: '6px 16px',
+    borderRadius: '6px',
+    maxWidth: '80vw',
+  },
+  lightboxHint: {
+    position: 'absolute',
+    bottom: '16px',
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: '12px',
+    pointerEvents: 'none',
   },
 }
 

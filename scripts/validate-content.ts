@@ -23,9 +23,9 @@ try {
   console.log(`\nSummary:`)
   console.log(`  Periods : ${content.periods.length}`)
   console.log(`  Rooms   : ${content.rooms.length}`)
-  console.log(`  Slots   : ${content.rooms.reduce((n, r) => n + r.slots.length, 0)} (${content.rooms.reduce((n, r) => n + r.slots.filter((s) => s.itemId !== null).length, 0)} assigned)`)
-  console.log(`  Items   : ${content.items.length}`)
-  console.log(`  Textures: ${content.textures.length}`)
+  console.log(`  Slots   : ${content.rooms.reduce((n, r) => n + r.slots.length, 0)} (${content.rooms.reduce((n, r) => n + r.slots.filter((s) => (s.documentIds ?? []).length > 0).length, 0)} assigned)`)
+  console.log(`  Documents : ${(content.documents || []).length}`)
+  console.log(`  Textures  : ${(content.textures || []).length}`)
 
   if (warnings.length > 0) {
     console.log('\nWarnings:')
